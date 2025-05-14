@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ma_visualization/RepairFeeDaily/RepairFeeDailyOverviewScreen.dart';
 import 'package:provider/provider.dart';
 
 import '../Provider/DateProvider.dart';
@@ -15,14 +16,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int selectedMonth = DateTime.now().month;
-  int selectedYear = DateTime.now().year;
-  DateTime selectedDate = DateTime(
-    DateTime.now().year,
-    DateTime.now().month,
-    1,
-  );
-
   @override
   void initState() {
     super.initState();
@@ -55,7 +48,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           width: MediaQuery.of(context).size.width,
           child: Wrap(
             children: [
-              // Hàng 1: Tổng quan
               SizedBox(
                 height: MediaQuery.of(context).size.height / 2 - 50,
                 width: MediaQuery.of(context).size.width / 2,
@@ -81,6 +73,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(color: Colors.blue.shade100),
+                  ),
+                  child: RepairFeeDailyOverviewScreen(
+                    onToggleTheme: widget.onToggleTheme,
+                    selectedDate: dateProvider.selectedDate,
                   ),
                 ),
               ),

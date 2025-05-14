@@ -62,7 +62,7 @@ class RepairFeeProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final result = await _apiService.fetchToolCosts(month);
+    final result = await _apiService.fetchRepairFee(month);
     _data = result;
     _lastLoadedDate = now;
     _lastLoadedMonth = month; // Cập nhật tháng

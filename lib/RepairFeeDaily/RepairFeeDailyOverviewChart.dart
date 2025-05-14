@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ma_visualization/Common/DetailsDataPopup.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../Model/RepairFeeModel.dart';
 import '../API/ApiService.dart';
 import '../Common/CustomLegend.dart';
-import '../Model/DetailsDataModel.dart';
+import '../Common/TitleWithIndexBadge.dart';
 
-class RepairFeeOverviewChart extends StatefulWidget {
+class RepairFeeDailyOverviewChart extends StatefulWidget {
   final List<RepairFeeModel> data;
   final String month;
 
-  const RepairFeeOverviewChart({
+  const RepairFeeDailyOverviewChart({
     super.key,
     required this.data,
     required this.month,
   });
 
   @override
-  State<RepairFeeOverviewChart> createState() => _RepairFeeOverviewChartState();
+  State<RepairFeeDailyOverviewChart> createState() =>
+      _RepairFeeDailyOverviewChartState();
 }
 
-class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
+class _RepairFeeDailyOverviewChartState
+    extends State<RepairFeeDailyOverviewChart> {
   int? selectedIndex;
   final apiService = ApiService();
   final numberFormat = NumberFormat("##0.0");
@@ -31,6 +32,8 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        TitleWithIndexBadge(index: 2, title: "Repair Fee (Daily)"),
+
         SizedBox(
           height: MediaQuery.of(context).size.height * .35,
           child: SfCartesianChart(
@@ -77,9 +80,9 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
         const SizedBox(height: 8),
         CustomLegend(
           items: [
-            LegendItem(Colors.red, 'Actual > Target (Negative)'),
-            LegendItem(Colors.green, 'Target Achieved'),
-            LegendItem(Colors.grey, 'Target'),
+            LegendItem(Colors.red, 'PRESS'),
+            LegendItem(Colors.green, 'MOLD'),
+            LegendItem(Colors.grey, 'GUIDE'),
           ],
         ),
       ],
@@ -110,67 +113,6 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
             color: Colors.white,
           ),
         ),
-        onPointTap: (ChartPointDetails details) async {
-          final index = details.pointIndex ?? -1;
-          final item = widget.data[index];
-
-          // Show loading dialog
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (_) => const Center(child: CircularProgressIndicator()),
-          );
-
-          try {
-            // Gọi API để lấy dữ liệu
-            List<DetailsDataModel> detailsData = await ApiService()
-                .fetchDetailsDataRF(widget.month, item.title);
-
-            // Tắt loading
-            Navigator.of(context).pop();
-
-            if (detailsData.isNotEmpty) {
-              // Hiển thị popup dữ liệu
-              showDialog(
-                context: context,
-                builder:
-                    (_) => DetailsDataPopup(
-                      title: 'Details Data',
-                      data: detailsData,
-                      totalActual: item.title == "PE" ? 0 : item.actual,
-                      group: item.title,
-                    ),
-              );
-            } else {
-              // Có thể thêm thông báo nếu không có dữ liệu
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'No data available',
-                      style: TextStyle(
-                        fontSize: 22.0, // Tăng kích thước font chữ
-                        fontWeight: FontWeight.bold, // Tùy chọn để làm đậm
-                      ),
-                    ),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 20.0),
-                  // Thêm khoảng cách trên/dưới
-                  behavior:
-                      SnackBarBehavior
-                          .fixed, // Tùy chọn hiển thị phía trên thay vì ở dưới
-                ),
-              );
-            }
-          } catch (e) {
-            Navigator.of(context).pop(); // Đảm bảo tắt loading nếu lỗi
-            print("Error fetching data: $e");
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Error fetching data')));
-          }
-        },
       ),
       ColumnSeries<RepairFeeModel, String>(
         animationDuration: 500,
@@ -178,7 +120,6 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
         xValueMapper: (item, _) => item.title,
         yValueMapper: (item, _) => item.target,
         dataLabelMapper: (item, _) => numberFormat.format(item.target),
-        color: Colors.grey,
         name: 'Target',
         width: 0.5,
         spacing: 0.1,

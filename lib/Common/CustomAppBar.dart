@@ -47,7 +47,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   activeColor: Colors.blue,
                 ),
-                Text(div, style: const TextStyle(color: Colors.blue)),
+                Text(
+                  div,
+                  style: const TextStyle(color: Colors.blue, fontSize: 18),
+                ),
               ],
             );
           }).toList(),

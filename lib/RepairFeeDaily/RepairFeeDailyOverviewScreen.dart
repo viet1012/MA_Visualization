@@ -1,29 +1,31 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../Common/DesignedByText.dart';
 import '../Common/NoDataWidget.dart';
-import '../Common/TitleWithIndexBadge.dart';
 import '../Provider/DateProvider.dart';
 import '../Provider/RepairFeeProvider.dart';
-import 'RepairFeeOverviewChart.dart';
+import 'RepairFeeDailyOverviewChart.dart';
 
-class RepairFeeOverviewScreen extends StatefulWidget {
+class RepairFeeDailyOverviewScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
   final DateTime selectedDate; // 👈 Thêm dòng này
-  const RepairFeeOverviewScreen({
+  const RepairFeeDailyOverviewScreen({
     super.key,
     required this.onToggleTheme,
     required this.selectedDate,
   });
 
   @override
-  State<RepairFeeOverviewScreen> createState() =>
-      _RepairFeeOverviewScreenState();
+  State<RepairFeeDailyOverviewScreen> createState() =>
+      _RepairFeeDailyOverviewScreenState();
 }
 
-class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
+class _RepairFeeDailyOverviewScreenState
+    extends State<RepairFeeDailyOverviewScreen> {
   int selectedMonth = DateTime.now().month;
   int selectedYear = DateTime.now().year;
   DateTime selectedDate = DateTime(
@@ -32,10 +34,11 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
     1,
   );
 
+  Timer? _dailyTimer;
   final dayFormat = DateFormat('d-MMM-yyyy');
 
   @override
-  void didUpdateWidget(covariant RepairFeeOverviewScreen oldWidget) {
+  void didUpdateWidget(covariant RepairFeeDailyOverviewScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     final dateProvider = context.read<DateProvider>();
@@ -70,6 +73,7 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
 
   @override
   void dispose() {
+    _dailyTimer?.cancel(); // 🧹 Dọn dẹp khi màn hình bị hủy
     super.dispose();
   }
 
@@ -105,10 +109,9 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: Wrap(
                   children: [
-                    TitleWithIndexBadge(index: 1, title: "Repair Fee"),
                     Padding(
                       padding: const EdgeInsets.all(8),
-                      child: RepairFeeOverviewChart(
+                      child: RepairFeeDailyOverviewChart(
                         data: provider.data,
                         month:
                             "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",
