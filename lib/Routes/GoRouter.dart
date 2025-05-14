@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../Common/NotFoundScreen.dart';
+import '../DashboardScreen.dart';
 
 // ✅ Danh sách các phòng ban hợp lệ
 final List<String> validDepts = [
@@ -22,11 +23,11 @@ String _getCurrentMonth() {
 GoRouter createRouter(VoidCallback onToggleTheme) {
   return GoRouter(
     routes: [
-      // GoRoute(
-      //   path: '/',
-      //   builder:
-      //       (context, state) => DashboardScreen(onToggleTheme: onToggleTheme),
-      // ),
+      GoRoute(
+        path: '/',
+        builder:
+            (context, state) => DashboardScreen(onToggleTheme: onToggleTheme),
+      ),
     ],
     errorBuilder: (context, state) => const NotFoundScreen(),
   );

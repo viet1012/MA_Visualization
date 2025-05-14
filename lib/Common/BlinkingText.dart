@@ -44,12 +44,30 @@ class _BlinkingTextState extends State<BlinkingText>
       builder:
           (context, child) => Opacity(
             opacity: _opacityAnim.value,
-            child: Text(
-              widget.text,
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: _colorAnim.value,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white, // Nền trắng (có thể chỉnh)
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _colorAnim.value ?? Colors.blue,
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (_colorAnim.value ?? Colors.blue).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(2, 4),
+                  ),
+                ],
+              ),
+              child: Text(
+                widget.text,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: _colorAnim.value,
+                ),
               ),
             ),
           ),
