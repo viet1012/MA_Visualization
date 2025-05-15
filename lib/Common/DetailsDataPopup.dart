@@ -2,9 +2,8 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
+import 'package:ma_visualization/Model/DetailsDataModel.dart';
 import 'package:universal_html/html.dart' as html;
-
-import '../Model/DetailsDataModel.dart';
 
 class DetailsDataPopup extends StatefulWidget {
   final String title;
@@ -29,32 +28,68 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
   final TextEditingController _filterController = TextEditingController();
   late List<DetailsDataModel> filteredData;
-  double costLoss = 0;
+  late List<Map<String, dynamic>> rawJsonList; // bạn lưu từ response
 
   @override
   void initState() {
     super.initState();
     filteredData = widget.data;
-    _filterController.addListener(_applyFilterForInputField);
-
-    costLoss = filteredData.fold<double>(0, (sum, item) => (sum + item.amount));
+    _filterController.addListener(_applyFilter);
+    rawJsonList = widget.data.map((e) => e.toJson()).toList();
   }
 
-  void _applyFilterForInputField() {
+  void _applyFilter() {
     final query = _filterController.text.toLowerCase();
+
     setState(() {
       filteredData =
           widget.data.where((item) {
-            return item.dept.toLowerCase().contains(query) ||
+            // Kiểm tra các điều kiện tìm kiếm trong chuỗi
+            final matchesSearch =
+                item.dept.toLowerCase().contains(query) ||
                 item.maktx.toLowerCase().contains(query) ||
                 item.xblnr2.toLowerCase().contains(query) ||
                 item.bktxt.toLowerCase().contains(query) ||
                 item.matnr.toLowerCase().contains(query) ||
                 item.useDate.toLowerCase().contains(query) ||
                 item.unit.toLowerCase().contains(query) ||
-                item.qty.toString().toLowerCase().contains(query) ||
-                item.amount.toString().toLowerCase().contains(query);
+                item.qty.toString().contains(query) ||
+                item.amount.toString().contains(query);
+
+            // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
+            final matchesFilters =
+                (selectedDept == null || item.dept == selectedDept) &&
+                (selectedMatnr == null || item.matnr == selectedMatnr) &&
+                (selectedMaktx == null || item.maktx == selectedMaktx) &&
+                (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
+                (selectedUnit == null || item.unit == selectedUnit) &&
+                (selectedUsedDate == null ||
+                    item.useDate == selectedUsedDate) &&
+                (selectedBktxt == null || item.bktxt == selectedBktxt) &&
+                (selectedKostl == null || item.kostl == selectedKostl) &&
+                (selectedKonto == null || item.konto == selectedKonto);
+
+            return matchesSearch &&
+                matchesFilters; // Kết hợp cả hai điều kiện: tìm kiếm và lọc
           }).toList();
+      print("Filtered Data Length: ${filteredData.length}");
+    });
+  }
+
+  void _resetFilter() {
+    setState(() {
+      _filterController.clear();
+      selectedXblnr2 = null;
+      selectedMaktx = null;
+      selectedMatnr = null;
+      selectedDept = null;
+      selectedUnit = null;
+      selectedUsedDate = null;
+      selectedBktxt = null;
+      selectedNote = null;
+      selectedKostl = null;
+      selectedKonto = null;
+      filteredData = widget.data;
     });
   }
 
@@ -100,35 +135,12 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     );
   }
 
-  void _resetFilter() {
-    setState(() {
-      _filterController.clear();
-      selectedXblnr2 = null;
-      selectedMaktx = null;
-      selectedMatnr = null;
-      selectedDept = null;
-      selectedUnit = null;
-      selectedDept = null;
-      selectedUsedDate = null;
-      selectedBktxt = null;
-      selectedNote = null;
-      filteredData = widget.data;
-    });
-  }
-
   Widget _buildHeader(ThemeData theme) {
     // Tính tổng amount
     final totalAmount = filteredData.fold<double>(
       0,
       (sum, item) => (sum + item.amount),
     );
-
-    double diff = widget.totalActual - (costLoss / 1000);
-
-    // Nếu độ lệch nhỏ hơn 0.01 thì coi như bằng 0
-    if (diff.abs() < 0.01) {
-      diff = 0;
-    }
 
     return Column(
       children: [
@@ -150,16 +162,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
             ),
             Row(
               children: [
-                // widget.group != "PE"
-                //     ? Text(
-                //       "Share: ${diff.toStringAsFixed(1)}K\$",
-                //       style: TextStyle(
-                //         fontWeight: FontWeight.bold,
-                //         fontSize: 18,
-                //       ),
-                //     )
-                //     : SizedBox(),
-                // SizedBox(width: 16),
                 Text(
                   "Total: ${(totalAmount / 1000).toStringAsFixed(1)}K\$",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -238,47 +240,110 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   String? selectedUsedDate;
   String? selectedBktxt;
   String? selectedNote;
+  String? selectedKostl;
+  String? selectedKonto;
 
-  void _applyFilter() {
-    final query = _filterController.text.toLowerCase();
-    setState(() {
-      filteredData =
-          widget.data.where((item) {
-            final matchesSearch =
-                item.dept.toLowerCase().contains(query) ||
-                item.maktx.toLowerCase().contains(query) ||
-                item.xblnr2.toLowerCase().contains(query) ||
-                item.bktxt.toLowerCase().contains(query) ||
-                item.matnr.toLowerCase().contains(query) ||
-                item.useDate.toLowerCase().contains(query) ||
-                item.unit.toLowerCase().contains(query) ||
-                item.qty.toString().toLowerCase().contains(query) ||
-                item.amount.toString().toLowerCase().contains(query);
-            final matchesDept =
-                selectedDept == null || item.dept == selectedDept;
-            final matchesMatnr =
-                selectedMatnr == null || item.matnr == selectedMatnr;
-            final matchesMaktx =
-                selectedMaktx == null || item.maktx == selectedMaktx;
-            final matchesXblnr2 =
-                selectedXblnr2 == null || item.xblnr2 == selectedXblnr2;
-            final matchesUnit =
-                selectedUnit == null || item.unit == selectedUnit;
-            final matchesUsedDate =
-                selectedUsedDate == null || item.useDate == selectedUsedDate;
-            final matchesBktxt =
-                selectedBktxt == null || item.bktxt == selectedBktxt;
+  Widget _buildDynamicDropdownHeader(String key) {
+    final title = key.toUpperCase();
+    List<String> values = _getUniqueValues(
+      (item) => item.toJson()[key]?.toString() ?? '',
+    );
+    String? selectedValue;
+    void Function(String?)? onChanged;
 
-            return matchesSearch &&
-                matchesDept &&
-                matchesMatnr &&
-                matchesMaktx &&
-                matchesXblnr2 &&
-                matchesUnit &&
-                matchesUsedDate &&
-                matchesBktxt;
-          }).toList();
-    });
+    switch (key) {
+      case 'dept':
+        selectedValue = selectedDept;
+        onChanged = (value) {
+          setState(() {
+            selectedDept = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      case 'matnr':
+        selectedValue = selectedMatnr;
+        onChanged = (value) {
+          setState(() {
+            selectedMatnr = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      case 'maktx':
+        selectedValue = selectedMaktx;
+        onChanged = (value) {
+          setState(() {
+            selectedMaktx = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      case 'xblnr2':
+        selectedValue = selectedXblnr2;
+        onChanged = (value) {
+          setState(() {
+            selectedXblnr2 = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      case 'unit':
+        selectedValue = selectedUnit;
+        onChanged = (value) {
+          setState(() {
+            selectedUnit = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      case 'useDate':
+        selectedValue = selectedUsedDate;
+        onChanged = (value) {
+          setState(() {
+            selectedUsedDate = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      case 'bktxt':
+        selectedValue = selectedBktxt;
+        onChanged = (value) {
+          setState(() {
+            selectedBktxt = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      case 'kostl':
+        selectedValue = selectedKostl;
+        onChanged = (value) {
+          setState(() {
+            selectedKostl = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      case 'konto':
+        selectedValue = selectedKonto;
+        onChanged = (value) {
+          setState(() {
+            selectedKonto = value == '__reset__' ? null : value;
+            _applyFilter();
+          });
+        };
+        break;
+      default:
+        // Không filter được -> render Text bình thường
+        return _buildTableCell(title, isHeader: true);
+    }
+
+    return _buildDropdownHeader(
+      title: title,
+      selectedValue: selectedValue,
+      values: values,
+      onChanged: onChanged,
+    );
   }
 
   Widget _buildDropdownHeader({
@@ -333,118 +398,46 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   }
 
   Widget _buildDataTable(BuildContext context, ThemeData theme) {
+    final columnKeys =
+        rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
+
     return Scrollbar(
       controller: _scrollController,
       thumbVisibility: true,
       child: SingleChildScrollView(
         controller: _scrollController,
-
         scrollDirection: Axis.horizontal,
         child: Column(
           children: [
-            // Sticky Header (dòng tiêu đề)
+            // Header Table
             Table(
               border: TableBorder.all(
                 color: theme.dividerColor.withOpacity(0.8),
               ),
               columnWidths: {
-                0: FixedColumnWidth(130),
-                1: FixedColumnWidth(150),
-                2: FixedColumnWidth(500),
+                0: FixedColumnWidth(120),
+                1: FixedColumnWidth(120),
+                2: FixedColumnWidth(180),
                 3: FixedColumnWidth(150),
                 4: FixedColumnWidth(220),
-                5: FixedColumnWidth(220),
-                6: FixedColumnWidth(100),
-                7: FixedColumnWidth(100),
-                8: FixedColumnWidth(120),
+                5: FixedColumnWidth(100),
+                6: FixedColumnWidth(130),
+                7: FixedColumnWidth(140),
+                8: FixedColumnWidth(370),
+                9: FixedColumnWidth(200),
+                10: FixedColumnWidth(100),
               },
               children: [
                 TableRow(
-                  children: [
-                    _buildDropdownHeader(
-                      title: 'Dept',
-                      selectedValue: selectedDept,
-                      values: _getUniqueValues((e) => e.dept),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedDept = value;
-                          _applyFilter();
-                        });
-                      },
-                    ),
-                    _buildDropdownHeader(
-                      title: 'Material No',
-                      selectedValue: selectedMatnr,
-                      values: _getUniqueValues((e) => e.matnr),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedMatnr = value;
-                          _applyFilter();
-                        });
-                      },
-                    ),
-                    _buildDropdownHeader(
-                      title: 'Description',
-                      selectedValue: selectedMaktx,
-                      values: _getUniqueValues((e) => e.maktx),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedMaktx = value;
-                          _applyFilter();
-                        });
-                      },
-                    ),
-                    _buildDropdownHeader(
-                      title: 'Used Date',
-                      selectedValue: selectedUsedDate,
-                      values: _getUniqueValues((e) => e.useDate),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedUsedDate = value;
-                          _applyFilter();
-                        });
-                      },
-                    ),
-                    _buildDropdownHeader(
-                      title: 'Doc Number',
-                      selectedValue: selectedXblnr2,
-                      values: _getUniqueValues((e) => e.xblnr2),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedXblnr2 = value;
-                          _applyFilter();
-                        });
-                      },
-                    ),
-                    _buildDropdownHeader(
-                      title: 'BKTXT',
-                      selectedValue: selectedBktxt,
-                      values: _getUniqueValues((e) => e.bktxt),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedBktxt = value;
-                          _applyFilter();
-                        });
-                      },
-                    ),
-                    _buildTableCell('Qty', isHeader: true),
-                    _buildDropdownHeader(
-                      title: 'Unit',
-                      selectedValue: selectedUnit,
-                      values: _getUniqueValues((e) => e.unit),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedUnit = value;
-                          _applyFilter();
-                        });
-                      },
-                    ),
-                    _buildTableCell('Amount \$', isHeader: true),
-                  ],
+                  children:
+                      columnKeys
+                          .map((key) => _buildDynamicDropdownHeader(key))
+                          .toList(),
                 ),
               ],
             ),
-            // Scrollable content
+
+            // Table content
             Expanded(
               child: Scrollbar(
                 controller: _scrollController,
@@ -460,36 +453,30 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                         color: theme.dividerColor.withOpacity(0.8),
                       ),
                       columnWidths: {
-                        0: FixedColumnWidth(130),
-                        1: FixedColumnWidth(150),
-                        2: FixedColumnWidth(500),
+                        0: FixedColumnWidth(120),
+                        1: FixedColumnWidth(120),
+                        2: FixedColumnWidth(180),
                         3: FixedColumnWidth(150),
                         4: FixedColumnWidth(220),
-                        5: FixedColumnWidth(220),
-                        6: FixedColumnWidth(100),
-                        7: FixedColumnWidth(100),
-                        8: FixedColumnWidth(120),
+                        5: FixedColumnWidth(100),
+                        6: FixedColumnWidth(130),
+                        7: FixedColumnWidth(140),
+                        8: FixedColumnWidth(370),
+                        9: FixedColumnWidth(200),
+                        10: FixedColumnWidth(100),
                       },
                       children:
                           filteredData.map((item) {
+                            final jsonRow = item.toJson(); // convert về Map
                             return TableRow(
-                              children: [
-                                _buildTableCell(item.dept),
-                                _buildTableCell(item.matnr),
-                                _buildTableCell(item.maktx),
-                                _buildTableCell(item.useDate),
-                                _buildTableCell(item.xblnr2),
-                                _buildTableCell(item.bktxt),
-                                _buildTableCell(
-                                  item.qty.toString(),
-                                  isNumber: true,
-                                ),
-                                _buildTableCell(item.unit),
-                                _buildTableCell(
-                                  item.amount.toStringAsFixed(2),
-                                  isNumber: true,
-                                ),
-                              ],
+                              children:
+                                  columnKeys.map((key) {
+                                    final value = jsonRow[key];
+                                    return _buildTableCell(
+                                      value?.toString() ?? '',
+                                      isNumber: value is num,
+                                    );
+                                  }).toList(),
                             );
                           }).toList(),
                     ),
@@ -583,31 +570,35 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     var excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
-    // Thêm tiêu đề
+    // Thêm tiêu đề đúng thứ tự
     sheet.appendRow([
-      'Dept',
+      'dept',
       'matnr',
       'kostl',
-      'Used Date',
-      'Doc Number',
-      'Note',
-      'Qty',
-      'Unit',
-      'Amount',
+      'konto',
+      'bktxt',
+      'qty',
+      'act', // Nếu toJson không có 'act' mà có 'amount' thì bạn map lại
+      'useDate',
+      'maktx',
+      'xblnr2',
+      'unit',
     ]);
 
-    // Thêm dữ liệu
+    // Dữ liệu theo đúng thứ tự như tiêu đề
     for (var item in data) {
       sheet.appendRow([
         item.dept,
         item.matnr,
-        item.maktx,
-        item.useDate,
-        item.xblnr2,
+        item.kostl,
+        item.konto,
         item.bktxt,
         item.qty,
-        item.unit,
         item.amount,
+        item.useDate,
+        item.maktx,
+        item.xblnr2,
+        item.unit,
       ]);
     }
 

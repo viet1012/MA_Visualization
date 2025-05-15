@@ -41,14 +41,14 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
     final dateProvider = context.read<DateProvider>();
     if (oldWidget.selectedDate != dateProvider.selectedDate) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final toolCostProvider = Provider.of<RepairFeeProvider>(
+        final repairFeeProvider = Provider.of<RepairFeeProvider>(
           context,
           listen: false,
         );
         final newMonth =
             "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
         print("newMonth: $newMonth");
-        toolCostProvider.fetchToolCosts(newMonth);
+        repairFeeProvider.fetchRepairFee(newMonth);
       });
     }
   }
@@ -78,7 +78,7 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
     final month =
         "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
     provider.clearData(); // 👈 Reset trước khi fetch
-    provider.fetchToolCosts(month);
+    provider.fetchRepairFee(month);
   }
 
   @override
@@ -100,7 +100,6 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
 
           return SingleChildScrollView(
             child: SizedBox(
-              width: MediaQuery.of(context).size.width,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Wrap(

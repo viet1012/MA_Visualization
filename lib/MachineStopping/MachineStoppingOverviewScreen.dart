@@ -2,30 +2,30 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ma_visualization/Provider/MachineStoppingProvider.dart';
 import 'package:provider/provider.dart';
 
 import '../Common/DesignedByText.dart';
 import '../Common/NoDataWidget.dart';
 import '../Provider/DateProvider.dart';
-import '../Provider/RepairFeeProvider.dart';
-import 'RepairFeeDailyOverviewChart.dart';
+import 'MachineStoppingOverviewChart.dart';
 
-class RepairFeeDailyOverviewScreen extends StatefulWidget {
+class MachineStoppingOverviewScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
   final DateTime selectedDate; // 👈 Thêm dòng này
-  const RepairFeeDailyOverviewScreen({
+  const MachineStoppingOverviewScreen({
     super.key,
     required this.onToggleTheme,
     required this.selectedDate,
   });
 
   @override
-  State<RepairFeeDailyOverviewScreen> createState() =>
-      _RepairFeeDailyOverviewScreenState();
+  State<MachineStoppingOverviewScreen> createState() =>
+      _MachineStoppingOverviewScreenState();
 }
 
-class _RepairFeeDailyOverviewScreenState
-    extends State<RepairFeeDailyOverviewScreen> {
+class _MachineStoppingOverviewScreenState
+    extends State<MachineStoppingOverviewScreen> {
   int selectedMonth = DateTime.now().month;
   int selectedYear = DateTime.now().year;
   DateTime selectedDate = DateTime(
@@ -38,20 +38,20 @@ class _RepairFeeDailyOverviewScreenState
   final dayFormat = DateFormat('d-MMM-yyyy');
 
   @override
-  void didUpdateWidget(covariant RepairFeeDailyOverviewScreen oldWidget) {
+  void didUpdateWidget(covariant MachineStoppingOverviewScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     final dateProvider = context.read<DateProvider>();
     if (oldWidget.selectedDate != dateProvider.selectedDate) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final toolCostProvider = Provider.of<RepairFeeProvider>(
+        final machineStoppingProvider = Provider.of<MachineStoppingProvider>(
           context,
           listen: false,
         );
         final newMonth =
             "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
         print("newMonth: $newMonth");
-        toolCostProvider.fetchToolCosts(newMonth);
+        machineStoppingProvider.fetchMachineStopping(newMonth);
       });
     }
   }
@@ -61,7 +61,10 @@ class _RepairFeeDailyOverviewScreenState
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<RepairFeeProvider>(context, listen: false);
+      final provider = Provider.of<MachineStoppingProvider>(
+        context,
+        listen: false,
+      );
       _fetchData(provider);
     });
   }
@@ -77,18 +80,18 @@ class _RepairFeeDailyOverviewScreenState
     super.dispose();
   }
 
-  void _fetchData(RepairFeeProvider provider) {
+  void _fetchData(MachineStoppingProvider provider) {
     final dateProvider = context.read<DateProvider>();
     final month =
         "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
     provider.clearData(); // 👈 Reset trước khi fetch
-    provider.fetchToolCosts(month);
+    provider.fetchMachineStopping(month);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<RepairFeeProvider>(
+      body: Consumer<MachineStoppingProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -111,7 +114,7 @@ class _RepairFeeDailyOverviewScreenState
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8),
-                      child: RepairFeeDailyOverviewChart(
+                      child: MachineStoppingOverviewChart(
                         data: provider.data,
                         month:
                             "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",

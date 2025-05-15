@@ -1,28 +1,28 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:ma_visualization/Model/RepairFeeModel.dart';
+import 'package:ma_visualization/Model/MachineStoppingModel.dart';
 
 import '../API/ApiService.dart';
 
-class RepairFeeProvider with ChangeNotifier {
+class MachineStoppingProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
 
-  List<RepairFeeModel> _data = [];
+  List<MachineStoppingModel> _data = [];
   DateTime? _lastLoadedDate;
   String? _lastLoadedMonth; // Thêm dòng này
   bool _isLoading = false;
 
-  List<RepairFeeModel> get data => _data;
+  List<MachineStoppingModel> get data => _data;
   bool get isLoading => _isLoading;
-  RepairFeeModel? selectedItem;
+  MachineStoppingModel? selectedItem;
 
   DateTime _lastFetchedDate = DateTime.now();
   Timer? _dailyTimer;
 
   DateTime get lastFetchedDate => _lastFetchedDate;
 
-  RepairFeeProvider() {
+  MachineStoppingProvider() {
     _initTimer();
   }
 
@@ -33,7 +33,7 @@ class RepairFeeProvider with ChangeNotifier {
         print("[DATE CHANGED] Detected date change! Refreshing...");
         _lastFetchedDate = now;
         final month = "${now.year}-${now.month.toString().padLeft(2, '0')}";
-        fetchRepairFee(month);
+        fetchMachineStopping(month);
       }
     });
   }
@@ -47,7 +47,7 @@ class RepairFeeProvider with ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> fetchRepairFee(String month) async {
+  Future<void> fetchMachineStopping(String month) async {
     final now = DateTime.now();
 
     // Sửa điều kiện: nếu đã tải hôm nay VÀ cùng tháng thì không cần gọi lại
@@ -62,7 +62,7 @@ class RepairFeeProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final result = await _apiService.fetchRepairFee(month);
+    final result = await _apiService.fetchMachineStopping(month);
     _data = result;
     _lastLoadedDate = now;
     _lastLoadedMonth = month; // Cập nhật tháng

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ma_visualization/Common/CustomTooltipWidget.dart';
 import 'package:ma_visualization/Common/DetailsDataPopup.dart';
+import 'package:ma_visualization/Common/RepairFeeStatusHelper.dart';
+import 'package:ma_visualization/Model/DetailsDataModel.dart';
+import 'package:ma_visualization/Model/RepairFeeModel.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-import '../../Model/RepairFeeModel.dart';
 import '../API/ApiService.dart';
 import '../Common/CustomLegend.dart';
-import '../Model/DetailsDataModel.dart';
 
 class RepairFeeOverviewChart extends StatefulWidget {
   final List<RepairFeeModel> data;
@@ -48,8 +50,8 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                   TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
                     decorationThickness: 3,
+                    decoration: TextDecoration.underline,
                   ),
                 );
               },
@@ -72,6 +74,31 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
               ),
             ),
             series: _buildSeries(widget.data),
+            tooltipBehavior: TooltipBehavior(
+              enable: true,
+              header: '',
+              canShowMarker: true,
+              builder: (
+                dynamic data,
+                dynamic point,
+                dynamic series,
+                int pointIndex,
+                int seriesIndex,
+              ) {
+                final repairItem = data as RepairFeeModel;
+
+                return CustomTooltipWidget(
+                  item: repairItem,
+                  numberFormat: numberFormat,
+                  seriesName: series.name,
+                  getActual: (item) => item.actual,
+                  getTarget: (item) => item.target,
+                  getStatus: (item) => RepairFeeStatusHelper.getStatus(item),
+                  getStatusColor:
+                      (status) => RepairFeeStatusHelper.getStatusColor(status),
+                );
+              },
+            ),
           ),
         ),
         const SizedBox(height: 8),
