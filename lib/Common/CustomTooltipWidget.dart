@@ -54,22 +54,22 @@ class CustomTooltipWidget extends StatelessWidget {
                 ? [
                   Text(
                     'Actual: ${numberFormat.format(actual)}K\$',
-                    style: const TextStyle(fontSize: 14, color: Colors.white),
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
                   ),
                   Text(
                     'Rate: ${percent.toStringAsFixed(1)}%',
-                    style: const TextStyle(fontSize: 14, color: Colors.white),
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
                   ),
                   const SizedBox(height: 4),
                   const Text(
                     '👇 Click the bar to see details',
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                 ]
                 : [
                   Text(
                     'Target: ${numberFormat.format(target)}K\$',
-                    style: const TextStyle(fontSize: 14, color: Colors.white),
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ],
       ),

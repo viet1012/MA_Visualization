@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ma_visualization/MachineStopping/MachineStoppingOverviewScreen.dart';
+import 'package:ma_visualization/Common/DesignedByText.dart';
 import 'package:ma_visualization/Provider/DateProvider.dart';
 import 'package:ma_visualization/Provider/RepairFeeProvider.dart';
 import 'package:provider/provider.dart';
@@ -82,6 +82,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
+              DesignedByText(),
               SizedBox(
                 height: MediaQuery.of(context).size.height / 2 - 50,
                 width: MediaQuery.of(context).size.width / 2,
@@ -104,10 +105,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(color: Colors.blue.shade100),
                   ),
-                  child: MachineStoppingOverviewScreen(
-                    onToggleTheme: widget.onToggleTheme,
-                    selectedDate: dateProvider.selectedDate,
-                  ),
+                  // child: MachineStoppingOverviewScreen(
+                  //   onToggleTheme: widget.onToggleTheme,
+                  //   selectedDate: dateProvider.selectedDate,
+                  // ),
                 ),
               ),
             ],

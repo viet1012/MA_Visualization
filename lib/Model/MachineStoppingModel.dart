@@ -3,7 +3,7 @@ class MachineStoppingModel {
   final double stopHourTgtMtd;
   final int countDay;
   final String div;
-  final DateTime sendDate;
+  final DateTime date;
   final int wdOffice;
   final double stopHourTgt;
 
@@ -12,7 +12,7 @@ class MachineStoppingModel {
     required this.stopHourTgtMtd,
     required this.countDay,
     required this.div,
-    required this.sendDate,
+    required this.date,
     required this.wdOffice,
     required this.stopHourTgt,
   });
@@ -22,8 +22,8 @@ class MachineStoppingModel {
       stopHourAct: (json['stopHourAct'] ?? 0).toDouble(),
       stopHourTgtMtd: (json['stopHourTgtMtd'] ?? 0).toDouble(),
       countDay: json['countDay'] ?? 0,
-      div: json['div'] ?? '',
-      sendDate: DateTime.parse(json['sendDate'] ?? '1970-01-01'),
+      div: json['dept'] ?? '',
+      date: DateTime.parse(json['date'] ?? '1970-01-01'),
       wdOffice: json['wdOffice'] ?? 0,
       stopHourTgt: (json['stopHourTgt'] ?? 0).toDouble(),
     );
@@ -35,7 +35,7 @@ class MachineStoppingModel {
       'stopHourTgtMtd': stopHourTgtMtd,
       'countDay': countDay,
       'div': div,
-      'sendDate': sendDate.toIso8601String(),
+      'sendDate': date.toIso8601String(),
       'wdOffice': wdOffice,
       'stopHourTgt': stopHourTgt,
     };
@@ -55,7 +55,7 @@ class MachineStoppingModel {
       stopHourTgtMtd: stopHourTgtMtd ?? this.stopHourTgtMtd,
       countDay: countDay ?? this.countDay,
       div: div ?? this.div,
-      sendDate: sendDate ?? this.sendDate,
+      date: sendDate ?? this.date,
       wdOffice: wdOffice ?? this.wdOffice,
       stopHourTgt: stopHourTgt ?? this.stopHourTgt,
     );

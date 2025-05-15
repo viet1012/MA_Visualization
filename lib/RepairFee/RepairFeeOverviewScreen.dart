@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../Common/DesignedByText.dart';
 import '../Common/NoDataWidget.dart';
 import '../Common/TitleWithIndexBadge.dart';
 import '../Provider/DateProvider.dart';
@@ -104,7 +103,12 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: Wrap(
                   children: [
-                    TitleWithIndexBadge(index: 1, title: "Repair Fee"),
+                    Row(
+                      children: [
+                        TitleWithIndexBadge(index: 1, title: "Repair Fee"),
+                      ],
+                    ),
+                    SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.all(8),
                       child: RepairFeeOverviewChart(
@@ -113,7 +117,6 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
                             "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",
                       ),
                     ),
-                    DesignedByText(),
                   ],
                 ),
               ),

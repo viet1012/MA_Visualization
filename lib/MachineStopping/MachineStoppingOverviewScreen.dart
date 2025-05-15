@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ma_visualization/Common/TitleWithIndexBadge.dart';
+import 'package:ma_visualization/Model/MachineStoppingModel.dart';
 import 'package:ma_visualization/Provider/MachineStoppingProvider.dart';
 import 'package:provider/provider.dart';
 
-import '../Common/DesignedByText.dart';
 import '../Common/NoDataWidget.dart';
 import '../Provider/DateProvider.dart';
 import 'MachineStoppingOverviewChart.dart';
@@ -112,6 +113,17 @@ class _MachineStoppingOverviewScreenState
                 padding: const EdgeInsets.all(8.0),
                 child: Wrap(
                   children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TitleWithIndexBadge(
+                          index: 4,
+                          title: "Machine Stopping",
+                        ),
+                        _buildMTDInfo(provider.data),
+                      ],
+                    ),
+                    SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.all(8),
                       child: MachineStoppingOverviewChart(
@@ -120,13 +132,54 @@ class _MachineStoppingOverviewScreenState
                             "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",
                       ),
                     ),
-                    DesignedByText(),
                   ],
                 ),
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildMTDInfo(List<MachineStoppingModel> data) {
+    final mtdAct = data.map((e) => e.stopHourAct).fold(0.0, (a, b) => a + b);
+    final mtdFC = data.map((e) => e.stopHourTgtMtd).fold(0.0, (a, b) => a + b);
+    final ratio = mtdFC > 0 ? (mtdAct / mtdFC * 100).toStringAsFixed(0) : '0';
+
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+          children: [
+            const TextSpan(text: 'MTD_Act: '),
+            TextSpan(
+              text: '${mtdAct.toStringAsFixed(1)}, ',
+              style: TextStyle(color: Colors.blueAccent),
+            ),
+            const TextSpan(text: 'FC: '),
+            TextSpan(
+              text: '${mtdFC.toStringAsFixed(1)}, ',
+              style: TextStyle(color: Colors.blue),
+            ),
+            const TextSpan(
+              text: 'Ratio: ',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextSpan(
+              text: '$ratio%',
+              style: TextStyle(
+                fontSize: 18,
+                color: int.parse(ratio) > 100 ? Colors.red : Colors.green,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

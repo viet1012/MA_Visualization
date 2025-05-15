@@ -6,16 +6,13 @@ class DesignedByText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Text(
-          "Designed by IT PRO",
-          style: TextStyle(
-            color: Colors.grey.withOpacity(0.4),
-            fontSize: 14,
-            fontStyle: FontStyle.italic,
-          ),
+      alignment: Alignment.center,
+      child: Text(
+        "Designed by IT PRO",
+        style: TextStyle(
+          color: Colors.grey.withOpacity(0.4),
+          fontSize: 14,
+          fontStyle: FontStyle.italic,
         ),
       ),
     );

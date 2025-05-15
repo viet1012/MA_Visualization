@@ -4,7 +4,6 @@ import 'package:ma_visualization/Model/MachineStoppingModel.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Common/CustomLegend.dart';
-import '../Common/TitleWithIndexBadge.dart';
 
 class MachineStoppingOverviewChart extends StatefulWidget {
   final List<MachineStoppingModel> data;
@@ -33,7 +32,6 @@ class _MachineStoppingOverviewChartState
 
     return Column(
       children: [
-        TitleWithIndexBadge(index: 4, title: "Machine Stopping"),
         SizedBox(
           height: MediaQuery.of(context).size.height * .35,
           child: SfCartesianChart(
@@ -80,6 +78,26 @@ class _MachineStoppingOverviewChartState
                 ),
               ),
             ),
+            axes: [
+              NumericAxis(
+                name: 'AreaAxis',
+                opposedPosition: true, // Y bên phải
+                majorGridLines: const MajorGridLines(width: 0),
+                labelStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                labelRotation: 45,
+                title: AxisTitle(
+                  text: 'Hour',
+                  textStyle: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
             series: _buildSeries(widget.data),
           ),
         ),
@@ -96,44 +114,72 @@ class _MachineStoppingOverviewChartState
   }
 
   List<MachineStoppingModel> calculateMtd(List<MachineStoppingModel> input) {
-    final actMap = <String, double>{}; // cộng dồn actual theo div
-    final tgtMap = <String, double>{}; // cộng dồn target theo div
     final result = <MachineStoppingModel>[];
 
-    final sorted =
-        input.toList()..sort((a, b) => a.sendDate.compareTo(b.sendDate));
+    if (input.isEmpty) return result;
 
-    for (var item in sorted) {
-      final key = item.div;
+    final sorted = input.toList()..sort((a, b) => a.date.compareTo(b.date));
+    final divs = sorted.map((e) => e.div).toSet(); // lấy tất cả các div
 
-      final prevActSum = actMap[key] ?? 0.0;
-      final prevTgtSum = tgtMap[key] ?? 0.0;
+    final startDate = sorted.first.date;
+    final endDate = sorted.last.date;
 
-      final actMtd =
-          prevActSum + (item.stopHourAct == 0 ? 0 : item.stopHourAct);
-      final tgtMtd =
-          prevTgtSum + (item.stopHourTgtMtd == 0 ? 0 : item.stopHourTgtMtd);
+    for (final div in divs) {
+      final itemsByDiv = sorted.where((e) => e.div == div).toList();
+      final dataByDate = <String, MachineStoppingModel>{
+        for (var item in itemsByDiv)
+          DateFormat('yyyy-MM-dd').format(item.date): item,
+      };
 
-      // Cập nhật lại giá trị MTD cho lần sau
-      actMap[key] = actMtd;
-      tgtMap[key] = tgtMtd;
+      var actMtd = 0.0;
+      var tgtMtd = 0.0;
 
-      // Nếu giá trị hiện tại bằng 0 → thay bằng MTD trước đó
-      result.add(
-        item.copyWith(
-          stopHourAct: item.stopHourAct == 0 ? prevActSum : actMtd,
-          stopHourTgtMtd: item.stopHourTgtMtd == 0 ? prevTgtSum : tgtMtd,
-        ),
-      );
+      for (
+        var d = startDate;
+        !d.isAfter(endDate);
+        d = d.add(const Duration(days: 1))
+      ) {
+        final dateKey = DateFormat('yyyy-MM-dd').format(d);
+        final item = dataByDate[dateKey];
+
+        if (item != null) {
+          // Nếu có dữ liệu ngày này thì cộng dồn
+          actMtd += item.stopHourAct;
+          tgtMtd += item.stopHourTgtMtd;
+          result.add(
+            item.copyWith(stopHourAct: actMtd, stopHourTgtMtd: tgtMtd),
+          );
+        } else {
+          // Nếu không có thì thêm bản ghi giữ nguyên MTD
+          result.add(
+            MachineStoppingModel(
+              stopHourAct: actMtd,
+              stopHourTgtMtd: tgtMtd,
+              countDay: 0,
+              div: div,
+              date: d,
+              wdOffice: 0,
+              stopHourTgt: 0,
+            ),
+          );
+        }
+      }
     }
-    return result;
+
+    return result..sort((a, b) => a.date.compareTo(b.date));
   }
 
   List<CartesianSeries<MachineStoppingModel, String>> _buildSeries(
     List<MachineStoppingModel> data,
   ) {
     final divs = ['PRESS', 'MOLD', 'GUIDE'];
-    final divColors = {
+    final divColorsActual = {
+      'PRESS': Colors.brown,
+      'MOLD': Colors.orange,
+      'GUIDE': Colors.purple,
+    };
+
+    final divColorsTarget = {
       'PRESS': Colors.brown,
       'MOLD': Colors.orange,
       'GUIDE': Colors.purple,
@@ -145,7 +191,7 @@ class _MachineStoppingOverviewChartState
     final moldData = data.where((d) => d.div == 'MOLD').toList();
     for (var item in moldData) {
       print(
-        'Ngày: ${DateFormat('yyyy-MM-dd').format(item.sendDate)}, '
+        'Ngày: ${DateFormat('yyyy-MM-dd').format(item.date)}, '
         'Div: ${item.div}, '
         'stopHourAct MTD: ${item.stopHourAct.toStringAsFixed(2)}, '
         'stopHourTgtMtd MTD: ${item.stopHourTgtMtd.toStringAsFixed(2)}',
@@ -158,13 +204,12 @@ class _MachineStoppingOverviewChartState
       seriesList.add(
         StackedColumnSeries<MachineStoppingModel, String>(
           dataSource: filteredData,
-          xValueMapper: (datum, _) => DateFormat('dd').format(datum.sendDate),
+          xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
           yValueMapper: (datum, _) => datum.stopHourAct,
           dataLabelMapper: (datum, _) => datum.stopHourAct.toStringAsFixed(0),
           name: divName,
-          color: divColors[divName],
+          color: divColorsActual[divName],
           dataLabelSettings: const DataLabelSettings(
-            isVisible: true,
             textStyle: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -173,17 +218,18 @@ class _MachineStoppingOverviewChartState
         ),
       );
 
-      // seriesList.add(
-      //   StackedAreaSeries<MachineStoppingModel, String>(
-      //     dataSource: filteredData,
-      //     xValueMapper: (datum, _) => DateFormat('dd').format(datum.sendDate),
-      //     yValueMapper: (datum, _) => datum.stopHourTgtMtd,
-      //     name: '$divName MTD',
-      //     color: divColors[divName]!.withOpacity(0.3),
-      //     markerSettings: const MarkerSettings(isVisible: true),
-      //     dataLabelSettings: const DataLabelSettings(isVisible: false),
-      //   ),
-      // );
+      seriesList.add(
+        StackedAreaSeries<MachineStoppingModel, String>(
+          dataSource: filteredData,
+          yAxisName: 'AreaAxis',
+          xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
+          yValueMapper: (datum, _) => datum.stopHourTgtMtd,
+          name: divName,
+          color: divColorsTarget[divName]!.withOpacity(0.3),
+          markerSettings: const MarkerSettings(isVisible: true),
+          dataLabelSettings: const DataLabelSettings(isVisible: false),
+        ),
+      );
     }
 
     return seriesList;
