@@ -68,7 +68,6 @@ class _MachineStoppingOverviewChartState
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
-              labelRotation: 45,
               axisLabelFormatter: (AxisLabelRenderDetails details) {
                 final valueInThousands = (details.value / 1000).toStringAsFixed(
                   0,
@@ -96,6 +95,7 @@ class _MachineStoppingOverviewChartState
               ),
             ],
             series: _buildSeries(widget.data),
+            annotations: buildAnnotations(widget.data),
           ),
         ),
         const SizedBox(height: 8),
@@ -116,6 +116,12 @@ class _MachineStoppingOverviewChartState
     if (input.isEmpty) return result;
 
     final sorted = input.toList()..sort((a, b) => a.date.compareTo(b.date));
+    for (var item in sorted) {
+      print(
+        "date: ${item.date}, div: ${item.div}, stopHourAct: ${item.stopHourAct}, stopHourTgtMtd: ${item.stopHourTgtMtd}",
+      );
+    }
+
     final divs = sorted.map((e) => e.div).toSet(); // lấy tất cả các div
 
     final startDate = sorted.first.date;
@@ -200,7 +206,7 @@ class _MachineStoppingOverviewChartState
       final filteredData = data.where((d) => d.div == divName).toList();
 
       seriesList.add(
-        AreaSeries<MachineStoppingModel, String>(
+        StackedAreaSeries<MachineStoppingModel, String>(
           dataSource: filteredData,
           yAxisName: 'AreaAxis',
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
@@ -208,13 +214,13 @@ class _MachineStoppingOverviewChartState
           name: divName,
           gradient: LinearGradient(
             colors: [
-              divColorsTarget[divName]!.withOpacity(0.3),
-              divColorsTarget[divName]!.withOpacity(0.1),
+              divColorsTarget[divName]!.withOpacity(0.5),
+              divColorsActual[divName]!.withOpacity(0.2),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
-          borderColor: divColorsTarget[divName]!.withOpacity(.8),
+          borderColor: divColorsActual[divName]!.withOpacity(.8),
           borderWidth: 1,
           markerSettings: const MarkerSettings(isVisible: false),
           dataLabelSettings: const DataLabelSettings(isVisible: false),
@@ -260,5 +266,57 @@ class _MachineStoppingOverviewChartState
     if (maxY <= 1000) return 200;
     final interval = (maxY / 5).ceilToDouble();
     return interval > 0 ? interval : 1;
+  }
+
+  List<CartesianChartAnnotation> buildAnnotations(
+    List<MachineStoppingModel> data,
+  ) {
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    data = calculateMtd(data);
+    // Lọc dữ liệu hợp lệ
+    final filtered = data.where((d) => !d.date.isAfter(todayDate)).toList();
+    final annotations = <CartesianChartAnnotation>[];
+
+    // Nhóm theo ngày (yyyy-MM-dd để tránh trùng)
+    final Map<String, List<MachineStoppingModel>> grouped = {};
+    for (var d in filtered) {
+      final dateKey = DateFormat('yyyy-MM-dd').format(d.date);
+      grouped.putIfAbsent(dateKey, () => []).add(d);
+    }
+
+    // Sắp xếp theo ngày
+    final sortedKeys = grouped.keys.toList()..sort((a, b) => a.compareTo(b));
+
+    // Tạo annotation cho từng ngày
+    for (var key in sortedKeys) {
+      final items = grouped[key]!;
+      final sum = items.fold<double>(
+        0.0,
+        (prev, item) => prev + item.stopHourAct,
+      );
+      final dayLabel = DateFormat(
+        'dd',
+      ).format(items.first.date); // x-axis dùng ngày dd
+
+
+      annotations.add(
+        CartesianChartAnnotation(
+          widget: RotatedBox(
+            quarterTurns: 0, // 1 = 90 độ, 2=180 độ, 3=270 độ
+            child: Text(
+              (sum / 1000).toStringAsFixed(1),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+          ),
+          coordinateUnit: CoordinateUnit.point,
+          region: AnnotationRegion.chart,
+          x: dayLabel,
+          y: sum * 1.1,
+        ),
+      );
+    }
+
+    return annotations;
   }
 }

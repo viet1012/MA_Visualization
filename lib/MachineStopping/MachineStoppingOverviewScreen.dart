@@ -159,12 +159,12 @@ class _MachineStoppingOverviewScreenState
           children: [
             const TextSpan(text: 'MTD_Act: '),
             TextSpan(
-              text: '${mtdAct.toStringAsFixed(1)}, ',
+              text: '${(mtdAct / 1000).toStringAsFixed(1)}K, ',
               style: TextStyle(color: Colors.blueAccent),
             ),
             const TextSpan(text: 'FC: '),
             TextSpan(
-              text: '${mtdFC.toStringAsFixed(1)}, ',
+              text: '${(mtdFC / 1000).toStringAsFixed(1)}K, ',
               style: TextStyle(color: Colors.blue),
             ),
             const TextSpan(
