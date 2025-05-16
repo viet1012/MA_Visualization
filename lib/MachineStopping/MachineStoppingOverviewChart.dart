@@ -69,6 +69,15 @@ class _MachineStoppingOverviewChartState
                 fontWeight: FontWeight.bold,
               ),
               labelRotation: 45,
+              axisLabelFormatter: (AxisLabelRenderDetails details) {
+                final valueInThousands = (details.value / 1000).toStringAsFixed(
+                  0,
+                );
+                return ChartAxisLabel(
+                  '$valueInThousands K',
+                  TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                );
+              },
               title: AxisTitle(
                 text: 'Hour',
                 textStyle: TextStyle(
@@ -83,19 +92,7 @@ class _MachineStoppingOverviewChartState
                 name: 'AreaAxis',
                 opposedPosition: true, // Y bên phải
                 majorGridLines: const MajorGridLines(width: 0),
-                labelStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                labelRotation: 45,
-                title: AxisTitle(
-                  text: 'Hour',
-                  textStyle: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
+                isVisible: false,
               ),
             ],
             series: _buildSeries(widget.data),
@@ -104,9 +101,9 @@ class _MachineStoppingOverviewChartState
         const SizedBox(height: 8),
         CustomLegend(
           items: [
-            LegendItem(Colors.brown, 'PRESS'),
-            LegendItem(Colors.orange, 'MOLD'),
-            LegendItem(Colors.purple, 'GUIDE'),
+            LegendItem(Colors.blue.shade800, 'PRESS'),
+            LegendItem(Colors.orange.shade800, 'MOLD'),
+            LegendItem(Colors.green.shade800, 'GUIDE'),
           ],
         ),
       ],
@@ -174,33 +171,62 @@ class _MachineStoppingOverviewChartState
   ) {
     final divs = ['PRESS', 'MOLD', 'GUIDE'];
     final divColorsActual = {
-      'PRESS': Colors.brown,
-      'MOLD': Colors.orange,
-      'GUIDE': Colors.purple,
+      'PRESS': Colors.blue.shade800,
+      'MOLD': Colors.orange.shade800,
+      'GUIDE': Colors.green.shade800,
     };
 
     final divColorsTarget = {
-      'PRESS': Colors.brown,
+      'PRESS': Colors.blue,
       'MOLD': Colors.orange,
-      'GUIDE': Colors.purple,
+      'GUIDE': Colors.green,
     };
 
     final List<CartesianSeries<MachineStoppingModel, String>> seriesList = [];
+
     data = calculateMtd(data);
 
-    final moldData = data.where((d) => d.div == 'MOLD').toList();
-    for (var item in moldData) {
-      print(
-        'Ngày: ${DateFormat('yyyy-MM-dd').format(item.date)}, '
-        'Div: ${item.div}, '
-        'stopHourAct MTD: ${item.stopHourAct.toStringAsFixed(2)}, '
-        'stopHourTgtMtd MTD: ${item.stopHourTgtMtd.toStringAsFixed(2)}',
+    // 👇 Lọc dữ liệu chỉ đến ngày hôm nay
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final filteredDataToToday =
+        data.where((e) {
+          final eDate = DateTime(e.date.year, e.date.month, e.date.day);
+          return !eDate.isAfter(todayDate);
+        }).toList();
+
+    // 🟦 1. Add toàn bộ StackedAreaSeries TRƯỚC
+    for (var divName in divs) {
+      final filteredData = data.where((d) => d.div == divName).toList();
+
+      seriesList.add(
+        AreaSeries<MachineStoppingModel, String>(
+          dataSource: filteredData,
+          yAxisName: 'AreaAxis',
+          xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
+          yValueMapper: (datum, _) => datum.stopHourTgtMtd,
+          name: divName,
+          gradient: LinearGradient(
+            colors: [
+              divColorsTarget[divName]!.withOpacity(0.3),
+              divColorsTarget[divName]!.withOpacity(0.1),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderColor: divColorsTarget[divName]!.withOpacity(.8),
+          borderWidth: 1,
+          markerSettings: const MarkerSettings(isVisible: false),
+          dataLabelSettings: const DataLabelSettings(isVisible: false),
+        ),
       );
     }
 
-    // Thêm các stacked column series
+    // 🟧 2. Add toàn bộ StackedColumnSeries SAU
     for (var divName in divs) {
-      final filteredData = data.where((d) => d.div == divName).toList();
+      final filteredData =
+          filteredDataToToday.where((d) => d.div == divName).toList();
+
       seriesList.add(
         StackedColumnSeries<MachineStoppingModel, String>(
           dataSource: filteredData,
@@ -208,26 +234,15 @@ class _MachineStoppingOverviewChartState
           yValueMapper: (datum, _) => datum.stopHourAct,
           dataLabelMapper: (datum, _) => datum.stopHourAct.toStringAsFixed(0),
           name: divName,
+          width: .4,
           color: divColorsActual[divName],
+          markerSettings: const MarkerSettings(isVisible: false),
           dataLabelSettings: const DataLabelSettings(
             textStyle: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-      );
-
-      seriesList.add(
-        StackedAreaSeries<MachineStoppingModel, String>(
-          dataSource: filteredData,
-          yAxisName: 'AreaAxis',
-          xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
-          yValueMapper: (datum, _) => datum.stopHourTgtMtd,
-          name: divName,
-          color: divColorsTarget[divName]!.withOpacity(0.3),
-          markerSettings: const MarkerSettings(isVisible: true),
-          dataLabelSettings: const DataLabelSettings(isVisible: false),
         ),
       );
     }
