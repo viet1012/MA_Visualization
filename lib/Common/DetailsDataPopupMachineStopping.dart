@@ -119,7 +119,7 @@ class _DetailsDataPopupMachineStoppingState
           maxHeight: MediaQuery.of(context).size.height,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(2),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -405,17 +405,18 @@ class _DetailsDataPopupMachineStoppingState
               ),
               columnWidths: {
                 0: FixedColumnWidth(120),
-                1: FixedColumnWidth(120),
+                1: FixedColumnWidth(110),
                 2: FixedColumnWidth(160),
                 3: FixedColumnWidth(150),
                 4: FixedColumnWidth(200),
                 5: FixedColumnWidth(140),
-                6: FixedColumnWidth(150),
-                7: FixedColumnWidth(140),
-                8: FixedColumnWidth(210),
-                9: FixedColumnWidth(140),
-                10: FixedColumnWidth(150),
-                11: FixedColumnWidth(140),
+                6: FixedColumnWidth(160),
+                7: FixedColumnWidth(160),
+                8: FixedColumnWidth(160),
+                9: FixedColumnWidth(120),
+                10: FixedColumnWidth(120),
+                11: FixedColumnWidth(130),
+                12: FixedColumnWidth(140),
               },
               children: [
                 TableRow(
@@ -444,17 +445,18 @@ class _DetailsDataPopupMachineStoppingState
                       ),
                       columnWidths: {
                         0: FixedColumnWidth(120),
-                        1: FixedColumnWidth(120),
+                        1: FixedColumnWidth(110),
                         2: FixedColumnWidth(160),
                         3: FixedColumnWidth(150),
                         4: FixedColumnWidth(200),
                         5: FixedColumnWidth(140),
-                        6: FixedColumnWidth(150),
-                        7: FixedColumnWidth(140),
-                        8: FixedColumnWidth(210),
-                        9: FixedColumnWidth(140),
-                        10: FixedColumnWidth(150),
-                        11: FixedColumnWidth(140),
+                        6: FixedColumnWidth(160),
+                        7: FixedColumnWidth(160),
+                        8: FixedColumnWidth(160),
+                        9: FixedColumnWidth(120),
+                        10: FixedColumnWidth(120),
+                        11: FixedColumnWidth(130),
+                        12: FixedColumnWidth(140),
                       },
                       children:
                           filteredData.map((item) {

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ma_visualization/API/ApiService.dart';
+import 'package:ma_visualization/Common/DetailsDataPopupMachineStopping.dart';
+import 'package:ma_visualization/Model/DetailsDataMachineStoppingModel.dart';
 import 'package:ma_visualization/Model/MachineStoppingModel.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -251,6 +254,65 @@ class _MachineStoppingOverviewChartState
               fontWeight: FontWeight.bold,
             ),
           ),
+          onPointTap: (ChartPointDetails details) async {
+            final index = details.pointIndex ?? -1;
+            final item = data[index];
+
+            // Show loading dialog
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(child: CircularProgressIndicator()),
+            );
+
+            try {
+              // Gọi API để lấy dữ liệu
+              List<DetailsDataMachineStoppingModel> detailsData =
+                  await ApiService().fetchDetailsDataMS(widget.month);
+
+              // Tắt loading
+              Navigator.of(context).pop();
+
+              if (detailsData.isNotEmpty) {
+                // Hiển thị popup dữ liệu
+                showDialog(
+                  context: context,
+                  builder:
+                      (_) => DetailsDataPopupMachineStopping(
+                        title: 'Details Data',
+                        data: detailsData,
+                      ),
+                );
+              } else {
+                // Có thể thêm thông báo nếu không có dữ liệu
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'No data available',
+                        style: TextStyle(
+                          fontSize: 22.0, // Tăng kích thước font chữ
+                          fontWeight: FontWeight.bold, // Tùy chọn để làm đậm
+                        ),
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 20.0),
+                    // Thêm khoảng cách trên/dưới
+                    behavior:
+                        SnackBarBehavior
+                            .fixed, // Tùy chọn hiển thị phía trên thay vì ở dưới
+                  ),
+                );
+              }
+            } catch (e) {
+              Navigator.of(context).pop(); // Đảm bảo tắt loading nếu lỗi
+              print("Error fetching data: $e");
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Error fetching data')));
+            }
+          },
         ),
       );
     }
