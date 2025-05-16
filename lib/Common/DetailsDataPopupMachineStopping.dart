@@ -32,61 +32,81 @@ class _DetailsDataPopupMachineStoppingState
   void initState() {
     super.initState();
     filteredData = widget.data;
-    // _filterController.addListener(_applyFilter);
+    _filterController.addListener(_applyFilter);
     rawJsonList = widget.data.map((e) => e.toJson()).toList();
   }
 
-  // void _applyFilter() {
-  //   final query = _filterController.text.toLowerCase();
-  //
-  //   setState(() {
-  //     filteredData =
-  //         widget.data.where((item) {
-  //           // Kiểm tra các điều kiện tìm kiếm trong chuỗi
-  //           final matchesSearch =
-  //               item.dept.toLowerCase().contains(query) ||
-  //               item.maktx.toLowerCase().contains(query) ||
-  //               item.xblnr2.toLowerCase().contains(query) ||
-  //               item.bktxt.toLowerCase().contains(query) ||
-  //               item.matnr.toLowerCase().contains(query) ||
-  //               item.useDate.toLowerCase().contains(query) ||
-  //               item.unit.toLowerCase().contains(query) ||
-  //               item.qty.toString().contains(query) ||
-  //               item.amount.toString().contains(query);
-  //
-  //           // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
-  //           final matchesFilters =
-  //               (selectedDept == null || item.dept == selectedDept) &&
-  //               (selectedMatnr == null || item.matnr == selectedMatnr) &&
-  //               (selectedMaktx == null || item.maktx == selectedMaktx) &&
-  //               (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
-  //               (selectedUnit == null || item.unit == selectedUnit) &&
-  //               (selectedUsedDate == null ||
-  //                   item.useDate == selectedUsedDate) &&
-  //               (selectedBktxt == null || item.bktxt == selectedBktxt) &&
-  //               (selectedKostl == null || item.kostl == selectedKostl) &&
-  //               (selectedKonto == null || item.konto == selectedKonto);
-  //
-  //           return matchesSearch &&
-  //               matchesFilters; // Kết hợp cả hai điều kiện: tìm kiếm và lọc
-  //         }).toList();
-  //     print("Filtered Data Length: ${filteredData.length}");
-  //   });
-  // }
+  void _applyFilter() {
+    final query = _filterController.text.toLowerCase();
+
+    setState(() {
+      filteredData =
+          widget.data.where((item) {
+            // Kiểm tra các điều kiện tìm kiếm trong chuỗi
+            final matchesSearch =
+                (item.div?.toLowerCase() ?? '').contains(query) ||
+                (item.groupName?.toLowerCase() ?? '').contains(query) ||
+                (item.machineCode?.toLowerCase() ?? '').contains(query) ||
+                (item.machineType?.toLowerCase() ?? '').contains(query) ||
+                (item.statusCode?.toLowerCase() ?? '').contains(query) ||
+                (item.confirmDate?.toLowerCase() ?? '').contains(query) ||
+                (item.sendTime?.toLowerCase() ?? '').contains(query) ||
+                (item.startTime?.toLowerCase() ?? '').contains(query) ||
+                (item.esTime?.toLowerCase() ?? '').contains(query) ||
+                (item.finishTime?.toLowerCase() ?? '').contains(query) ||
+                (item.stopHour?.toString() ?? '').contains(query) ||
+                (item.issueStatus?.toLowerCase() ?? '').contains(query);
+
+            // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
+            final matchesFilters =
+                (selectedSendDate == null ||
+                    item.sendDate == selectedSendDate) &&
+                (selectedDiv == null || item.div == selectedDiv) &&
+                (selectedGroupName == null ||
+                    item.groupName == selectedGroupName) &&
+                (selectedMachineCode == null ||
+                    item.machineCode == selectedMachineCode) &&
+                (selectedMachineType == null ||
+                    item.machineType == selectedMachineType) &&
+                (selectedStatusCode == null ||
+                    item.statusCode == selectedStatusCode) &&
+                (selectedConfirmDate == null ||
+                    item.confirmDate == selectedConfirmDate) &&
+                (selectedSendTime == null ||
+                    item.sendTime == selectedSendTime) &&
+                (selectedStartTime == null ||
+                    item.startTime == selectedStartTime) &&
+                (selectedEsTime == null || item.esTime == selectedEsTime) &&
+                (selectedFinishTime == null ||
+                    item.finishTime == selectedFinishTime) &&
+                (selectedStopHour == null ||
+                    item.stopHour?.toString() == selectedStopHour) &&
+                (selectedIssueStatus == null ||
+                    item.issueStatus == selectedIssueStatus);
+
+            return matchesSearch &&
+                matchesFilters; // Kết hợp cả hai điều kiện: tìm kiếm và lọc
+          }).toList();
+      print("Filtered Data Length: ${filteredData.length}");
+    });
+  }
 
   void _resetFilter() {
     setState(() {
       _filterController.clear();
-      selectedXblnr2 = null;
-      selectedMaktx = null;
-      selectedMatnr = null;
-      selectedDept = null;
-      selectedUnit = null;
-      selectedUsedDate = null;
-      selectedBktxt = null;
-      selectedNote = null;
-      selectedKostl = null;
-      selectedKonto = null;
+      selectedSendDate = null;
+      selectedDiv = null;
+      selectedGroupName = null;
+      selectedMachineCode = null;
+      selectedMachineType = null;
+      selectedStatusCode = null;
+      selectedConfirmDate = null;
+      selectedSendTime = null;
+      selectedStartTime = null;
+      selectedEsTime = null;
+      selectedFinishTime = null;
+      selectedStopHour = null;
+      selectedIssueStatus = null;
       filteredData = widget.data;
     });
   }
@@ -205,7 +225,8 @@ class _DetailsDataPopupMachineStoppingState
           child: TextField(
             controller: _filterController,
             decoration: InputDecoration(
-              hintText: 'Search by Dept, Material No., Description, Note...',
+              hintText:
+                  'Search by Div, Group Name, Machine Code, Machine Type...',
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -221,111 +242,70 @@ class _DetailsDataPopupMachineStoppingState
     );
   }
 
-  String? selectedDept;
-  String? selectedMatnr;
-  String? selectedMaktx;
-  String? selectedXblnr2;
-  String? selectedUnit;
-  String? selectedUsedDate;
-  String? selectedBktxt;
-  String? selectedNote;
-  String? selectedKostl;
-  String? selectedKonto;
+  String? selectedSendDate;
+  String? selectedDiv;
+  String? selectedGroupName;
+  String? selectedMachineCode;
+  String? selectedMachineType;
+  String? selectedStatusCode;
+  String? selectedConfirmDate;
+  String? selectedSendTime;
+  String? selectedStartTime;
+  String? selectedEsTime;
+  String? selectedFinishTime;
+  String? selectedStopHour;
+  String? selectedIssueStatus;
 
   Widget _buildDynamicDropdownHeader(String key) {
     final title = key.toUpperCase();
     List<String> values = _getUniqueValues(
       (item) => item.toJson()[key]?.toString() ?? '',
     );
-    String? selectedValue;
-    void Function(String?)? onChanged;
 
-    switch (key) {
-      case 'dept':
-        selectedValue = selectedDept;
-        onChanged = (value) {
-          setState(() {
-            selectedDept = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      case 'matnr':
-        selectedValue = selectedMatnr;
-        onChanged = (value) {
-          setState(() {
-            selectedMatnr = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      case 'maktx':
-        selectedValue = selectedMaktx;
-        onChanged = (value) {
-          setState(() {
-            selectedMaktx = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      case 'xblnr2':
-        selectedValue = selectedXblnr2;
-        onChanged = (value) {
-          setState(() {
-            selectedXblnr2 = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      case 'unit':
-        selectedValue = selectedUnit;
-        onChanged = (value) {
-          setState(() {
-            selectedUnit = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      case 'useDate':
-        selectedValue = selectedUsedDate;
-        onChanged = (value) {
-          setState(() {
-            selectedUsedDate = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      case 'bktxt':
-        selectedValue = selectedBktxt;
-        onChanged = (value) {
-          setState(() {
-            selectedBktxt = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      case 'kostl':
-        selectedValue = selectedKostl;
-        onChanged = (value) {
-          setState(() {
-            selectedKostl = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      case 'konto':
-        selectedValue = selectedKonto;
-        onChanged = (value) {
-          setState(() {
-            selectedKonto = value == '__reset__' ? null : value;
-            // _applyFilter();
-          });
-        };
-        break;
-      default:
-        // Không filter được -> render Text bình thường
-        return _buildTableCell(title, isHeader: true);
+    final valueMap = {
+      'sendDate': selectedSendDate,
+      'div': selectedDiv,
+      'groupName': selectedGroupName,
+      'machineCode': selectedMachineCode,
+      'machineType': selectedMachineType,
+      'statusCode': selectedStatusCode,
+      'confirmDate': selectedConfirmDate,
+      'sendTime': selectedSendTime,
+      'startTime': selectedStartTime,
+      'esTime': selectedEsTime,
+      'finishTime': selectedFinishTime,
+      'stopHour': selectedStopHour,
+      'issueStatus': selectedIssueStatus,
+    };
+
+    final setterMap = {
+      'sendDate': (String? value) => selectedSendDate = value,
+      'div': (String? value) => selectedDiv = value,
+      'groupName': (String? value) => selectedGroupName = value,
+      'machineCode': (String? value) => selectedMachineCode = value,
+      'machineType': (String? value) => selectedMachineType = value,
+      'statusCode': (String? value) => selectedStatusCode = value,
+      'confirmDate': (String? value) => selectedConfirmDate = value,
+      'sendTime': (String? value) => selectedSendTime = value,
+      'startTime': (String? value) => selectedStartTime = value,
+      'esTime': (String? value) => selectedEsTime = value,
+      'finishTime': (String? value) => selectedFinishTime = value,
+      'stopHour': (String? value) => selectedStopHour = value,
+      'issueStatus': (String? value) => selectedIssueStatus = value,
+    };
+
+    if (!valueMap.containsKey(key)) {
+      // Không khớp key -> render Text bình thường
+      return _buildTableCell(title, isHeader: true);
     }
+
+    String? selectedValue = valueMap[key];
+    void Function(String?)? onChanged = (value) {
+      setState(() {
+        setterMap[key]!(value == '__reset__' ? null : value);
+        _applyFilter();
+      });
+    };
 
     return _buildDropdownHeader(
       title: title,
@@ -352,13 +332,13 @@ class _DetailsDataPopupMachineStoppingState
               DropdownMenuItem<String>(
                 value: '__reset__',
                 child: Padding(
-                  padding: EdgeInsets.only(left: 8),
+                  padding: EdgeInsets.only(left: 0),
                   child: Center(
                     child: Text(
                       title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -372,7 +352,7 @@ class _DetailsDataPopupMachineStoppingState
                       v,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -414,7 +394,7 @@ class _DetailsDataPopupMachineStoppingState
                 7: FixedColumnWidth(160),
                 8: FixedColumnWidth(160),
                 9: FixedColumnWidth(120),
-                10: FixedColumnWidth(120),
+                10: FixedColumnWidth(125),
                 11: FixedColumnWidth(130),
                 12: FixedColumnWidth(140),
               },
@@ -454,7 +434,7 @@ class _DetailsDataPopupMachineStoppingState
                         7: FixedColumnWidth(160),
                         8: FixedColumnWidth(160),
                         9: FixedColumnWidth(120),
-                        10: FixedColumnWidth(120),
+                        10: FixedColumnWidth(125),
                         11: FixedColumnWidth(130),
                         12: FixedColumnWidth(140),
                       },
@@ -563,37 +543,41 @@ class _DetailsDataPopupMachineStoppingState
     var excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
-    // Thêm tiêu đề đúng thứ tự
+    // Thêm tiêu đề đúng thứ tự các trường trong model
     sheet.appendRow([
-      'dept',
-      'matnr',
-      'kostl',
-      'konto',
-      'bktxt',
-      'qty',
-      'act', // Nếu toJson không có 'act' mà có 'amount' thì bạn map lại
-      'useDate',
-      'maktx',
-      'xblnr2',
-      'unit',
+      'sendDate',
+      'div',
+      'groupName',
+      'machineCode',
+      'machineType',
+      'statusCode',
+      'confirmDate',
+      'sendTime',
+      'startTime',
+      'esTime',
+      'finishTime',
+      'stopHour',
+      'issueStatus',
     ]);
 
-    // Dữ liệu theo đúng thứ tự như tiêu đề
-    // for (var item in data) {
-    //   sheet.appendRow([
-    //     item.dept,
-    //     item.matnr,
-    //     item.kostl,
-    //     item.konto,
-    //     item.bktxt,
-    //     item.qty,
-    //     item.amount,
-    //     item.useDate,
-    //     item.maktx,
-    //     item.xblnr2,
-    //     item.unit,
-    //   ]);
-    // }
+    // Thêm dữ liệu từng dòng
+    for (var item in data) {
+      sheet.appendRow([
+        item.sendDate,
+        item.div,
+        item.groupName,
+        item.machineCode,
+        item.machineType,
+        item.statusCode,
+        item.confirmDate,
+        item.sendTime,
+        item.startTime,
+        item.esTime,
+        item.finishTime,
+        item.stopHour?.toStringAsFixed(2), // làm tròn 2 chữ số
+        item.issueStatus,
+      ]);
+    }
 
     final fileBytes = excel.encode();
     return Uint8List.fromList(fileBytes!);

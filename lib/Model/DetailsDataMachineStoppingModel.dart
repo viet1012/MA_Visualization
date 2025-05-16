@@ -37,11 +37,11 @@ class DetailsDataMachineStoppingModel {
       machineCode: json['machineCode']?.toString(),
       machineType: json['machineType']?.toString(),
       statusCode: json['statusCode']?.toString(),
-      confirmDate: json['confirmDate']?.toString(),
-      sendTime: json['sendTime']?.toString(),
-      startTime: json['startTime']?.toString(),
-      esTime: json['esTime']?.toString(),
-      finishTime: json['finishTime']?.toString(),
+      confirmDate: _formatDateTime(json['confirmDate']),
+      sendTime: _formatDateTime(json['sendTime']),
+      startTime: _formatDateTime(json['startTime']),
+      esTime: _formatDateTime(json['esTime']),
+      finishTime: _formatDateTime(json['finishTime']),
       stopHour: _toDouble(json['stopHour']),
       issueStatus: json['issueStatus']?.toString(),
     );
@@ -71,5 +71,24 @@ class DetailsDataMachineStoppingModel {
     if (value is int) return value.toDouble();
     if (value is String) return double.tryParse(value);
     return null;
+  }
+
+  // ✅ Getter định dạng thời gian
+  String? get formattedSendTime => _formatDateTime(sendTime);
+  String? get formattedStartTime => _formatDateTime(startTime);
+  String? get formattedFinishTime => _formatDateTime(finishTime);
+  String? get formattedConfirmDate => _formatDateTime(confirmDate);
+
+  static String? _formatDateTime(dynamic raw) {
+    if (raw == null) return null;
+    try {
+      final dateTime = DateTime.parse(raw.toString());
+      return '${dateTime.month.toString().padLeft(2, '0')}-'
+          '${dateTime.day.toString().padLeft(2, '0')} '
+          '${dateTime.hour.toString().padLeft(2, '0')}:'
+          '${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return raw.toString();
+    }
   }
 }

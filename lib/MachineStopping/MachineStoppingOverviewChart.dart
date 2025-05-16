@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ma_visualization/API/ApiService.dart';
@@ -67,6 +69,9 @@ class _MachineStoppingOverviewChartState
               },
             ),
             primaryYAxis: NumericAxis(
+              minimum: 0,
+              maximum: 18000,
+              interval: 3000,
               majorGridLines: const MajorGridLines(width: 0),
               majorTickLines: const MajorTickLines(width: 0),
               labelStyle: const TextStyle(
@@ -112,6 +117,55 @@ class _MachineStoppingOverviewChartState
           ],
         ),
       ],
+    );
+  }
+
+  double _computeAxisMax(List<MachineStoppingModel> data) {
+    if (data.isEmpty) return 0;
+    // lần lượt lấy max actual và max target MTD
+    final maxAct = data
+        .map((e) => e.stopHourAct)
+        .reduce((a, b) => a > b ? a : b);
+    final maxTgt = data
+        .map((e) => e.stopHourTgtMtd)
+        .reduce((a, b) => a > b ? a : b);
+    var rawMax = max(maxAct, maxTgt);
+    // cộng thêm 10% để annotation/khoảng trống
+    rawMax *= 1.1;
+    // làm tròn lên thành bội của 1000 cho đẹp
+    return (rawMax / 1000).ceil() * 1000;
+  }
+
+  NumericAxis _makeYAxis({
+    required double axisMax,
+    required double interval,
+    bool opposed = false,
+    String? name,
+  }) {
+    return NumericAxis(
+      name: name,
+      opposedPosition: opposed,
+      minimum: 0,
+      maximum: axisMax,
+      interval: interval,
+      majorGridLines: const MajorGridLines(width: 0),
+      majorTickLines: const MajorTickLines(width: 0),
+      labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      axisLabelFormatter: (details) {
+        final v = (details.value / 1000).toStringAsFixed(0);
+        return ChartAxisLabel(
+          '$v K',
+          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        );
+      },
+      title: AxisTitle(
+        text: 'Hour',
+        textStyle: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
     );
   }
 
