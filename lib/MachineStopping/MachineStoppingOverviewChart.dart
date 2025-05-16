@@ -43,6 +43,8 @@ class _MachineStoppingOverviewChartState
             ),
             plotAreaBorderColor: Colors.black45,
             primaryXAxis: CategoryAxis(
+              labelAlignment: LabelAlignment.center,
+              labelPlacement: LabelPlacement.betweenTicks,
               majorGridLines: const MajorGridLines(width: 0),
               majorTickLines: const MajorTickLines(width: 0),
               labelStyle: const TextStyle(
@@ -298,7 +300,6 @@ class _MachineStoppingOverviewChartState
       final dayLabel = DateFormat(
         'dd',
       ).format(items.first.date); // x-axis dùng ngày dd
-
 
       annotations.add(
         CartesianChartAnnotation(

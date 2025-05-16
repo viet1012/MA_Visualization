@@ -27,7 +27,7 @@ class MachineStoppingProvider with ChangeNotifier {
   }
 
   void _initTimer() {
-    _dailyTimer = Timer.periodic(Duration(seconds: 5), (timer) {
+    _dailyTimer = Timer.periodic(Duration(minutes: 60), (timer) {
       final now = DateTime.now();
       if (!_isSameDate(now, _lastFetchedDate)) {
         print("[DATE CHANGED] Detected date change! Refreshing...");
