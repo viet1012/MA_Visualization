@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:ma_visualization/Model/DetailsDataMachineStoppingModel.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
 import 'package:ma_visualization/Model/MachineStoppingModel.dart';
 import 'package:ma_visualization/Model/RepairFeeModel.dart';
@@ -72,6 +73,31 @@ class ApiService {
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => MachineStoppingModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Exception caught: $e");
+      return [];
+    }
+  }
+
+  Future<List<DetailsDataMachineStoppingModel>> fetchDetailsDataMS(
+    String month,
+  ) async {
+    final url = Uri.parse(
+      "$baseUrl/details_data/machine_stopping?month=$month",
+    );
+    print("url: $url");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data
+            .map((json) => DetailsDataMachineStoppingModel.fromJson(json))
+            .toList();
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }

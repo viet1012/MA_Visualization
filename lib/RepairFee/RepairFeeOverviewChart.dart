@@ -139,7 +139,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
         ),
         onPointTap: (ChartPointDetails details) async {
           final index = details.pointIndex ?? -1;
-          final item = widget.data[index];
+          final item = data[index];
 
           // Show loading dialog
           showDialog(
