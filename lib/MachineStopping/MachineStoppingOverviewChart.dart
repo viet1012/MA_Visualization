@@ -381,9 +381,6 @@ class _MachineStoppingOverviewChartState
     final actualMax = _getMaxDailyActualSum(rawData);
     final targetMax = _getMaxDailyTargetSum(rawData);
 
-    print('🔹 Max Actual: $actualMax');
-    print('🔹 Target (End of Month): $targetMax');
-
     return actualMax > targetMax ? actualMax : targetMax;
   }
 
@@ -410,8 +407,6 @@ class _MachineStoppingOverviewChartState
       0.0,
       (prev, curr) => curr > prev ? curr : prev,
     );
-
-    print('\n✅ Max Daily Actual Sum: $maxSum');
 
     return maxSum;
   }
