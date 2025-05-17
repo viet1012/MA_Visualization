@@ -177,8 +177,8 @@ class _DetailsDataPopupMachineStoppingState
             Row(
               children: [
                 FilledButton.icon(
-                  icon: Icon(Icons.refresh_rounded),
-                  label: Text('Refresh'),
+                  icon: Icon(Icons.cleaning_services_rounded),
+                  label: Text('Clear'),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.orange.shade700,
                     foregroundColor: Colors.white,

@@ -168,10 +168,10 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 ),
                 SizedBox(width: 16),
                 FilledButton.icon(
-                  icon: Icon(Icons.refresh_rounded),
-                  label: Text('Refresh'),
+                  icon: Icon(Icons.cleaning_services_rounded),
+                  label: Text('Clear'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.orange.shade700,
+                    backgroundColor: Colors.grey.shade700,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ma_visualization/API/ApiService.dart';
@@ -31,9 +29,16 @@ class _MachineStoppingOverviewChartState
   final numberFormat = NumberFormat("##0.0");
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final maxY = _getMaxY(widget.data);
-    final interval = _getInterval(maxY);
+    // 1. Tính max value từ dữ liệu
+    final double dynamicMax = getMaxValueBetweenActualAndTarget(widget.data);
+
+    final double roundedMax = _getInterval(dynamicMax);
 
     return Column(
       children: [
@@ -70,8 +75,8 @@ class _MachineStoppingOverviewChartState
             ),
             primaryYAxis: NumericAxis(
               minimum: 0,
-              maximum: 18000,
-              interval: 3000,
+              maximum: dynamicMax,
+              interval: roundedMax,
               majorGridLines: const MajorGridLines(width: 0),
               majorTickLines: const MajorTickLines(width: 0),
               labelStyle: const TextStyle(
@@ -120,66 +125,12 @@ class _MachineStoppingOverviewChartState
     );
   }
 
-  double _computeAxisMax(List<MachineStoppingModel> data) {
-    if (data.isEmpty) return 0;
-    // lần lượt lấy max actual và max target MTD
-    final maxAct = data
-        .map((e) => e.stopHourAct)
-        .reduce((a, b) => a > b ? a : b);
-    final maxTgt = data
-        .map((e) => e.stopHourTgtMtd)
-        .reduce((a, b) => a > b ? a : b);
-    var rawMax = max(maxAct, maxTgt);
-    // cộng thêm 10% để annotation/khoảng trống
-    rawMax *= 1.1;
-    // làm tròn lên thành bội của 1000 cho đẹp
-    return (rawMax / 1000).ceil() * 1000;
-  }
-
-  NumericAxis _makeYAxis({
-    required double axisMax,
-    required double interval,
-    bool opposed = false,
-    String? name,
-  }) {
-    return NumericAxis(
-      name: name,
-      opposedPosition: opposed,
-      minimum: 0,
-      maximum: axisMax,
-      interval: interval,
-      majorGridLines: const MajorGridLines(width: 0),
-      majorTickLines: const MajorTickLines(width: 0),
-      labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      axisLabelFormatter: (details) {
-        final v = (details.value / 1000).toStringAsFixed(0);
-        return ChartAxisLabel(
-          '$v K',
-          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        );
-      },
-      title: AxisTitle(
-        text: 'Hour',
-        textStyle: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-          fontStyle: FontStyle.italic,
-        ),
-      ),
-    );
-  }
-
   List<MachineStoppingModel> calculateMtd(List<MachineStoppingModel> input) {
     final result = <MachineStoppingModel>[];
 
     if (input.isEmpty) return result;
 
     final sorted = input.toList()..sort((a, b) => a.date.compareTo(b.date));
-    for (var item in sorted) {
-      print(
-        "date: ${item.date}, div: ${item.div}, stopHourAct: ${item.stopHourAct}, stopHourTgtMtd: ${item.stopHourTgtMtd}",
-      );
-    }
 
     final divs = sorted.map((e) => e.div).toSet(); // lấy tất cả các div
 
@@ -374,15 +325,11 @@ class _MachineStoppingOverviewChartState
     return seriesList;
   }
 
-  double _getMaxY(List<MachineStoppingModel> data) {
-    return data.map((e) => e.stopHourAct).fold(0.0, (a, b) => a > b ? a : b);
-  }
-
   double _getInterval(double maxY) {
     if (maxY <= 100) return 20;
     if (maxY <= 500) return 100;
     if (maxY <= 1000) return 200;
-    final interval = (maxY / 5).ceilToDouble();
+    final interval = (maxY / 6).ceilToDouble();
     return interval > 0 ? interval : 1;
   }
 
@@ -392,48 +339,105 @@ class _MachineStoppingOverviewChartState
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
     data = calculateMtd(data);
-    // Lọc dữ liệu hợp lệ
-    final filtered = data.where((d) => !d.date.isAfter(todayDate)).toList();
-    final annotations = <CartesianChartAnnotation>[];
 
-    // Nhóm theo ngày (yyyy-MM-dd để tránh trùng)
-    final Map<String, List<MachineStoppingModel>> grouped = {};
-    for (var d in filtered) {
-      final dateKey = DateFormat('yyyy-MM-dd').format(d.date);
-      grouped.putIfAbsent(dateKey, () => []).add(d);
+    // Lọc dữ liệu đến hôm nay
+    final filtered = data.where((d) => !d.date.isAfter(todayDate)).toList();
+
+    // Nhóm theo ngày (yyyy-MM-dd để tránh trùng) và tính tổng Actual cho mỗi ngày
+    final Map<String, double> dailySum = {};
+    for (var item in filtered) {
+      final key = DateFormat('yyyy-MM-dd').format(item.date);
+      dailySum[key] = (dailySum[key] ?? 0) + item.stopHourAct;
     }
 
-    // Sắp xếp theo ngày
-    final sortedKeys = grouped.keys.toList()..sort((a, b) => a.compareTo(b));
-
-    // Tạo annotation cho từng ngày
-    for (var key in sortedKeys) {
-      final items = grouped[key]!;
-      final sum = items.fold<double>(
-        0.0,
-        (prev, item) => prev + item.stopHourAct,
-      );
-      final dayLabel = DateFormat(
-        'dd',
-      ).format(items.first.date); // x-axis dùng ngày dd
-
+    // Giờ thì sẽ tạo annotation như cũ, dựa trên grouped list
+    // (nếu vẫn cần hiển thị từng ngày)
+    final annotations = <CartesianChartAnnotation>[];
+    dailySum.forEach((dateKey, sum) {
+      final dayLabel = DateFormat('dd').format(DateTime.parse(dateKey));
       annotations.add(
         CartesianChartAnnotation(
-          widget: RotatedBox(
-            quarterTurns: 0, // 1 = 90 độ, 2=180 độ, 3=270 độ
-            child: Text(
-              (sum / 1000).toStringAsFixed(1),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            ),
+          widget: Text(
+            (sum / 1000).toStringAsFixed(1),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           ),
           coordinateUnit: CoordinateUnit.point,
           region: AnnotationRegion.chart,
           x: dayLabel,
-          y: sum * 1.1,
+          y: sum * 1.1, // đặt annotation cao hơn đúng tầm
         ),
       );
-    }
+    });
 
     return annotations;
+  }
+
+  double getMaxValueBetweenActualAndTarget(List<MachineStoppingModel> rawData) {
+    rawData = calculateMtd(rawData);
+
+    final actualMax = _getMaxDailyActualSum(rawData);
+    final targetMax = _getMaxDailyTargetSum(rawData);
+
+    print('🔹 Max Actual: $actualMax');
+    print('🔹 Target (End of Month): $targetMax');
+
+    return actualMax > targetMax ? actualMax : targetMax;
+  }
+
+  /// Trả về giá trị lớn nhất của tổng stopHourAct trên mỗi ngày (từ đầu tháng đến hôm nay)
+  double _getMaxDailyActualSum(List<MachineStoppingModel> rawData) {
+    // 2. Lọc đến ngày hiện tại
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final filtered =
+        rawData.where((d) {
+          final dDate = DateTime(d.date.year, d.date.month, d.date.day);
+          return !dDate.isAfter(todayDate);
+        }).toList();
+
+    // 3. Gom nhóm theo ngày và cộng Actual
+    final Map<String, double> dailySum = {};
+    for (var item in filtered) {
+      final key = DateFormat('yyyy-MM-dd').format(item.date);
+      dailySum[key] = (dailySum[key] ?? 0) + item.stopHourAct;
+    }
+
+    // 4. Tìm max
+    final maxSum = dailySum.values.fold<double>(
+      0.0,
+      (prev, curr) => curr > prev ? curr : prev,
+    );
+
+    print('\n✅ Max Daily Actual Sum: $maxSum');
+
+    return maxSum;
+  }
+
+  double _getMaxDailyTargetSum(List<MachineStoppingModel> rawData) {
+    final now = DateTime.now();
+    final firstDayNextMonth =
+        (now.month < 12)
+            ? DateTime(now.year, now.month + 1, 1)
+            : DateTime(now.year + 1, 1, 1);
+    final lastDayOfMonth = firstDayNextMonth.subtract(Duration(days: 1));
+
+    // So sánh theo ngày (bỏ giờ phút)
+    final targetDate = DateTime(
+      lastDayOfMonth.year,
+      lastDayOfMonth.month,
+      lastDayOfMonth.day,
+    );
+
+    // Lọc các dòng đúng ngày cuối tháng
+    final endOfMonthData = rawData.where((item) {
+      final itemDate = DateTime(item.date.year, item.date.month, item.date.day);
+      return itemDate == targetDate;
+    });
+
+    // Cộng lại nếu có nhiều bản ghi cùng ngày
+    return endOfMonthData.fold<double>(
+      0.0,
+      (sum, item) => sum + item.stopHourTgtMtd,
+    );
   }
 }
