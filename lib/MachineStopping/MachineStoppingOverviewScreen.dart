@@ -100,15 +100,21 @@ class _MachineStoppingOverviewScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TitleWithIndexBadge(
-                          index: 4,
-                          title: "Machine Stopping",
+                        Row(
+                          children: [
+                            TitleWithIndexBadge(
+                              index: 4,
+                              title: "Machine Stopping",
+                            ),
+                            SizedBox(width: 16),
+                            MtdDateText(
+                              selectedDate: selectedDate,
+                              minusOneDayIfCurrentMonth:
+                                  false, // hoặc false nếu bạn muốn lấy ngày hiện tại
+                            ),
+                          ],
                         ),
-                        MtdDateText(
-                          selectedDate: selectedDate,
-                          minusOneDayIfCurrentMonth:
-                              true, // hoặc false nếu bạn muốn lấy ngày hiện tại
-                        ),
+
                         _buildMTDInfo(provider.data),
                       ],
                     ),

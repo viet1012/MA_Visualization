@@ -1,30 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ma_visualization/API/ApiService.dart';
-import 'package:ma_visualization/Common/DetailsDataPopupMachineStopping.dart';
-import 'package:ma_visualization/Model/DetailsDataMachineStoppingModel.dart';
-import 'package:ma_visualization/Model/MachineStoppingModel.dart';
+import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Common/CustomLegend.dart';
 
-class MachineStoppingOverviewChart extends StatefulWidget {
-  final List<MachineStoppingModel> data;
+class RepairFeeDailyOverviewChart extends StatefulWidget {
+  final List<RepairFeeDailyModel> data;
   final String month;
 
-  const MachineStoppingOverviewChart({
+  const RepairFeeDailyOverviewChart({
     super.key,
     required this.data,
     required this.month,
   });
 
   @override
-  State<MachineStoppingOverviewChart> createState() =>
-      _MachineStoppingOverviewChartState();
+  State<RepairFeeDailyOverviewChart> createState() =>
+      _RepairFeeDailyOverviewChartState();
 }
 
-class _MachineStoppingOverviewChartState
-    extends State<MachineStoppingOverviewChart> {
+class _RepairFeeDailyOverviewChartState
+    extends State<RepairFeeDailyOverviewChart> {
   int? selectedIndex;
   final numberFormat = NumberFormat("##0.0");
 
@@ -94,7 +91,7 @@ class _MachineStoppingOverviewChartState
                 );
               },
               title: AxisTitle(
-                text: 'Hour',
+                text: 'K\$',
                 textStyle: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -126,65 +123,8 @@ class _MachineStoppingOverviewChartState
     );
   }
 
-  List<MachineStoppingModel> calculateMtd(List<MachineStoppingModel> input) {
-    final result = <MachineStoppingModel>[];
-
-    if (input.isEmpty) return result;
-
-    final sorted = input.toList()..sort((a, b) => a.date.compareTo(b.date));
-
-    final divs = sorted.map((e) => e.div).toSet(); // lấy tất cả các div
-
-    final startDate = sorted.first.date;
-    final endDate = sorted.last.date;
-
-    for (final div in divs) {
-      final itemsByDiv = sorted.where((e) => e.div == div).toList();
-      final dataByDate = <String, MachineStoppingModel>{
-        for (var item in itemsByDiv)
-          DateFormat('yyyy-MM-dd').format(item.date): item,
-      };
-
-      var actMtd = 0.0;
-      var tgtMtd = 0.0;
-
-      for (
-        var d = startDate;
-        !d.isAfter(endDate);
-        d = d.add(const Duration(days: 1))
-      ) {
-        final dateKey = DateFormat('yyyy-MM-dd').format(d);
-        final item = dataByDate[dateKey];
-
-        if (item != null) {
-          // Nếu có dữ liệu ngày này thì cộng dồn
-          actMtd += item.stopHourAct;
-          tgtMtd += item.stopHourTgtMtd;
-          result.add(
-            item.copyWith(stopHourAct: actMtd, stopHourTgtMtd: tgtMtd),
-          );
-        } else {
-          // Nếu không có thì thêm bản ghi giữ nguyên MTD
-          result.add(
-            MachineStoppingModel(
-              stopHourAct: actMtd,
-              stopHourTgtMtd: tgtMtd,
-              countDay: 0,
-              div: div,
-              date: d,
-              wdOffice: 0,
-              stopHourTgt: 0,
-            ),
-          );
-        }
-      }
-    }
-
-    return result..sort((a, b) => a.date.compareTo(b.date));
-  }
-
-  List<CartesianSeries<MachineStoppingModel, String>> _buildSeries(
-    List<MachineStoppingModel> data,
+  List<CartesianSeries<RepairFeeDailyModel, String>> _buildSeries(
+    List<RepairFeeDailyModel> data,
   ) {
     final divs = ['PRESS', 'MOLD', 'GUIDE'];
     final divColorsActual = {
@@ -199,8 +139,7 @@ class _MachineStoppingOverviewChartState
       'GUIDE': Colors.green,
     };
 
-    final List<CartesianSeries<MachineStoppingModel, String>> seriesList = [];
-
+    final List<CartesianSeries<RepairFeeDailyModel, String>> seriesList = [];
     data = calculateMtd(data);
 
     // 👇 Lọc dữ liệu chỉ đến ngày hôm nay
@@ -214,14 +153,14 @@ class _MachineStoppingOverviewChartState
 
     // 🟦 1. Add toàn bộ StackedAreaSeries TRƯỚC
     for (var divName in divs) {
-      final filteredData = data.where((d) => d.div == divName).toList();
+      final filteredData = data.where((d) => d.dept == divName).toList();
 
       seriesList.add(
-        StackedAreaSeries<MachineStoppingModel, String>(
+        StackedAreaSeries<RepairFeeDailyModel, String>(
           dataSource: filteredData,
           yAxisName: 'AreaAxis',
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
-          yValueMapper: (datum, _) => datum.stopHourTgtMtd,
+          yValueMapper: (datum, _) => datum.fcDay,
           name: divName,
           gradient: LinearGradient(
             colors: [
@@ -242,14 +181,14 @@ class _MachineStoppingOverviewChartState
     // 🟧 2. Add toàn bộ StackedColumnSeries SAU
     for (var divName in divs) {
       final filteredData =
-          filteredDataToToday.where((d) => d.div == divName).toList();
+          filteredDataToToday.where((d) => d.dept == divName).toList();
 
       seriesList.add(
-        StackedColumnSeries<MachineStoppingModel, String>(
+        StackedColumnSeries<RepairFeeDailyModel, String>(
           dataSource: filteredData,
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
-          yValueMapper: (datum, _) => datum.stopHourAct,
-          dataLabelMapper: (datum, _) => datum.stopHourAct.toStringAsFixed(0),
+          yValueMapper: (datum, _) => datum.act,
+          dataLabelMapper: (datum, _) => datum.act.toStringAsFixed(0),
           name: divName,
           width: .4,
           color: divColorsActual[divName],
@@ -260,67 +199,6 @@ class _MachineStoppingOverviewChartState
               fontWeight: FontWeight.bold,
             ),
           ),
-          onPointTap: (ChartPointDetails details) async {
-            final index = details.pointIndex ?? -1;
-            final item = data[index];
-
-            // Show loading dialog
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const Center(child: CircularProgressIndicator()),
-            );
-
-            try {
-              String month = DateFormat('yyyy-MM-dd').format(item.date);
-
-              // Gọi API để lấy dữ liệu
-              List<DetailsDataMachineStoppingModel> detailsData =
-                  await ApiService().fetchDetailsDataMS(month);
-
-              // Tắt loading
-              Navigator.of(context).pop();
-
-              if (detailsData.isNotEmpty) {
-                // Hiển thị popup dữ liệu
-                showDialog(
-                  context: context,
-                  builder:
-                      (_) => DetailsDataPopupMachineStopping(
-                        title: 'Details Data',
-                        data: detailsData,
-                      ),
-                );
-              } else {
-                // Có thể thêm thông báo nếu không có dữ liệu
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'No data available',
-                        style: TextStyle(
-                          fontSize: 22.0, // Tăng kích thước font chữ
-                          fontWeight: FontWeight.bold, // Tùy chọn để làm đậm
-                        ),
-                      ),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 20.0),
-                    // Thêm khoảng cách trên/dưới
-                    behavior:
-                        SnackBarBehavior
-                            .fixed, // Tùy chọn hiển thị phía trên thay vì ở dưới
-                  ),
-                );
-              }
-            } catch (e) {
-              Navigator.of(context).pop(); // Đảm bảo tắt loading nếu lỗi
-              print("Error fetching data: $e");
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Error fetching data')));
-            }
-          },
         ),
       );
     }
@@ -328,8 +206,63 @@ class _MachineStoppingOverviewChartState
     return seriesList;
   }
 
+  List<RepairFeeDailyModel> calculateMtd(List<RepairFeeDailyModel> input) {
+    final result = <RepairFeeDailyModel>[];
+
+    if (input.isEmpty) return result;
+
+    final sorted = input.toList()..sort((a, b) => a.date.compareTo(b.date));
+
+    final divs = sorted.map((e) => e.dept).toSet(); // lấy tất cả các div
+
+    final startDate = sorted.first.date;
+    final endDate = sorted.last.date;
+
+    for (final div in divs) {
+      final itemsByDiv = sorted.where((e) => e.dept == div).toList();
+      final dataByDate = <String, RepairFeeDailyModel>{
+        for (var item in itemsByDiv)
+          DateFormat('yyyy-MM-dd').format(item.date): item,
+      };
+
+      var actMtd = 0.0;
+      var tgtMtd = 0.0;
+
+      for (
+        var d = startDate;
+        !d.isAfter(endDate);
+        d = d.add(const Duration(days: 1))
+      ) {
+        final dateKey = DateFormat('yyyy-MM-dd').format(d);
+        final item = dataByDate[dateKey];
+
+        if (item != null) {
+          // Nếu có dữ liệu ngày này thì cộng dồn
+          actMtd += item.act;
+          tgtMtd += item.fcDay;
+          result.add(item.copyWith(act: actMtd, fcDay: tgtMtd));
+        } else {
+          // Nếu không có thì thêm bản ghi giữ nguyên MTD
+          result.add(
+            RepairFeeDailyModel(
+              act: actMtd,
+              fcDay: tgtMtd,
+              dept: div,
+              date: d,
+              wdOffice: 0,
+              fcUsd: 0,
+              countDayAll: 0,
+            ),
+          );
+        }
+      }
+    }
+
+    return result..sort((a, b) => a.date.compareTo(b.date));
+  }
+
   List<CartesianChartAnnotation> buildAnnotations(
-    List<MachineStoppingModel> data,
+    List<RepairFeeDailyModel> data,
   ) {
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
@@ -342,7 +275,7 @@ class _MachineStoppingOverviewChartState
     final Map<String, double> dailySum = {};
     for (var item in filtered) {
       final key = DateFormat('yyyy-MM-dd').format(item.date);
-      dailySum[key] = (dailySum[key] ?? 0) + item.stopHourAct;
+      dailySum[key] = (dailySum[key] ?? 0) + item.act;
     }
 
     // Giờ thì sẽ tạo annotation như cũ, dựa trên grouped list
@@ -352,14 +285,17 @@ class _MachineStoppingOverviewChartState
       final dayLabel = DateFormat('dd').format(DateTime.parse(dateKey));
       annotations.add(
         CartesianChartAnnotation(
-          widget: Text(
-            (sum / 1000).toStringAsFixed(1),
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          widget: RotatedBox(
+            quarterTurns: 1,
+            child: Text(
+              (sum / 1000).toStringAsFixed(1),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
           ),
           coordinateUnit: CoordinateUnit.point,
           region: AnnotationRegion.chart,
           x: dayLabel,
-          y: sum * 1.1, // đặt annotation cao hơn đúng tầm
+          y: sum, // đặt annotation cao hơn đúng tầm
         ),
       );
     });
@@ -375,7 +311,7 @@ class _MachineStoppingOverviewChartState
     return interval > 0 ? interval : 1;
   }
 
-  double getMaxValueBetweenActualAndTarget(List<MachineStoppingModel> rawData) {
+  double getMaxValueBetweenActualAndTarget(List<RepairFeeDailyModel> rawData) {
     rawData = calculateMtd(rawData);
 
     final actualMax = _getMaxDailyActualSum(rawData);
@@ -388,7 +324,7 @@ class _MachineStoppingOverviewChartState
   }
 
   /// Trả về giá trị lớn nhất của tổng stopHourAct trên mỗi ngày (từ đầu tháng đến hôm nay)
-  double _getMaxDailyActualSum(List<MachineStoppingModel> rawData) {
+  double _getMaxDailyActualSum(List<RepairFeeDailyModel> rawData) {
     // 2. Lọc đến ngày hiện tại
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
@@ -402,7 +338,7 @@ class _MachineStoppingOverviewChartState
     final Map<String, double> dailySum = {};
     for (var item in filtered) {
       final key = DateFormat('yyyy-MM-dd').format(item.date);
-      dailySum[key] = (dailySum[key] ?? 0) + item.stopHourAct;
+      dailySum[key] = (dailySum[key] ?? 0) + item.fcDay;
     }
 
     // 4. Tìm max
@@ -416,7 +352,7 @@ class _MachineStoppingOverviewChartState
     return maxSum;
   }
 
-  double _getMaxDailyTargetSum(List<MachineStoppingModel> rawData) {
+  double _getMaxDailyTargetSum(List<RepairFeeDailyModel> rawData) {
     final now = DateTime.now();
     final firstDayNextMonth =
         (now.month < 12)
@@ -438,9 +374,6 @@ class _MachineStoppingOverviewChartState
     });
 
     // Cộng lại nếu có nhiều bản ghi cùng ngày
-    return endOfMonthData.fold<double>(
-      0.0,
-      (sum, item) => sum + item.stopHourTgtMtd,
-    );
+    return endOfMonthData.fold<double>(0.0, (sum, item) => sum + item.fcDay);
   }
 }

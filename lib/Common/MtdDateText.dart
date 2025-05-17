@@ -19,11 +19,16 @@ class MtdDateText extends StatelessWidget {
 
     DateTime displayDate;
 
-    if (isCurrentMonth && minusOneDayIfCurrentMonth) {
-      // Nếu là tháng hiện tại → lùi 1 ngày
-      displayDate = DateTime(now.year, now.month, now.day - 1);
+    if (isCurrentMonth) {
+      if (minusOneDayIfCurrentMonth) {
+        // Tháng hiện tại và yêu cầu lùi 1 ngày
+        displayDate = DateTime(now.year, now.month, now.day - 1);
+      } else {
+        // Tháng hiện tại và lấy đúng ngày hiện tại
+        displayDate = DateTime(now.year, now.month, now.day);
+      }
     } else {
-      // Nếu là tháng trước/khác → lấy ngày cuối tháng
+      // Tháng khác → lấy ngày cuối tháng
       final nextMonth = DateTime(selectedDate.year, selectedDate.month + 1, 1);
       displayDate = nextMonth.subtract(const Duration(days: 1));
     }

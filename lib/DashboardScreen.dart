@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ma_visualization/Common/DesignedByText.dart';
+import 'package:ma_visualization/Common/OverviewCard.dart';
 import 'package:ma_visualization/MachineStopping/MachineStoppingOverviewScreen.dart';
 import 'package:ma_visualization/Provider/DateProvider.dart';
 import 'package:ma_visualization/Provider/RepairFeeProvider.dart';
+import 'package:ma_visualization/RepairFee(Daily)/RepairFeeDailyOverviewScreen.dart';
 import 'package:provider/provider.dart';
 
 import 'Common/CustomAppBar.dart';
@@ -52,35 +54,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           width: MediaQuery.of(context).size.width,
           child: Wrap(
             children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.height / 2 - 50,
-                width: MediaQuery.of(context).size.width / 2,
-                child: Card(
-                  elevation: 8,
-                  shadowColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.blue.shade100),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: RepairFeeOverviewScreen(
-                      onToggleTheme: widget.onToggleTheme,
-                      selectedDate: dateProvider.selectedDate,
-                    ),
-                  ),
+              OverviewCard(
+                child: RepairFeeOverviewScreen(
+                  onToggleTheme: widget.onToggleTheme,
+                  selectedDate: dateProvider.selectedDate,
                 ),
               ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height / 2 - 50,
-                width: MediaQuery.of(context).size.width / 2,
-                child: Card(
-                  elevation: 8,
-                  shadowColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.blue.shade100),
-                  ),
+              OverviewCard(
+                child: RepairFeeDailyOverviewScreen(
+                  onToggleTheme: widget.onToggleTheme,
+                  selectedDate: dateProvider.selectedDate,
                 ),
               ),
               DesignedByText(),
@@ -96,20 +79,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height / 2 - 50,
-                width: MediaQuery.of(context).size.width / 2,
-                child: Card(
-                  elevation: 8,
-                  shadowColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.blue.shade100),
-                  ),
-                  child: MachineStoppingOverviewScreen(
-                    onToggleTheme: widget.onToggleTheme,
-                    selectedDate: dateProvider.selectedDate,
-                  ),
+              OverviewCard(
+                child: MachineStoppingOverviewScreen(
+                  onToggleTheme: widget.onToggleTheme,
+                  selectedDate: dateProvider.selectedDate,
                 ),
               ),
             ],

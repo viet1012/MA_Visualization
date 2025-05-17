@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ma_visualization/Provider/MachineStoppingProvider.dart';
+import 'package:ma_visualization/Provider/RepairFeeDailyProvider.dart';
 import 'package:provider/provider.dart';
 
 import 'Provider/DateProvider.dart';
@@ -12,6 +13,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => RepairFeeProvider()),
         ChangeNotifierProvider(create: (_) => MachineStoppingProvider()),
+        ChangeNotifierProvider(create: (_) => RepairFeeDailyProvider()),
         ChangeNotifierProvider(create: (_) => DateProvider()),
       ],
       child: DashboardApp(),

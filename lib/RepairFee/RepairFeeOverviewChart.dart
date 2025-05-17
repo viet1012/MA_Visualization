@@ -34,7 +34,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
     return Column(
       children: [
         SizedBox(
-          height: MediaQuery.of(context).size.height * .35,
+          height: MediaQuery.of(context).size.height * .33,
           child: SfCartesianChart(
             plotAreaBorderColor: Colors.black45,
             primaryXAxis: CategoryAxis(
