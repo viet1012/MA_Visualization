@@ -86,7 +86,7 @@ class _RepairFeeDailyOverviewChartState
                   0,
                 );
                 return ChartAxisLabel(
-                  '$valueInThousands K',
+                  valueInThousands,
                   TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 );
               },

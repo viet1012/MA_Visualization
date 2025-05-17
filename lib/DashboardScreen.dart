@@ -70,14 +70,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               SizedBox(
                 height: MediaQuery.of(context).size.height / 2 - 50,
                 width: MediaQuery.of(context).size.width / 2,
-                child: Card(
-                  elevation: 8,
-                  shadowColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.blue.shade100),
-                  ),
-                ),
               ),
               OverviewCard(
                 child: MachineStoppingOverviewScreen(
