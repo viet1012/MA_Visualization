@@ -271,9 +271,11 @@ class _MachineStoppingOverviewChartState
             );
 
             try {
+              String month = DateFormat('yyyy-MM-dd').format(item.date);
+
               // Gọi API để lấy dữ liệu
               List<DetailsDataMachineStoppingModel> detailsData =
-                  await ApiService().fetchDetailsDataMS(widget.month);
+                  await ApiService().fetchDetailsDataMS(month);
 
               // Tắt loading
               Navigator.of(context).pop();

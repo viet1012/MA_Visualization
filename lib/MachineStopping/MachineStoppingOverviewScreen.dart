@@ -1,7 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:ma_visualization/Common/MtdDateText.dart';
 import 'package:ma_visualization/Common/TitleWithIndexBadge.dart';
 import 'package:ma_visualization/Model/MachineStoppingModel.dart';
 import 'package:ma_visualization/Provider/MachineStoppingProvider.dart';
@@ -27,17 +25,6 @@ class MachineStoppingOverviewScreen extends StatefulWidget {
 
 class _MachineStoppingOverviewScreenState
     extends State<MachineStoppingOverviewScreen> {
-  int selectedMonth = DateTime.now().month;
-  int selectedYear = DateTime.now().year;
-  DateTime selectedDate = DateTime(
-    DateTime.now().year,
-    DateTime.now().month,
-    1,
-  );
-
-  Timer? _dailyTimer;
-  final dayFormat = DateFormat('d-MMM-yyyy');
-
   @override
   void didUpdateWidget(covariant MachineStoppingOverviewScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -71,13 +58,7 @@ class _MachineStoppingOverviewScreenState
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  @override
   void dispose() {
-    _dailyTimer?.cancel(); // 🧹 Dọn dẹp khi màn hình bị hủy
     super.dispose();
   }
 
@@ -91,6 +72,9 @@ class _MachineStoppingOverviewScreenState
 
   @override
   Widget build(BuildContext context) {
+    final dateProvider = context.watch<DateProvider>();
+    final selectedDate = dateProvider.selectedDate;
+
     return Scaffold(
       body: Consumer<MachineStoppingProvider>(
         builder: (context, provider, child) {
@@ -120,6 +104,11 @@ class _MachineStoppingOverviewScreenState
                           index: 4,
                           title: "Machine Stopping",
                         ),
+                        MtdDateText(
+                          selectedDate: selectedDate,
+                          minusOneDayIfCurrentMonth:
+                              true, // hoặc false nếu bạn muốn lấy ngày hiện tại
+                        ),
                         _buildMTDInfo(provider.data),
                       ],
                     ),
@@ -144,7 +133,19 @@ class _MachineStoppingOverviewScreenState
 
   Widget _buildMTDInfo(List<MachineStoppingModel> data) {
     final mtdAct = data.map((e) => e.stopHourAct).fold(0.0, (a, b) => a + b);
-    final mtdFC = data.map((e) => e.stopHourTgtMtd).fold(0.0, (a, b) => a + b);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final mtdFC = data
+        .where(
+          (e) => DateTime(
+            e.date.year,
+            e.date.month,
+            e.date.day,
+          ).isBefore(today.add(Duration(days: 1))),
+        )
+        .map((e) => e.stopHourTgtMtd)
+        .fold(0.0, (a, b) => a + b);
     final ratio = mtdFC > 0 ? (mtdAct / mtdFC * 100).toStringAsFixed(0) : '0';
 
     return Padding(

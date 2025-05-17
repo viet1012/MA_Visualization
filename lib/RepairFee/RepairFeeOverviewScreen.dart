@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:ma_visualization/Common/MtdDateText.dart';
 import 'package:provider/provider.dart';
 
 import '../Common/NoDataWidget.dart';
@@ -23,16 +23,6 @@ class RepairFeeOverviewScreen extends StatefulWidget {
 }
 
 class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
-  int selectedMonth = DateTime.now().month;
-  int selectedYear = DateTime.now().year;
-  DateTime selectedDate = DateTime(
-    DateTime.now().year,
-    DateTime.now().month,
-    1,
-  );
-
-  final dayFormat = DateFormat('d-MMM-yyyy');
-
   @override
   void didUpdateWidget(covariant RepairFeeOverviewScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -63,11 +53,6 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  @override
   void dispose() {
     super.dispose();
   }
@@ -82,6 +67,9 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dateProvider = context.watch<DateProvider>();
+    final selectedDate = dateProvider.selectedDate;
+
     return Scaffold(
       body: Consumer<RepairFeeProvider>(
         builder: (context, provider, child) {
@@ -106,6 +94,12 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
                     Row(
                       children: [
                         TitleWithIndexBadge(index: 1, title: "Repair Fee"),
+                        SizedBox(width: 16),
+                        MtdDateText(
+                          selectedDate: selectedDate,
+                          minusOneDayIfCurrentMonth:
+                              true, // hoặc false nếu bạn muốn lấy ngày hiện tại
+                        ),
                       ],
                     ),
                     SizedBox(height: 16),
