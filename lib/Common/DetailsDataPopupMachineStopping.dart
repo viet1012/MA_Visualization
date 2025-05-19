@@ -25,6 +25,8 @@ class _DetailsDataPopupMachineStoppingState
   final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _filterController = TextEditingController();
+  bool _hasInput = false;
+
   late List<DetailsDataMachineStoppingModel> filteredData;
   late List<Map<String, dynamic>> rawJsonList; // bạn lưu từ response
 
@@ -32,6 +34,11 @@ class _DetailsDataPopupMachineStoppingState
   void initState() {
     super.initState();
     filteredData = widget.data;
+    _filterController.addListener(() {
+      setState(() {
+        _hasInput = _filterController.text.trim().isNotEmpty;
+      });
+    });
     _filterController.addListener(_applyFilter);
     rawJsonList = widget.data.map((e) => e.toJson()).toList();
   }
@@ -55,6 +62,7 @@ class _DetailsDataPopupMachineStoppingState
                 (item.esTime?.toLowerCase() ?? '').contains(query) ||
                 (item.finishTime?.toLowerCase() ?? '').contains(query) ||
                 (item.stopHour?.toString() ?? '').contains(query) ||
+                (item.sendDate?.toString() ?? '').contains(query) ||
                 (item.issueStatus?.toLowerCase() ?? '').contains(query);
 
             // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
@@ -108,6 +116,7 @@ class _DetailsDataPopupMachineStoppingState
       selectedStopHour = null;
       selectedIssueStatus = null;
       filteredData = widget.data;
+      _hasInput = false; // ✅ reset trạng thái
     });
   }
 
@@ -116,6 +125,22 @@ class _DetailsDataPopupMachineStoppingState
     _filterController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  bool _checkHasInput() {
+    return selectedSendDate != null ||
+        selectedDiv != null ||
+        selectedGroupName != null ||
+        selectedMachineCode != null ||
+        selectedMachineType != null ||
+        selectedStatusCode != null ||
+        selectedConfirmDate != null ||
+        selectedSendTime != null ||
+        selectedStartTime != null ||
+        selectedEsTime != null ||
+        selectedFinishTime != null ||
+        selectedStopHour != null ||
+        selectedIssueStatus != null;
   }
 
   List<String> _getUniqueValues(
@@ -162,16 +187,26 @@ class _DetailsDataPopupMachineStoppingState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  widget.title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.blueAccent,
-                    fontWeight: FontWeight.w600,
+              child: Row(
+                children: [
+                  Text(
+                    widget.title,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: Colors.blueAccent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  SizedBox(width: 4),
+                  Text(
+                    '[Details Data]',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: Colors.blueAccent.shade400,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
             Row(
@@ -180,7 +215,8 @@ class _DetailsDataPopupMachineStoppingState
                   icon: Icon(Icons.cleaning_services_rounded),
                   label: Text('Clear'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.grey.shade700,
+                    backgroundColor:
+                        _hasInput ? Colors.red.shade600 : Colors.grey.shade700,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
@@ -300,12 +336,13 @@ class _DetailsDataPopupMachineStoppingState
     }
 
     String? selectedValue = valueMap[key];
-    void Function(String?)? onChanged = (value) {
+    onChanged(value) {
       setState(() {
         setterMap[key]!(value == '__reset__' ? null : value);
         _applyFilter();
+        _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
       });
-    };
+    }
 
     return _buildDropdownHeader(
       title: title,

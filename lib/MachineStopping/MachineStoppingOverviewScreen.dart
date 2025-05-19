@@ -74,6 +74,7 @@ class _MachineStoppingOverviewScreenState
   Widget build(BuildContext context) {
     final dateProvider = context.watch<DateProvider>();
     final selectedDate = dateProvider.selectedDate;
+    final nameChart = "Machine Stopping";
 
     return Scaffold(
       body: Consumer<MachineStoppingProvider>(
@@ -102,10 +103,7 @@ class _MachineStoppingOverviewScreenState
                       children: [
                         Row(
                           children: [
-                            TitleWithIndexBadge(
-                              index: 4,
-                              title: "Machine Stopping",
-                            ),
+                            TitleWithIndexBadge(index: 4, title: nameChart),
                             SizedBox(width: 16),
                             MtdDateText(
                               selectedDate: selectedDate,
@@ -125,6 +123,7 @@ class _MachineStoppingOverviewScreenState
                         data: provider.data,
                         month:
                             "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",
+                        nameChart: nameChart,
                       ),
                     ),
                   ],

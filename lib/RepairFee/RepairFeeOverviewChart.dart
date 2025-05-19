@@ -13,11 +13,13 @@ import '../Common/CustomLegend.dart';
 class RepairFeeOverviewChart extends StatefulWidget {
   final List<RepairFeeModel> data;
   final String month;
+  final String nameChart;
 
   const RepairFeeOverviewChart({
     super.key,
     required this.data,
     required this.month,
+    required this.nameChart,
   });
 
   @override
@@ -162,7 +164,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                 context: context,
                 builder:
                     (_) => DetailsDataPopup(
-                      title: 'Details Data',
+                      title: widget.nameChart,
                       data: detailsData,
                       totalActual: item.title == "PE" ? 0 : item.actual,
                       group: item.title,

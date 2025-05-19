@@ -74,7 +74,7 @@ class _RepairFeeDailyOverviewScreenState
   Widget build(BuildContext context) {
     final dateProvider = context.watch<DateProvider>();
     final selectedDate = dateProvider.selectedDate;
-
+    final nameChart = 'Repair Fee [Daily]';
     return Scaffold(
       body: Consumer<RepairFeeDailyProvider>(
         builder: (context, provider, child) {
@@ -101,10 +101,7 @@ class _RepairFeeDailyOverviewScreenState
                       children: [
                         Row(
                           children: [
-                            TitleWithIndexBadge(
-                              index: 2,
-                              title: "Repair Fee [Daily]",
-                            ),
+                            TitleWithIndexBadge(index: 2, title: nameChart),
                             SizedBox(width: 16),
                             MtdDateText(
                               selectedDate: selectedDate,
@@ -121,6 +118,7 @@ class _RepairFeeDailyOverviewScreenState
                       padding: const EdgeInsets.all(8),
                       child: RepairFeeDailyOverviewChart(
                         data: provider.data,
+                        nameChart: nameChart,
                         month:
                             "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",
                       ),

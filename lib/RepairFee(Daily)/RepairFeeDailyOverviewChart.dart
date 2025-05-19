@@ -8,11 +8,12 @@ import '../Common/CustomLegend.dart';
 class RepairFeeDailyOverviewChart extends StatefulWidget {
   final List<RepairFeeDailyModel> data;
   final String month;
-
+  final String nameChart;
   const RepairFeeDailyOverviewChart({
     super.key,
     required this.data,
     required this.month,
+    required this.nameChart,
   });
 
   @override
@@ -65,7 +66,6 @@ class _RepairFeeDailyOverviewChartState
                   TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
                     decorationThickness: 3,
                   ),
                 );

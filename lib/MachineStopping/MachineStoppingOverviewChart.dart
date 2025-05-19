@@ -11,11 +11,13 @@ import '../Common/CustomLegend.dart';
 class MachineStoppingOverviewChart extends StatefulWidget {
   final List<MachineStoppingModel> data;
   final String month;
+  final String nameChart;
 
   const MachineStoppingOverviewChart({
     super.key,
     required this.data,
     required this.month,
+    required this.nameChart,
   });
 
   @override
@@ -194,7 +196,7 @@ class _MachineStoppingOverviewChartState
     };
 
     final divColorsTarget = {
-      'PRESS': Colors.blue,
+      'PRESS': Colors.blueAccent,
       'MOLD': Colors.orange,
       'GUIDE': Colors.green,
     };
@@ -287,7 +289,7 @@ class _MachineStoppingOverviewChartState
                   context: context,
                   builder:
                       (_) => DetailsDataPopupMachineStopping(
-                        title: 'Details Data',
+                        title: widget.nameChart,
                         data: detailsData,
                       ),
                 );

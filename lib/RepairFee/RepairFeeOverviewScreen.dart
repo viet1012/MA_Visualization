@@ -69,6 +69,7 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
   Widget build(BuildContext context) {
     final dateProvider = context.watch<DateProvider>();
     final selectedDate = dateProvider.selectedDate;
+    final nameChart = 'Repair Fee';
 
     return Scaffold(
       body: Consumer<RepairFeeProvider>(
@@ -93,7 +94,7 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
                   children: [
                     Row(
                       children: [
-                        TitleWithIndexBadge(index: 1, title: "Repair Fee"),
+                        TitleWithIndexBadge(index: 1, title: nameChart),
                         SizedBox(width: 16),
                         MtdDateText(
                           selectedDate: selectedDate,
@@ -109,6 +110,7 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
                         data: provider.data,
                         month:
                             "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",
+                        nameChart: nameChart,
                       ),
                     ),
                   ],

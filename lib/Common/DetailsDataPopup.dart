@@ -27,6 +27,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _filterController = TextEditingController();
+  bool _hasInput = false;
   late List<DetailsDataModel> filteredData;
   late List<Map<String, dynamic>> rawJsonList; // bạn lưu từ response
 
@@ -34,11 +35,32 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   void initState() {
     super.initState();
     filteredData = widget.data;
+    _filterController.addListener(() {
+      setState(() {
+        _hasInput = _filterController.text.trim().isNotEmpty;
+      });
+    });
     _filterController.addListener(_applyFilter);
     rawJsonList = widget.data.map((e) => e.toJson()).toList();
-    for (var item in rawJsonList) {
-      print('Item: $item');
-    }
+  }
+
+  @override
+  void dispose() {
+    _filterController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  bool _checkHasInput() {
+    return selectedDept != null ||
+        selectedMatnr != null ||
+        selectedMaktx != null ||
+        selectedXblnr2 != null ||
+        selectedUnit != null ||
+        selectedUsedDate != null ||
+        selectedBktxt != null ||
+        selectedKostl != null ||
+        selectedKonto != null;
   }
 
   void _applyFilter() {
@@ -93,14 +115,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       selectedKostl = null;
       selectedKonto = null;
       filteredData = widget.data;
+      _hasInput = false; // ✅ reset trạng thái
     });
-  }
-
-  @override
-  void dispose() {
-    _filterController.dispose();
-    _scrollController.dispose();
-    super.dispose();
   }
 
   List<String> _getUniqueValues(String Function(DetailsDataModel) selector) {
@@ -116,22 +132,25 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 12,
       backgroundColor: theme.colorScheme.surface,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width,
-          maxHeight: MediaQuery.of(context).size.height,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(theme),
-              const SizedBox(height: 16),
-              Expanded(child: _buildDataTable(context, theme)),
-              const SizedBox(height: 16),
-              _buildFooter(context),
-            ],
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width,
+            maxHeight: MediaQuery.of(context).size.height,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(theme),
+                const SizedBox(height: 16),
+                Expanded(child: _buildDataTable(context, theme)),
+                const SizedBox(height: 16),
+                _buildFooter(context),
+              ],
+            ),
           ),
         ),
       ),
@@ -151,30 +170,56 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  widget.title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.blueAccent,
-                    fontWeight: FontWeight.w600,
+              child: Row(
+                children: [
+                  Text(
+                    widget.title,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: Colors.blueAccent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  SizedBox(width: 4),
+                  Text(
+                    '[Details Data]',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: Colors.blueAccent.shade400,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
             Row(
               children: [
-                Text(
-                  "Total: ${(totalAmount / 1000).toStringAsFixed(1)}K\$",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                Row(
+                  children: [
+                    Text(
+                      "Total: ",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Text(
+                      "${(totalAmount / 1000).toStringAsFixed(1)}K\$",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(width: 16),
                 FilledButton.icon(
                   icon: Icon(Icons.cleaning_services_rounded),
                   label: Text('Clear'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.grey.shade700,
+                    backgroundColor:
+                        _hasInput ? Colors.red.shade600 : Colors.grey.shade700,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
@@ -261,6 +306,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedDept = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -270,6 +316,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedMatnr = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -279,6 +326,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedMaktx = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -288,6 +336,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedXblnr2 = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -297,6 +346,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedUnit = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -306,6 +356,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedUsedDate = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -315,6 +366,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedBktxt = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -324,6 +376,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedKostl = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -333,6 +386,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           setState(() {
             selectedKonto = value == '__reset__' ? null : value;
             _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
         };
         break;
@@ -426,7 +480,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 5: FixedColumnWidth(120),
                 6: FixedColumnWidth(190),
                 7: FixedColumnWidth(220),
-                8: FixedColumnWidth(110),
+                8: FixedColumnWidth(100),
                 9: FixedColumnWidth(110),
                 10: FixedColumnWidth(120),
               },
@@ -464,7 +518,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                         5: FixedColumnWidth(120),
                         6: FixedColumnWidth(190),
                         7: FixedColumnWidth(220),
-                        8: FixedColumnWidth(110),
+                        8: FixedColumnWidth(100),
                         9: FixedColumnWidth(110),
                         10: FixedColumnWidth(120),
                       },
