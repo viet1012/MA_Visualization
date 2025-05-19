@@ -164,7 +164,7 @@ class _DetailsDataPopupMachineStoppingState
           maxHeight: MediaQuery.of(context).size.height,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -429,7 +429,7 @@ class _DetailsDataPopupMachineStoppingState
                 5: FixedColumnWidth(140),
                 6: FixedColumnWidth(160),
                 7: FixedColumnWidth(160),
-                8: FixedColumnWidth(160),
+                8: FixedColumnWidth(145),
                 9: FixedColumnWidth(120),
                 10: FixedColumnWidth(125),
                 11: FixedColumnWidth(130),
@@ -469,7 +469,7 @@ class _DetailsDataPopupMachineStoppingState
                         5: FixedColumnWidth(140),
                         6: FixedColumnWidth(160),
                         7: FixedColumnWidth(160),
-                        8: FixedColumnWidth(160),
+                        8: FixedColumnWidth(145),
                         9: FixedColumnWidth(120),
                         10: FixedColumnWidth(125),
                         11: FixedColumnWidth(130),

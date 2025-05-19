@@ -146,10 +146,13 @@ class _RepairFeeDailyOverviewChartState
     // 👇 Lọc dữ liệu chỉ đến ngày hôm nay
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
+    // 👇 Lùi 1 ngày
+    final yesterdayDate = todayDate.subtract(const Duration(days: 1));
+
     final filteredDataToToday =
         data.where((e) {
           final eDate = DateTime(e.date.year, e.date.month, e.date.day);
-          return !eDate.isAfter(todayDate);
+          return !eDate.isAfter(yesterdayDate);
         }).toList();
 
     // 🟦 1. Add toàn bộ StackedAreaSeries TRƯỚC

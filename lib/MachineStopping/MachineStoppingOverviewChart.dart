@@ -70,7 +70,6 @@ class _MachineStoppingOverviewChartState
                   TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
                     decorationThickness: 3,
                   ),
                 );

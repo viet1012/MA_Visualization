@@ -130,13 +130,16 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
         name: 'Actual',
         width: 0.5,
         spacing: 0.1,
-        dataLabelSettings: const DataLabelSettings(
+        dataLabelSettings: DataLabelSettings(
           labelAlignment: ChartDataLabelAlignment.top,
           isVisible: true,
           textStyle: TextStyle(
             fontSize: 18, // 👈 Tùy chỉnh kích thước nếu cần
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
           ),
         ),
         onPointTap: (ChartPointDetails details) async {
@@ -212,13 +215,16 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
         width: 0.5,
         spacing: 0.1,
         // 👈 khoảng cách giữa các cột trong cùng nhóm
-        dataLabelSettings: const DataLabelSettings(
+        dataLabelSettings: DataLabelSettings(
           labelAlignment: ChartDataLabelAlignment.top,
           isVisible: true,
           textStyle: TextStyle(
             fontSize: 18, // 👈 Tùy chỉnh kích thước nếu cần
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
           ),
         ),
       ),

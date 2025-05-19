@@ -106,7 +106,7 @@ class _RepairFeeDailyOverviewScreenState
                             MtdDateText(
                               selectedDate: selectedDate,
                               minusOneDayIfCurrentMonth:
-                                  false, // hoặc false nếu bạn muốn lấy ngày hiện tại
+                                  true, // hoặc false nếu bạn muốn lấy ngày hiện tại
                             ),
                           ],
                         ),
@@ -135,16 +135,17 @@ class _RepairFeeDailyOverviewScreenState
 
   Widget _buildMTDInfo(List<RepairFeeDailyModel> data) {
     final mtdAct = data.map((e) => e.act).fold(0.0, (a, b) => a + b);
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-
+    final todayDate = DateTime(today.year, today.month, today.day);
     final mtdFC = data
         .where(
           (e) => DateTime(
             e.date.year,
             e.date.month,
             e.date.day,
-          ).isBefore(today.add(Duration(days: 1))),
+          ).isBefore(todayDate),
         )
         .map((e) => e.fcDay)
         .fold(0.0, (a, b) => a + b);
