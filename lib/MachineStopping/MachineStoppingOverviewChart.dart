@@ -263,7 +263,7 @@ class _MachineStoppingOverviewChartState
           ),
           onPointTap: (ChartPointDetails details) async {
             final index = details.pointIndex ?? -1;
-            final item = data[index];
+            final item = filteredData[index];
 
             // Show loading dialog
             showDialog(

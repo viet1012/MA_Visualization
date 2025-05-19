@@ -8,16 +8,9 @@ import 'package:universal_html/html.dart' as html;
 class DetailsDataPopup extends StatefulWidget {
   final String title;
   final List<DetailsDataModel> data;
-  final double totalActual;
-  final String group;
 
-  DetailsDataPopup({
-    Key? key,
-    required this.title,
-    required this.data,
-    required this.totalActual,
-    required this.group,
-  }) : super(key: key);
+  DetailsDataPopup({Key? key, required this.title, required this.data})
+    : super(key: key);
 
   @override
   State<DetailsDataPopup> createState() => _DetailsDataPopupState();

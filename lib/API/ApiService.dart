@@ -127,6 +127,30 @@ class ApiService {
     }
   }
 
+  Future<List<DetailsDataModel>> fetchDetailsDataRFDaily(
+    String month,
+    String dept,
+  ) async {
+    final url = Uri.parse(
+      "$baseUrl/details_data/repair_fee_daily?month=$month&dept=$dept",
+    );
+    print("url: $url");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => DetailsDataModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Exception caught: $e");
+      return [];
+    }
+  }
+
   // Chuyển đổi JSON thành danh sách ToolCostModel
   List<RepairFeeModel> parseRepairFeeList(List<dynamic> data) {
     return data.map((json) => RepairFeeModel.fromJson(json)).toList();

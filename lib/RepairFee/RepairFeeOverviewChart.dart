@@ -169,8 +169,6 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                     (_) => DetailsDataPopup(
                       title: widget.nameChart,
                       data: detailsData,
-                      totalActual: item.title == "PE" ? 0 : item.actual,
-                      group: item.title,
                     ),
               );
             } else {
