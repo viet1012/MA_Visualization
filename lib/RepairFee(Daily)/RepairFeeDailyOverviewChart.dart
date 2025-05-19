@@ -140,6 +140,7 @@ class _RepairFeeDailyOverviewChartState
     };
 
     final List<CartesianSeries<RepairFeeDailyModel, String>> seriesList = [];
+
     data = calculateMtd(data);
 
     // 👇 Lọc dữ liệu chỉ đến ngày hôm nay

@@ -36,6 +36,9 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     filteredData = widget.data;
     _filterController.addListener(_applyFilter);
     rawJsonList = widget.data.map((e) => e.toJson()).toList();
+    for (var item in rawJsonList) {
+      print('Item: $item');
+    }
   }
 
   void _applyFilter() {
@@ -335,7 +338,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
         break;
       default:
         // Không filter được -> render Text bình thường
-        return _buildTableCell(title, isHeader: true);
+        return _buildTableCell(title, isHeader: true, columnKey: key);
     }
 
     return _buildDropdownHeader(
@@ -416,16 +419,16 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
               ),
               columnWidths: {
                 0: FixedColumnWidth(120),
-                1: FixedColumnWidth(120),
-                2: FixedColumnWidth(160),
+                1: FixedColumnWidth(130),
+                2: FixedColumnWidth(410),
                 3: FixedColumnWidth(150),
-                4: FixedColumnWidth(200),
-                5: FixedColumnWidth(100),
-                6: FixedColumnWidth(130),
-                7: FixedColumnWidth(140),
-                8: FixedColumnWidth(410),
-                9: FixedColumnWidth(200),
-                10: FixedColumnWidth(100),
+                4: FixedColumnWidth(150),
+                5: FixedColumnWidth(120),
+                6: FixedColumnWidth(190),
+                7: FixedColumnWidth(220),
+                8: FixedColumnWidth(110),
+                9: FixedColumnWidth(110),
+                10: FixedColumnWidth(120),
               },
               children: [
                 TableRow(
@@ -454,16 +457,16 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                       ),
                       columnWidths: {
                         0: FixedColumnWidth(120),
-                        1: FixedColumnWidth(120),
-                        2: FixedColumnWidth(160),
+                        1: FixedColumnWidth(130),
+                        2: FixedColumnWidth(410),
                         3: FixedColumnWidth(150),
-                        4: FixedColumnWidth(200),
-                        5: FixedColumnWidth(100),
-                        6: FixedColumnWidth(130),
-                        7: FixedColumnWidth(140),
-                        8: FixedColumnWidth(410),
-                        9: FixedColumnWidth(200),
-                        10: FixedColumnWidth(100),
+                        4: FixedColumnWidth(150),
+                        5: FixedColumnWidth(120),
+                        6: FixedColumnWidth(190),
+                        7: FixedColumnWidth(220),
+                        8: FixedColumnWidth(110),
+                        9: FixedColumnWidth(110),
+                        10: FixedColumnWidth(120),
                       },
                       children:
                           filteredData.map((item) {
@@ -495,7 +498,12 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     bool isHeader = false,
     bool highlight = false,
     bool isNumber = false,
+    String? columnKey, // thêm tham số để biết cột nào
   }) {
+    final isActual =
+        columnKey != null && columnKey.toLowerCase().contains('act');
+    final displayText = (isActual && isHeader) ? '${text} \$' : text;
+
     return Container(
       padding: isHeader ? EdgeInsets.only(top: 8) : null,
       // color: Colors.green,
@@ -503,7 +511,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(
-          text,
+          displayText,
           textAlign: isNumber ? TextAlign.right : TextAlign.left,
           style: TextStyle(
             fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
