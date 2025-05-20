@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ma_visualization/API/ApiService.dart';
-import 'package:ma_visualization/Common/DetailsDataPopup.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
 import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
+import 'package:ma_visualization/Popup/DetailsDataPopup.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Common/CustomLegend.dart';
@@ -120,6 +120,7 @@ class _RepairFeeDailyOverviewChartState
             LegendItem(Colors.blue.shade800, 'PRESS'),
             LegendItem(Colors.orange.shade800, 'MOLD'),
             LegendItem(Colors.green.shade800, 'GUIDE'),
+            LegendItem(Colors.grey, 'OTHER'),
           ],
         ),
       ],
@@ -129,17 +130,19 @@ class _RepairFeeDailyOverviewChartState
   List<CartesianSeries<RepairFeeDailyModel, String>> _buildSeries(
     List<RepairFeeDailyModel> data,
   ) {
-    final divs = ['PRESS', 'MOLD', 'GUIDE'];
+    final divs = ['PRESS', 'MOLD', 'GUIDE', 'OTHER'];
     final divColorsActual = {
       'PRESS': Colors.blue.shade800,
       'MOLD': Colors.orange.shade800,
       'GUIDE': Colors.green.shade800,
+      'OTHER': Colors.grey,
     };
 
     final divColorsTarget = {
       'PRESS': Colors.blue,
       'MOLD': Colors.orange,
       'GUIDE': Colors.green,
+      'OTHER': Colors.grey,
     };
 
     final List<CartesianSeries<RepairFeeDailyModel, String>> seriesList = [];

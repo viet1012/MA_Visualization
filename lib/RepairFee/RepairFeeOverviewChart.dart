@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ma_visualization/Common/CustomTooltipWidget.dart';
-import 'package:ma_visualization/Common/DetailsDataPopup.dart';
 import 'package:ma_visualization/Common/RepairFeeStatusHelper.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
 import 'package:ma_visualization/Model/RepairFeeModel.dart';
+import 'package:ma_visualization/Popup/DetailsDataPopup.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../API/ApiService.dart';

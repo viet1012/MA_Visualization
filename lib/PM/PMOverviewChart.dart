@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ma_visualization/API/ApiService.dart';
+import 'package:ma_visualization/Model/DetailsDataPMModel.dart';
 import 'package:ma_visualization/Model/PMModel.dart';
+import 'package:ma_visualization/Popup/DetailsDataPMPopup.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Common/CustomLegend.dart';
@@ -195,6 +198,67 @@ class _PMOverviewChartState extends State<PMOverviewChart> {
               fontWeight: FontWeight.bold,
             ),
           ),
+          onPointTap: (ChartPointDetails details) async {
+            final index = details.pointIndex ?? -1;
+            final item = filteredData[index];
+
+            // Show loading dialog
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(child: CircularProgressIndicator()),
+            );
+
+            try {
+              String month = DateFormat('yyyy-MM-dd').format(item.date);
+
+              // Gọi API để lấy dữ liệu
+              List<DetailsDataPMModel> detailsData = await ApiService()
+                  .fetchDetailsDataPM(month);
+
+              // Tắt loading
+              Navigator.of(context).pop();
+
+              if (detailsData.isNotEmpty) {
+                // Hiển thị popup dữ liệu
+                showDialog(
+                  context: context,
+                  builder:
+                      (_) => DetailsDataPMPopup(
+                        title: widget.nameChart,
+                        data: detailsData,
+                      ),
+                );
+              } else {
+                // Có thể thêm thông báo nếu không có dữ liệu
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'No data available',
+                        style: TextStyle(
+                          fontSize: 22.0, // Tăng kích thước font chữ
+                          fontWeight: FontWeight.bold, // Tùy chọn để làm đậm
+                        ),
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 20.0),
+                    // Thêm khoảng cách trên/dưới
+                    behavior:
+                        SnackBarBehavior
+                            .fixed, // Tùy chọn hiển thị phía trên thay vì ở dưới
+                  ),
+                );
+              }
+            } catch (e) {
+              Navigator.of(context).pop(); // Đảm bảo tắt loading nếu lỗi
+              print("Error fetching data: $e");
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Error fetching data')));
+            }
+          },
         ),
       );
     }
@@ -272,9 +336,9 @@ class _PMOverviewChartState extends State<PMOverviewChart> {
       annotations.add(
         CartesianChartAnnotation(
           widget: RotatedBox(
-            quarterTurns: 1,
+            quarterTurns: 0,
             child: Text(
-              (sum).toStringAsFixed(1),
+              (sum).toStringAsFixed(0),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),

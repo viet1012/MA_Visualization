@@ -73,7 +73,6 @@ class DetailsDataMachineStoppingModel {
     return null;
   }
 
-  // ✅ Getter định dạng thời gian
   String? get formattedSendTime => _formatDateTime(sendTime);
   String? get formattedStartTime => _formatDateTime(startTime);
   String? get formattedFinishTime => _formatDateTime(finishTime);

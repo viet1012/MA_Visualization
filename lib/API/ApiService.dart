@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:ma_visualization/Model/DetailsDataMachineStoppingModel.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
+import 'package:ma_visualization/Model/DetailsDataPMModel.dart';
 import 'package:ma_visualization/Model/MachineStoppingModel.dart';
 import 'package:ma_visualization/Model/PMModel.dart';
 import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
@@ -160,6 +161,25 @@ class ApiService {
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => PMModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Exception caught: $e");
+      return [];
+    }
+  }
+
+  Future<List<DetailsDataPMModel>> fetchDetailsDataPM(String month) async {
+    final url = Uri.parse("$baseUrl/details_data/pm?month=$month&dept=Viet");
+    print("url: $url");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => DetailsDataPMModel.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }

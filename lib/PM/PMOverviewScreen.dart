@@ -175,7 +175,7 @@ class _PMOverviewScreenState extends State<PMOverviewScreen> {
               text: '$ratio%',
               style: TextStyle(
                 fontSize: 18,
-                color: int.parse(ratio) > 100 ? Colors.red : Colors.green,
+                color: int.parse(ratio) > 100 ? Colors.green : Colors.red,
               ),
             ),
           ],
