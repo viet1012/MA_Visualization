@@ -165,18 +165,6 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
             ),
             Row(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      "Total: ",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(width: 16),
                 FilledButton.icon(
                   icon: Icon(Icons.cleaning_services_rounded),
                   label: Text('Clear'),
@@ -227,7 +215,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
           child: TextField(
             controller: _filterController,
             decoration: InputDecoration(
-              hintText: 'Search by Dept, Material No., Description, Note...',
+              hintText: 'Search by Dept, Cline, Issue Status, ...',
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -368,7 +356,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
                 color: theme.dividerColor.withOpacity(0.8),
               ),
               columnWidths: {
-                0: FixedColumnWidth(140),
+                0: FixedColumnWidth(143),
                 1: FixedColumnWidth(170),
                 2: FixedColumnWidth(160),
                 3: FixedColumnWidth(200),
@@ -406,7 +394,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
                         color: theme.dividerColor.withOpacity(0.8),
                       ),
                       columnWidths: {
-                        0: FixedColumnWidth(140),
+                        0: FixedColumnWidth(143),
                         1: FixedColumnWidth(170),
                         2: FixedColumnWidth(160),
                         3: FixedColumnWidth(200),
@@ -531,21 +519,33 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
     // Thêm tiêu đề đúng thứ tự
     sheet.appendRow([
       'dept',
-      'matnr',
-      'kostl',
-      'konto',
-      'bktxt',
-      'qty',
-      'act', // Nếu toJson không có 'act' mà có 'amount' thì bạn map lại
-      'useDate',
-      'maktx',
-      'xblnr2',
-      'unit',
+      'cline',
+      'empno',
+      'empname',
+      'machinecode',
+      'actioncode',
+      'sendtime',
+      'estime',
+      'starttime',
+      'finishtime',
+      'issuestatus',
     ]);
 
     // Dữ liệu theo đúng thứ tự như tiêu đề
     for (var item in data) {
-      sheet.appendRow([item.dept]);
+      sheet.appendRow([
+        item.dept,
+        item.cLine,
+        item.empNo,
+        item.empName,
+        item.machineCode,
+        item.actionCode,
+        item.sendTime,
+        item.estime,
+        item.startTime,
+        item.finishTime,
+        item.issueStatus,
+      ]);
     }
 
     final fileBytes = excel.encode();
