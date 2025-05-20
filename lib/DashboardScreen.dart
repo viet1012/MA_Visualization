@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ma_visualization/Common/DesignedByText.dart';
 import 'package:ma_visualization/Common/OverviewCard.dart';
 import 'package:ma_visualization/MachineStopping/MachineStoppingOverviewScreen.dart';
+import 'package:ma_visualization/PM/PMOverviewScreen.dart';
 import 'package:ma_visualization/Provider/DateProvider.dart';
 import 'package:ma_visualization/Provider/RepairFeeProvider.dart';
 import 'package:ma_visualization/RepairFee(Daily)/RepairFeeDailyOverviewScreen.dart';
@@ -67,9 +68,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               DesignedByText(),
-              SizedBox(
-                height: MediaQuery.of(context).size.height / 2 - 50,
-                width: MediaQuery.of(context).size.width / 2,
+              OverviewCard(
+                child: PMOverviewScreen(
+                  onToggleTheme: widget.onToggleTheme,
+                  selectedDate: dateProvider.selectedDate,
+                ),
               ),
               OverviewCard(
                 child: MachineStoppingOverviewScreen(

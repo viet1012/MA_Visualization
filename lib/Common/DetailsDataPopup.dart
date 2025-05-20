@@ -173,7 +173,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(width: 4),
+                  SizedBox(width: 8),
                   Text(
                     '[Details Data]',
                     style: theme.textTheme.headlineSmall?.copyWith(

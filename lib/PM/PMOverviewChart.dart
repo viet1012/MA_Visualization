@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ma_visualization/API/ApiService.dart';
-import 'package:ma_visualization/Common/DetailsDataPopup.dart';
-import 'package:ma_visualization/Model/DetailsDataModel.dart';
-import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
+import 'package:ma_visualization/Model/PMModel.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Common/CustomLegend.dart';
 
-class RepairFeeDailyOverviewChart extends StatefulWidget {
-  final List<RepairFeeDailyModel> data;
+class PMOverviewChart extends StatefulWidget {
+  final List<PMModel> data;
   final String month;
   final String nameChart;
-  const RepairFeeDailyOverviewChart({
+  const PMOverviewChart({
     super.key,
     required this.data,
     required this.month,
@@ -20,12 +17,10 @@ class RepairFeeDailyOverviewChart extends StatefulWidget {
   });
 
   @override
-  State<RepairFeeDailyOverviewChart> createState() =>
-      _RepairFeeDailyOverviewChartState();
+  State<PMOverviewChart> createState() => _PMOverviewChartState();
 }
 
-class _RepairFeeDailyOverviewChartState
-    extends State<RepairFeeDailyOverviewChart> {
+class _PMOverviewChartState extends State<PMOverviewChart> {
   int? selectedIndex;
   final numberFormat = NumberFormat("##0.0");
 
@@ -85,16 +80,14 @@ class _RepairFeeDailyOverviewChartState
                 fontWeight: FontWeight.bold,
               ),
               axisLabelFormatter: (AxisLabelRenderDetails details) {
-                final valueInThousands = (details.value / 1000).toStringAsFixed(
-                  0,
-                );
+                final value = (details.value).toStringAsFixed(0);
                 return ChartAxisLabel(
-                  valueInThousands,
+                  value,
                   TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 );
               },
               title: AxisTitle(
-                text: 'K\$',
+                text: 'CASE',
                 textStyle: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -126,9 +119,7 @@ class _RepairFeeDailyOverviewChartState
     );
   }
 
-  List<CartesianSeries<RepairFeeDailyModel, String>> _buildSeries(
-    List<RepairFeeDailyModel> data,
-  ) {
+  List<CartesianSeries<PMModel, String>> _buildSeries(List<PMModel> data) {
     final divs = ['PRESS', 'MOLD', 'GUIDE'];
     final divColorsActual = {
       'PRESS': Colors.blue.shade800,
@@ -142,20 +133,18 @@ class _RepairFeeDailyOverviewChartState
       'GUIDE': Colors.green,
     };
 
-    final List<CartesianSeries<RepairFeeDailyModel, String>> seriesList = [];
+    final List<CartesianSeries<PMModel, String>> seriesList = [];
 
     data = calculateMtd(data);
 
     // 👇 Lọc dữ liệu chỉ đến ngày hôm nay
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
-    // 👇 Lùi 1 ngày
-    final yesterdayDate = todayDate.subtract(const Duration(days: 1));
 
     final filteredDataToToday =
         data.where((e) {
           final eDate = DateTime(e.date.year, e.date.month, e.date.day);
-          return !eDate.isAfter(yesterdayDate);
+          return !eDate.isAfter(todayDate);
         }).toList();
 
     // 🟦 1. Add toàn bộ StackedAreaSeries TRƯỚC
@@ -163,7 +152,7 @@ class _RepairFeeDailyOverviewChartState
       final filteredData = data.where((d) => d.dept == divName).toList();
 
       seriesList.add(
-        StackedAreaSeries<RepairFeeDailyModel, String>(
+        StackedAreaSeries<PMModel, String>(
           dataSource: filteredData,
           yAxisName: 'AreaAxis',
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
@@ -191,7 +180,7 @@ class _RepairFeeDailyOverviewChartState
           filteredDataToToday.where((d) => d.dept == divName).toList();
 
       seriesList.add(
-        StackedColumnSeries<RepairFeeDailyModel, String>(
+        StackedColumnSeries<PMModel, String>(
           dataSource: filteredData,
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
           yValueMapper: (datum, _) => datum.act,
@@ -206,67 +195,6 @@ class _RepairFeeDailyOverviewChartState
               fontWeight: FontWeight.bold,
             ),
           ),
-          onPointTap: (ChartPointDetails details) async {
-            final index = details.pointIndex ?? -1;
-            final item = filteredData[index];
-
-            // Show loading dialog
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const Center(child: CircularProgressIndicator()),
-            );
-
-            try {
-              String month = DateFormat('yyyy-MM-dd').format(item.date);
-
-              // Gọi API để lấy dữ liệu
-              List<DetailsDataModel> detailsData = await ApiService()
-                  .fetchDetailsDataRFDaily(month, item.dept);
-
-              // Tắt loading
-              Navigator.of(context).pop();
-
-              if (detailsData.isNotEmpty) {
-                // Hiển thị popup dữ liệu
-                showDialog(
-                  context: context,
-                  builder:
-                      (_) => DetailsDataPopup(
-                        title: widget.nameChart,
-                        data: detailsData,
-                      ),
-                );
-              } else {
-                // Có thể thêm thông báo nếu không có dữ liệu
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'No data available',
-                        style: TextStyle(
-                          fontSize: 22.0, // Tăng kích thước font chữ
-                          fontWeight: FontWeight.bold, // Tùy chọn để làm đậm
-                        ),
-                      ),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 20.0),
-                    // Thêm khoảng cách trên/dưới
-                    behavior:
-                        SnackBarBehavior
-                            .fixed, // Tùy chọn hiển thị phía trên thay vì ở dưới
-                  ),
-                );
-              }
-            } catch (e) {
-              Navigator.of(context).pop(); // Đảm bảo tắt loading nếu lỗi
-              print("Error fetching data: $e");
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Error fetching data')));
-            }
-          },
         ),
       );
     }
@@ -274,8 +202,8 @@ class _RepairFeeDailyOverviewChartState
     return seriesList;
   }
 
-  List<RepairFeeDailyModel> calculateMtd(List<RepairFeeDailyModel> input) {
-    final result = <RepairFeeDailyModel>[];
+  List<PMModel> calculateMtd(List<PMModel> input) {
+    final result = <PMModel>[];
 
     if (input.isEmpty) return result;
 
@@ -288,7 +216,7 @@ class _RepairFeeDailyOverviewChartState
 
     for (final div in divs) {
       final itemsByDiv = sorted.where((e) => e.dept == div).toList();
-      final dataByDate = <String, RepairFeeDailyModel>{
+      final dataByDate = <String, PMModel>{
         for (var item in itemsByDiv)
           DateFormat('yyyy-MM-dd').format(item.date): item,
       };
@@ -312,15 +240,7 @@ class _RepairFeeDailyOverviewChartState
         } else {
           // Nếu không có thì thêm bản ghi giữ nguyên MTD
           result.add(
-            RepairFeeDailyModel(
-              act: actMtd,
-              fcDay: tgtMtd,
-              dept: div,
-              date: d,
-              wdOffice: 0,
-              fcUsd: 0,
-              countDayAll: 0,
-            ),
+            PMModel(act: actMtd, fcDay: tgtMtd, dept: div, date: d, fcMonth: 0),
           );
         }
       }
@@ -329,16 +249,13 @@ class _RepairFeeDailyOverviewChartState
     return result..sort((a, b) => a.date.compareTo(b.date));
   }
 
-  List<CartesianChartAnnotation> buildAnnotations(
-    List<RepairFeeDailyModel> data,
-  ) {
+  List<CartesianChartAnnotation> buildAnnotations(List<PMModel> data) {
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
-    final yesterday = todayDate.subtract(const Duration(days: 1));
     data = calculateMtd(data);
 
     // Lọc dữ liệu đến hôm nay
-    final filtered = data.where((d) => !d.date.isAfter(yesterday)).toList();
+    final filtered = data.where((d) => !d.date.isAfter(todayDate)).toList();
 
     // Nhóm theo ngày (yyyy-MM-dd để tránh trùng) và tính tổng Actual cho mỗi ngày
     final Map<String, double> dailySum = {};
@@ -357,7 +274,7 @@ class _RepairFeeDailyOverviewChartState
           widget: RotatedBox(
             quarterTurns: 1,
             child: Text(
-              (sum / 1000).toStringAsFixed(1),
+              (sum).toStringAsFixed(1),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),
@@ -380,7 +297,7 @@ class _RepairFeeDailyOverviewChartState
     return interval > 0 ? interval : 1;
   }
 
-  double getMaxValueBetweenActualAndTarget(List<RepairFeeDailyModel> rawData) {
+  double getMaxValueBetweenActualAndTarget(List<PMModel> rawData) {
     rawData = calculateMtd(rawData);
 
     final actualMax = _getMaxDailyActualSum(rawData);
@@ -390,7 +307,7 @@ class _RepairFeeDailyOverviewChartState
   }
 
   /// Trả về giá trị lớn nhất của tổng stopHourAct trên mỗi ngày (từ đầu tháng đến hôm nay)
-  double _getMaxDailyActualSum(List<RepairFeeDailyModel> rawData) {
+  double _getMaxDailyActualSum(List<PMModel> rawData) {
     // 2. Lọc đến ngày hiện tại
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
@@ -416,7 +333,7 @@ class _RepairFeeDailyOverviewChartState
     return maxSum;
   }
 
-  double _getMaxDailyTargetSum(List<RepairFeeDailyModel> rawData) {
+  double _getMaxDailyTargetSum(List<PMModel> rawData) {
     final now = DateTime.now();
     final firstDayNextMonth =
         (now.month < 12)

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:ma_visualization/Model/DetailsDataMachineStoppingModel.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
 import 'package:ma_visualization/Model/MachineStoppingModel.dart';
+import 'package:ma_visualization/Model/PMModel.dart';
 import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
 import 'package:ma_visualization/Model/RepairFeeModel.dart';
 
@@ -22,14 +23,12 @@ class ApiService {
         final List<dynamic> data = json.decode(response.body);
 
         // Lọc dữ liệu để loại bỏ các phần tử có act == null hoặc tgt_MTD_ORG == 0
-        final filteredData =
-            data.where((item) {
-              return item['act'] != null && item['tgt_MTD_ORG'] != 0.0;
-            }).toList();
+        // final filteredData =
+        //     data.where((item) {
+        //       return item['act'] != null && item['tgt_MTD_ORG'] != 0.0;
+        //     }).toList();
 
-        return parseRepairFeeList(
-          filteredData,
-        ); // Chuyển đổi dữ liệu từ JSON thành danh sách ToolCostModel
+        return data.map((json) => RepairFeeModel.fromJson(json)).toList();
       } else {
         print("Error: ${response.statusCode}");
         return [];
@@ -142,6 +141,25 @@ class ApiService {
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => DetailsDataModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Exception caught: $e");
+      return [];
+    }
+  }
+
+  Future<List<PMModel>> fetchPM(String month) async {
+    final url = Uri.parse("$baseUrl/pm?month=$month");
+    print("url: $url");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => PMModel.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }
