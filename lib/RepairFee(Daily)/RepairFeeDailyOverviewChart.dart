@@ -139,7 +139,7 @@ class _RepairFeeDailyOverviewChartState
     };
 
     final divColorsTarget = {
-      'PRESS': Colors.blue,
+      'PRESS': Colors.blueAccent,
       'MOLD': Colors.orange,
       'GUIDE': Colors.green,
       'OTHER': Colors.grey,
