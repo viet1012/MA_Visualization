@@ -589,6 +589,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     final barColor =
         Color.lerp(Colors.red.shade300, Colors.red.shade800, fraction)!;
 
+    var displayText = (isActColumn && isHeader) ? '$text \$' : text;
+
     return Container(
       padding: isHeader ? EdgeInsets.only(top: 9) : null,
       height: 40,
@@ -615,7 +617,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                     : (isNumber ? Alignment.centerRight : Alignment.centerLeft),
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Text(
-              text,
+              displayText,
               textAlign: isNumber ? TextAlign.right : TextAlign.left,
               style: TextStyle(
                 fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,

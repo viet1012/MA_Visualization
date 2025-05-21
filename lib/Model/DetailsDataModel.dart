@@ -2,8 +2,8 @@ class DetailsDataModel {
   final String dept;
   final String matnr;
   final String maktx;
-  final String kostl;
-  final String konto;
+  final double kostl;
+  final double konto;
   final String bktxt;
   final String useDate;
   final String xblnr2;
@@ -31,13 +31,12 @@ class DetailsDataModel {
       matnr: json['matnr'] ?? '',
       maktx: json['maktx'] ?? '',
       useDate: json['useDate'] ?? '',
-      kostl: json['kostl'] ?? '',
-      konto: json['konto'] ?? '',
+      kostl: (json['kostl'] as num?)?.toDouble() ?? 0.0,
+      konto: (json['konto'] as num?)?.toDouble() ?? 0.0,
       xblnr2: json['xblnr2'] ?? '',
       amount: double.parse(
         ((json['act'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(0),
       ),
-
       bktxt: json['bktxt'] ?? '',
       qty: (json['qty'] as num?)?.toDouble() ?? 0.0,
       unit: json['unit'] ?? '',
