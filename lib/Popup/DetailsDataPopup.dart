@@ -451,6 +451,27 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     final columnKeys =
         rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
 
+    final Map<String, double> columnMax = {};
+
+    // 1. Khởi tạo map
+    for (var key in columnKeys) {
+      columnMax[key] = 0.0;
+    }
+
+    // 2. Tính max
+    for (var item in filteredData) {
+      final row = item.toJson();
+      for (var key in columnKeys) {
+        final v = row[key];
+        if (v is num) {
+          final d = v.toDouble();
+          if (d > (columnMax[key] ?? 0)) {
+            columnMax[key] = d;
+          }
+        }
+      }
+    }
+
     return Scrollbar(
       controller: _scrollController,
       thumbVisibility: true,
@@ -522,9 +543,16 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                               children:
                                   columnKeys.map((key) {
                                     final value = jsonRow[key];
+                                    final isNumber = value is num;
+                                    final txt = value?.toString() ?? '';
                                     return _buildTableCell(
-                                      value?.toString() ?? '',
-                                      isNumber: value is num,
+                                      txt,
+                                      isHeader: false,
+                                      isNumber: isNumber,
+                                      columnKey: key,
+                                      numValue:
+                                          isNumber ? (value).toDouble() : null,
+                                      columnMaxValue: columnMax[key],
                                     );
                                   }).toList(),
                             );
@@ -543,13 +571,74 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   Widget _buildTableCell(
     String text, {
     bool isHeader = false,
+    bool isNumber = false,
+    String? columnKey,
+    double? numValue,
+    double? columnMaxValue,
+  }) {
+    final fraction =
+        (isNumber &&
+                numValue != null &&
+                columnMaxValue != null &&
+                columnMaxValue > 0)
+            ? (numValue / columnMaxValue).clamp(0.0, 1.0)
+            : 0.0;
+
+    final isActColumn = columnKey?.trim().toLowerCase() == 'act';
+
+    final barColor =
+        Color.lerp(Colors.red.shade300, Colors.red.shade800, fraction)!;
+
+    return Container(
+      padding: isHeader ? EdgeInsets.only(top: 9) : null,
+      height: 40,
+      alignment:
+          isHeader
+              ? Alignment.center
+              : (isNumber ? Alignment.centerRight : Alignment.centerLeft),
+      child: Stack(
+        children: [
+          // Bar bên phải, không ảnh hưởng layout chữ
+          if (!isHeader && isActColumn)
+            Align(
+              alignment: Alignment.centerRight,
+              child: FractionallySizedBox(
+                widthFactor: fraction,
+                child: Container(height: double.infinity, color: barColor),
+              ),
+            ),
+          // Text phía trên
+          Container(
+            alignment:
+                isHeader
+                    ? Alignment.center
+                    : (isNumber ? Alignment.centerRight : Alignment.centerLeft),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Text(
+              text,
+              textAlign: isNumber ? TextAlign.right : TextAlign.left,
+              style: TextStyle(
+                fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
+                fontSize: isHeader ? 18 : 16,
+                color: isActColumn ? Colors.white : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableCell1(
+    String text, {
+    bool isHeader = false,
     bool highlight = false,
     bool isNumber = false,
     String? columnKey, // thêm tham số để biết cột nào
   }) {
     final isActual =
         columnKey != null && columnKey.toLowerCase().contains('act');
-    final displayText = (isActual && isHeader) ? '${text} \$' : text;
+    var displayText = (isActual && isHeader) ? '$text \$' : text;
 
     return Container(
       padding: isHeader ? EdgeInsets.only(top: 8) : null,

@@ -67,7 +67,7 @@ class DetailsDataMachineStoppingModel {
 
   static double? _toDouble(dynamic value) {
     if (value == null) return null;
-    if (value is double) return value;
+    if (value is double) return double.parse(value.toStringAsFixed(0));
     if (value is int) return value.toDouble();
     if (value is String) return double.tryParse(value);
     return null;

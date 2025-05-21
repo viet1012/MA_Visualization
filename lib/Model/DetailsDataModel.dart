@@ -34,7 +34,10 @@ class DetailsDataModel {
       kostl: json['kostl'] ?? '',
       konto: json['konto'] ?? '',
       xblnr2: json['xblnr2'] ?? '',
-      amount: (json['act'] as num?)?.toDouble() ?? 0.0,
+      amount: double.parse(
+        ((json['act'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(0),
+      ),
+
       bktxt: json['bktxt'] ?? '',
       qty: (json['qty'] as num?)?.toDouble() ?? 0.0,
       unit: json['unit'] ?? '',

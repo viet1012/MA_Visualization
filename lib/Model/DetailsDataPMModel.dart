@@ -40,6 +40,7 @@ class DetailsDataPMModel {
       machineCode: json['machinecode'] ?? '',
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
       'dept': dept,
@@ -54,14 +55,6 @@ class DetailsDataPMModel {
       'finishtime': finishTime,
       'issuestatus': issueStatus,
     };
-  }
-
-  static double? _toDouble(dynamic value) {
-    if (value == null) return null;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value);
-    return null;
   }
 
   String? get formattedSendTime => _formatDateTime(sendTime);

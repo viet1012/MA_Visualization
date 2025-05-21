@@ -53,7 +53,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     decorationThickness: 3,
-                    decoration: TextDecoration.underline,
+                    // decoration: TextDecoration.underline,
                   ),
                 );
               },
