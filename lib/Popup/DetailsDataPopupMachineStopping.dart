@@ -56,7 +56,7 @@ class _DetailsDataPopupMachineStoppingState
                 (item.machineCode?.toLowerCase() ?? '').contains(query) ||
                 (item.machineType?.toLowerCase() ?? '').contains(query) ||
                 (item.statusCode?.toLowerCase() ?? '').contains(query) ||
-                (item.confirmDate?.toLowerCase() ?? '').contains(query) ||
+                (item.confirmDate?.toString() ?? '').contains(query) ||
                 (item.sendTime?.toLowerCase() ?? '').contains(query) ||
                 (item.startTime?.toLowerCase() ?? '').contains(query) ||
                 (item.esTime?.toLowerCase() ?? '').contains(query) ||
@@ -78,17 +78,17 @@ class _DetailsDataPopupMachineStoppingState
                     item.machineType == selectedMachineType) &&
                 (selectedStatusCode == null ||
                     item.statusCode == selectedStatusCode) &&
-                (selectedConfirmDate == null ||
-                    item.confirmDate == selectedConfirmDate) &&
-                (selectedSendTime == null ||
-                    item.sendTime == selectedSendTime) &&
-                (selectedStartTime == null ||
-                    item.startTime == selectedStartTime) &&
-                (selectedEsTime == null || item.esTime == selectedEsTime) &&
-                (selectedFinishTime == null ||
-                    item.finishTime == selectedFinishTime) &&
-                (selectedStopHour == null ||
-                    item.stopHour?.toString() == selectedStopHour) &&
+                // (selectedConfirmDate == null ||
+                //     item.confirmDate == selectedConfirmDate) &&
+                // (selectedSendTime == null ||
+                //     item.sendTime == selectedSendTime) &&
+                // (selectedStartTime == null ||
+                //     item.startTime == selectedStartTime) &&
+                // (selectedEsTime == null || item.esTime == selectedEsTime) &&
+                // (selectedFinishTime == null ||
+                //     item.finishTime == selectedFinishTime) &&
+                // (selectedStopHour == null ||
+                //     item.stopHour?.toString() == selectedStopHour) &&
                 (selectedIssueStatus == null ||
                     item.issueStatus == selectedIssueStatus);
 
@@ -108,12 +108,12 @@ class _DetailsDataPopupMachineStoppingState
       selectedMachineCode = null;
       selectedMachineType = null;
       selectedStatusCode = null;
-      selectedConfirmDate = null;
-      selectedSendTime = null;
-      selectedStartTime = null;
-      selectedEsTime = null;
-      selectedFinishTime = null;
-      selectedStopHour = null;
+      // selectedConfirmDate = null;
+      // selectedSendTime = null;
+      // selectedStartTime = null;
+      // selectedEsTime = null;
+      // selectedFinishTime = null;
+      // selectedStopHour = null;
       selectedIssueStatus = null;
       filteredData = widget.data;
       _hasInput = false; // ✅ reset trạng thái
@@ -134,12 +134,12 @@ class _DetailsDataPopupMachineStoppingState
         selectedMachineCode != null ||
         selectedMachineType != null ||
         selectedStatusCode != null ||
-        selectedConfirmDate != null ||
-        selectedSendTime != null ||
-        selectedStartTime != null ||
-        selectedEsTime != null ||
-        selectedFinishTime != null ||
-        selectedStopHour != null ||
+        // selectedConfirmDate != null ||
+        // selectedSendTime != null ||
+        // selectedStartTime != null ||
+        // selectedEsTime != null ||
+        // selectedFinishTime != null ||
+        // selectedStopHour != null ||
         selectedIssueStatus != null;
   }
 
@@ -284,12 +284,12 @@ class _DetailsDataPopupMachineStoppingState
   String? selectedMachineCode;
   String? selectedMachineType;
   String? selectedStatusCode;
-  String? selectedConfirmDate;
-  String? selectedSendTime;
-  String? selectedStartTime;
-  String? selectedEsTime;
-  String? selectedFinishTime;
-  String? selectedStopHour;
+  // String? selectedConfirmDate;
+  // String? selectedSendTime;
+  // String? selectedStartTime;
+  // String? selectedEsTime;
+  // String? selectedFinishTime;
+  // String? selectedStopHour;
   String? selectedIssueStatus;
 
   Widget _buildDynamicDropdownHeader(String key) {
@@ -305,12 +305,12 @@ class _DetailsDataPopupMachineStoppingState
       'machineCode': selectedMachineCode,
       'machineType': selectedMachineType,
       'statusCode': selectedStatusCode,
-      'confirmDate': selectedConfirmDate,
-      'sendTime': selectedSendTime,
-      'startTime': selectedStartTime,
-      'esTime': selectedEsTime,
-      'finishTime': selectedFinishTime,
-      'stopHour': selectedStopHour,
+      // 'confirmDate': selectedConfirmDate,
+      // 'sendTime': selectedSendTime,
+      // 'startTime': selectedStartTime,
+      // 'esTime': selectedEsTime,
+      // 'finishTime': selectedFinishTime,
+      // 'stopHour': selectedStopHour,
       'issueStatus': selectedIssueStatus,
     };
 
@@ -321,12 +321,12 @@ class _DetailsDataPopupMachineStoppingState
       'machineCode': (String? value) => selectedMachineCode = value,
       'machineType': (String? value) => selectedMachineType = value,
       'statusCode': (String? value) => selectedStatusCode = value,
-      'confirmDate': (String? value) => selectedConfirmDate = value,
-      'sendTime': (String? value) => selectedSendTime = value,
-      'startTime': (String? value) => selectedStartTime = value,
-      'esTime': (String? value) => selectedEsTime = value,
-      'finishTime': (String? value) => selectedFinishTime = value,
-      'stopHour': (String? value) => selectedStopHour = value,
+      // 'confirmDate': (String? value) => selectedConfirmDate = value,
+      // 'sendTime': (String? value) => selectedSendTime = value,
+      // 'startTime': (String? value) => selectedStartTime = value,
+      // 'esTime': (String? value) => selectedEsTime = value,
+      // 'finishTime': (String? value) => selectedFinishTime = value,
+      // 'stopHour': (String? value) => selectedStopHour = value,
       'issueStatus': (String? value) => selectedIssueStatus = value,
     };
 

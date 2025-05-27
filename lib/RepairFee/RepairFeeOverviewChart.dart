@@ -123,6 +123,30 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
         animationDuration: 500,
         dataSource: data,
         xValueMapper: (item, _) => item.title,
+        yValueMapper: (item, _) => item.target,
+        dataLabelMapper: (item, _) => numberFormat.format(item.target),
+        color: Colors.grey,
+        name: 'Target',
+        width: 0.5,
+        spacing: 0.1,
+        // 👈 khoảng cách giữa các cột trong cùng nhóm
+        dataLabelSettings: DataLabelSettings(
+          labelAlignment: ChartDataLabelAlignment.top,
+          isVisible: true,
+          textStyle: TextStyle(
+            fontSize: 18, // 👈 Tùy chỉnh kích thước nếu cần
+            fontWeight: FontWeight.w600,
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+          ),
+        ),
+      ),
+      ColumnSeries<RepairFeeModel, String>(
+        animationDuration: 500,
+        dataSource: data,
+        xValueMapper: (item, _) => item.title,
         yValueMapper: (item, _) => item.actual,
         dataLabelMapper: (item, _) => numberFormat.format(item.actual),
         pointColorMapper:
@@ -201,30 +225,6 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
             ).showSnackBar(SnackBar(content: Text('Error fetching data')));
           }
         },
-      ),
-      ColumnSeries<RepairFeeModel, String>(
-        animationDuration: 500,
-        dataSource: data,
-        xValueMapper: (item, _) => item.title,
-        yValueMapper: (item, _) => item.target,
-        dataLabelMapper: (item, _) => numberFormat.format(item.target),
-        color: Colors.grey,
-        name: 'Target',
-        width: 0.5,
-        spacing: 0.1,
-        // 👈 khoảng cách giữa các cột trong cùng nhóm
-        dataLabelSettings: DataLabelSettings(
-          labelAlignment: ChartDataLabelAlignment.top,
-          isVisible: true,
-          textStyle: TextStyle(
-            fontSize: 18, // 👈 Tùy chỉnh kích thước nếu cần
-            fontWeight: FontWeight.w600,
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
-          ),
-        ),
       ),
     ];
   }

@@ -99,7 +99,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       actions: [
-        _buildDivisionSelector(),
+        // _buildDivisionSelector(),
         if (onToggleTheme != null)
           IconButton(
             icon: const Icon(Icons.brightness_6),

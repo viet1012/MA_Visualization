@@ -587,7 +587,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     final isActColumn = columnKey?.trim().toLowerCase() == 'act';
 
     final barColor =
-        Color.lerp(Colors.red.shade300, Colors.red.shade800, fraction)!;
+        Color.lerp(Colors.red.shade800, Colors.red.shade800, fraction)!;
 
     var displayText = (isActColumn && isHeader) ? '$text \$' : text;
 

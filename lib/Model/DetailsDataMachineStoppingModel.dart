@@ -37,7 +37,7 @@ class DetailsDataMachineStoppingModel {
       machineCode: json['machineCode']?.toString(),
       machineType: json['machineType']?.toString(),
       statusCode: json['statusCode']?.toString(),
-      confirmDate: _formatDateTime(json['confirmDate']),
+      confirmDate: _formatDateTime((json['confirmDate'])),
       sendTime: _formatDateTime(json['sendTime']),
       startTime: _formatDateTime(json['startTime']),
       esTime: _formatDateTime(json['esTime']),
@@ -67,7 +67,7 @@ class DetailsDataMachineStoppingModel {
 
   static double? _toDouble(dynamic value) {
     if (value == null) return null;
-    if (value is double) return double.parse(value.toStringAsFixed(0));
+    if (value is double) return double.parse(value.toStringAsFixed(1));
     if (value is int) return value.toDouble();
     if (value is String) return double.tryParse(value);
     return null;
