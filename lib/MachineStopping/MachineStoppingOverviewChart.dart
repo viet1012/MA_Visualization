@@ -219,6 +219,7 @@ class _MachineStoppingOverviewChartState
 
       seriesList.add(
         StackedAreaSeries<MachineStoppingModel, String>(
+          animationDuration: 500,
           dataSource: filteredData,
           yAxisName: 'AreaAxis',
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
@@ -247,6 +248,7 @@ class _MachineStoppingOverviewChartState
 
       seriesList.add(
         StackedColumnSeries<MachineStoppingModel, String>(
+          animationDuration: 500,
           dataSource: filteredData,
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
           yValueMapper: (datum, _) => datum.stopHourAct,

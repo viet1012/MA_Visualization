@@ -167,6 +167,7 @@ class _RepairFeeDailyOverviewChartState
 
       seriesList.add(
         StackedAreaSeries<RepairFeeDailyModel, String>(
+          animationDuration: 500,
           dataSource: filteredData,
           yAxisName: 'AreaAxis',
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
@@ -195,6 +196,7 @@ class _RepairFeeDailyOverviewChartState
 
       seriesList.add(
         StackedColumnSeries<RepairFeeDailyModel, String>(
+          animationDuration: 500,
           dataSource: filteredData,
           xValueMapper: (datum, _) => DateFormat('dd').format(datum.date),
           yValueMapper: (datum, _) => datum.act,
