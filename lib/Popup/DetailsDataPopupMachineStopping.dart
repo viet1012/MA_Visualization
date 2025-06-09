@@ -582,20 +582,21 @@ class _DetailsDataPopupMachineStoppingState
 
     // Thêm tiêu đề đúng thứ tự các trường trong model
     sheet.appendRow([
-      'sendDate',
-      'div',
-      'groupName',
-      'machineCode',
-      'machineType',
-      'statusCode',
-      'confirmDate',
-      'sendTime',
-      'startTime',
-      'esTime',
-      'finishTime',
-      'stopHour',
-      'issueStatus',
+      'SENDDATE',
+      'DIV',
+      'GROUPNAME',
+      'MACHINECODE',
+      'MACHINETYPE',
+      'STATUSCODE',
+      'CONFIRMDATE',
+      'SENDTIME',
+      'STARTTIME',
+      'ESTIME',
+      'FINISHTIME',
+      'STOPHOUR',
+      'ISSUESTATUS',
     ]);
+
 
     // Thêm dữ liệu từng dòng
     for (var item in data) {

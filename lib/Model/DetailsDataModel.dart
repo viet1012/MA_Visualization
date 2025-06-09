@@ -1,5 +1,8 @@
 class DetailsDataModel {
   final String dept;
+  final String macName;
+  final String macId;
+  final String cate;
   final String matnr;
   final String maktx;
   final double kostl;
@@ -13,6 +16,9 @@ class DetailsDataModel {
 
   DetailsDataModel({
     required this.dept,
+    required this.macName,
+    required this.macId,
+    required this.cate,
     required this.matnr,
     required this.maktx,
     required this.useDate,
@@ -28,6 +34,9 @@ class DetailsDataModel {
   factory DetailsDataModel.fromJson(Map<String, dynamic> json) {
     return DetailsDataModel(
       dept: json['dept'] ?? '',
+      macName: json['macName'] ?? '',
+      macId: json['macId'] ?? '',
+      cate: json['cate'] ?? '',
       matnr: json['matnr'] ?? '',
       maktx: json['maktx'] ?? '',
       useDate: json['useDate'] ?? '',
@@ -46,6 +55,9 @@ class DetailsDataModel {
   Map<String, dynamic> toJson() {
     return {
       'dept': dept,
+      'macId' : macId,
+      'macName': macName ,
+      'cate' : cate,
       'matnr': matnr,
       'maktx': maktx,
       'useDate': useDate,

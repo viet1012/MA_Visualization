@@ -47,6 +47,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   bool _checkHasInput() {
     return selectedDept != null ||
         selectedMatnr != null ||
+        selectedMacName != null ||
         selectedMaktx != null ||
         selectedXblnr2 != null ||
         selectedUnit != null ||
@@ -65,6 +66,9 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
             // Kiểm tra các điều kiện tìm kiếm trong chuỗi
             final matchesSearch =
                 item.dept.toLowerCase().contains(query) ||
+                item.macId.toLowerCase().contains(query) ||
+                item.macName.toLowerCase().contains(query) ||
+                item.cate.toLowerCase().contains(query) ||
                 item.maktx.toLowerCase().contains(query) ||
                 item.xblnr2.toLowerCase().contains(query) ||
                 item.bktxt.toLowerCase().contains(query) ||
@@ -77,12 +81,13 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
             // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
             final matchesFilters =
                 (selectedDept == null || item.dept == selectedDept) &&
+                (selectedMacId == null || item.macId == selectedMacId) &&
+                (selectedMacName == null || item.macName == selectedMacName) &&
                 (selectedMatnr == null || item.matnr == selectedMatnr) &&
                 (selectedMaktx == null || item.maktx == selectedMaktx) &&
                 (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
                 (selectedUnit == null || item.unit == selectedUnit) &&
-                (selectedUsedDate == null ||
-                    item.useDate == selectedUsedDate) &&
+                (selectedUsedDate == null || item.useDate == selectedUsedDate) &&
                 (selectedBktxt == null || item.bktxt == selectedBktxt) &&
                 (selectedKostl == null || item.kostl == selectedKostl) &&
                 (selectedKonto == null || item.konto == selectedKonto);
@@ -98,6 +103,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     setState(() {
       _filterController.clear();
       selectedXblnr2 = null;
+      selectedMacId = null;
+      selectedMacName = null;
       selectedMaktx = null;
       selectedMatnr = null;
       selectedDept = null;
@@ -274,6 +281,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   }
 
   String? selectedDept;
+  String? selectedMacId;
+  String? selectedMacName;
   String? selectedMatnr;
   String? selectedMaktx;
   String? selectedXblnr2;
@@ -298,6 +307,16 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
         onChanged = (value) {
           setState(() {
             selectedDept = value == '__reset__' ? null : value;
+            _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
+          });
+        };
+        break;
+      case 'macId':
+        selectedValue = selectedMacId;
+        onChanged = (value) {
+          setState(() {
+            selectedMacId = value == '__reset__' ? null : value;
             _applyFilter();
             _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
           });
@@ -486,17 +505,21 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 color: theme.dividerColor.withOpacity(0.8),
               ),
               columnWidths: {
-                0: FixedColumnWidth(120),
-                1: FixedColumnWidth(130),
-                2: FixedColumnWidth(410),
-                3: FixedColumnWidth(150),
-                4: FixedColumnWidth(150),
-                5: FixedColumnWidth(120),
-                6: FixedColumnWidth(190),
-                7: FixedColumnWidth(220),
-                8: FixedColumnWidth(100),
-                9: FixedColumnWidth(110),
-                10: FixedColumnWidth(120),
+                0: FixedColumnWidth(100),
+                1: FixedColumnWidth(100),
+                2: FixedColumnWidth(180),
+                3: FixedColumnWidth(110),
+                4: FixedColumnWidth(130),
+                5: FixedColumnWidth(250),
+                6: FixedColumnWidth(120),
+                7: FixedColumnWidth(130),
+                8: FixedColumnWidth(130),
+                9: FixedColumnWidth(150),
+                10: FixedColumnWidth(150),
+                11: FixedColumnWidth(90),
+                12: FixedColumnWidth(90),
+                13: FixedColumnWidth(90),
+
               },
               children: [
                 TableRow(
@@ -524,17 +547,20 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                         color: theme.dividerColor.withOpacity(0.8),
                       ),
                       columnWidths: {
-                        0: FixedColumnWidth(120),
-                        1: FixedColumnWidth(130),
-                        2: FixedColumnWidth(410),
-                        3: FixedColumnWidth(150),
-                        4: FixedColumnWidth(150),
-                        5: FixedColumnWidth(120),
-                        6: FixedColumnWidth(190),
-                        7: FixedColumnWidth(220),
-                        8: FixedColumnWidth(100),
-                        9: FixedColumnWidth(110),
-                        10: FixedColumnWidth(120),
+                        0: FixedColumnWidth(100),
+                        1: FixedColumnWidth(100),
+                        2: FixedColumnWidth(180),
+                        3: FixedColumnWidth(110),
+                        4: FixedColumnWidth(130),
+                        5: FixedColumnWidth(250),
+                        6: FixedColumnWidth(120),
+                        7: FixedColumnWidth(130),
+                        8: FixedColumnWidth(130),
+                        9: FixedColumnWidth(150),
+                        10: FixedColumnWidth(150),
+                        11: FixedColumnWidth(90),
+                        12: FixedColumnWidth(90),
+                        13: FixedColumnWidth(90),
                       },
                       children:
                           filteredData.map((item) {
@@ -592,8 +618,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     var displayText = (isActColumn && isHeader) ? '$text \$' : text;
 
     return Container(
+      height:  isHeader ? 40 : 80,
       padding: isHeader ? EdgeInsets.only(top: 9) : null,
-      height: 40,
       alignment:
           isHeader
               ? Alignment.center
@@ -718,23 +744,30 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
     // Thêm tiêu đề đúng thứ tự
     sheet.appendRow([
-      'dept',
-      'matnr',
-      'kostl',
-      'konto',
-      'bktxt',
-      'qty',
-      'act', // Nếu toJson không có 'act' mà có 'amount' thì bạn map lại
-      'useDate',
-      'maktx',
-      'xblnr2',
-      'unit',
+      'DEPT',
+      'MACID',
+      'MACNAME',
+      'CATE',
+      'MATNR',
+      'KOSTL',
+      'KONTO',
+      'BKTXT',
+      'QTY',
+      'ACT', // Nếu toJson không có 'act' mà có 'amount' thì bạn map lại
+      'USEDATE',
+      'MAKTX',
+      'XBLNR2',
+      'UNIT',
     ]);
+
 
     // Dữ liệu theo đúng thứ tự như tiêu đề
     for (var item in data) {
       sheet.appendRow([
         item.dept,
+        item.macId,
+        item.macName,
+        item.cate,
         item.matnr,
         item.kostl,
         item.konto,

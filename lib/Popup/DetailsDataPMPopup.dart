@@ -518,18 +518,19 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
 
     // Thêm tiêu đề đúng thứ tự
     sheet.appendRow([
-      'dept',
-      'cline',
-      'empno',
-      'empname',
-      'machinecode',
-      'actioncode',
-      'sendtime',
-      'estime',
-      'starttime',
-      'finishtime',
-      'issuestatus',
+      'DEPT',
+      'CLINE',
+      'EMPNO',
+      'EMPNAME',
+      'MACHINECODE',
+      'ACTIONCODE',
+      'SENDTIME',
+      'ESTIME',
+      'STARTTIME',
+      'FINISHTIME',
+      'ISSUESTATUS',
     ]);
+
 
     // Dữ liệu theo đúng thứ tự như tiêu đề
     for (var item in data) {
