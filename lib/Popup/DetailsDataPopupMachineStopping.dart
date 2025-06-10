@@ -292,10 +292,46 @@ class _DetailsDataPopupMachineStoppingState
   // String? selectedStopHour;
   String? selectedIssueStatus;
 
+  List<String> _getUniqueValuesFromList(List<dynamic> list, String Function(dynamic) extractor) {
+    final set = <String>{};
+    for (var item in list) {
+      final value = extractor(item);
+      if (value.isNotEmpty) {
+        set.add(value);
+      }
+    }
+    final sorted = set.toList()..sort();
+    return sorted;
+  }
+
   Widget _buildDynamicDropdownHeader(String key) {
     final title = key.toUpperCase();
-    List<String> values = _getUniqueValues(
-      (item) => item.toJson()[key]?.toString() ?? '',
+    // List<String> values = _getUniqueValues(
+    //   (item) => item.toJson()[key]?.toString() ?? '',
+    // );
+
+    final tempFilteredData = widget.data.where((item) {
+      return
+        (selectedSendDate == null ||
+            item.sendDate == selectedSendDate) &&
+            (selectedDiv == null || item.div == selectedDiv) &&
+            (selectedGroupName == null ||
+                item.groupName == selectedGroupName) &&
+            (selectedMachineCode == null ||
+                item.machineCode == selectedMachineCode) &&
+            (selectedMachineType == null ||
+                item.machineType == selectedMachineType) &&
+            (selectedStatusCode == null ||
+                item.statusCode == selectedStatusCode) &&
+            (selectedIssueStatus == null ||
+                item.issueStatus == selectedIssueStatus);
+
+    }).toList();
+
+    // Lấy danh sách giá trị duy nhất theo key trong kết quả đã lọc
+    List<String> values = _getUniqueValuesFromList(
+      tempFilteredData,
+          (item) => item.toJson()[key]?.toString() ?? '',
     );
 
     final valueMap = {
@@ -384,13 +420,11 @@ class _DetailsDataPopupMachineStoppingState
               ...values.map(
                 (v) => DropdownMenuItem<String>(
                   value: v,
-                  child: Center(
-                    child: Text(
-                      v,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                  child: Text(
+                    v,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                 ),
