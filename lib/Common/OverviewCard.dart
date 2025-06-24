@@ -9,7 +9,7 @@ class OverviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height / 2 - 62,
+      height: MediaQuery.of(context).size.height / 2 - 50,
       width: MediaQuery.of(context).size.width / 2,
       child: WaterfallBackground(
         child: Card(

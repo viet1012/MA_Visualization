@@ -141,7 +141,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
             maxHeight: MediaQuery.of(context).size.height,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -265,7 +265,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           child: TextField(
             controller: _filterController,
             decoration: InputDecoration(
-              hintText: 'Search by Dept, Material No., Description, Note...',
+              hintText: 'Search by Dept, MacID, MacName, Cate...',
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -547,21 +547,21 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 color: theme.dividerColor.withOpacity(0.8),
               ),
               columnWidths: {
-                0: FixedColumnWidth(100),
+                0: FixedColumnWidth(90),
                 1: FixedColumnWidth(100),
-                2: FixedColumnWidth(180),
+                2: FixedColumnWidth(160),
                 3: FixedColumnWidth(110),
-                4: FixedColumnWidth(130),
+                4: FixedColumnWidth(110),
                 5: FixedColumnWidth(250),
                 6: FixedColumnWidth(120),
                 7: FixedColumnWidth(130),
                 8: FixedColumnWidth(130),
-                9: FixedColumnWidth(150),
+                9: FixedColumnWidth(140),
                 10: FixedColumnWidth(150),
                 11: FixedColumnWidth(90),
                 12: FixedColumnWidth(90),
-                13: FixedColumnWidth(90),
-
+                13: FixedColumnWidth(80),
+                14: FixedColumnWidth(100),
               },
               children: [
                 TableRow(
@@ -589,20 +589,22 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                         color: theme.dividerColor.withOpacity(0.8),
                       ),
                       columnWidths: {
-                        0: FixedColumnWidth(100),
+                        0: FixedColumnWidth(90),
                         1: FixedColumnWidth(100),
-                        2: FixedColumnWidth(180),
+                        2: FixedColumnWidth(160),
                         3: FixedColumnWidth(110),
-                        4: FixedColumnWidth(130),
+                        4: FixedColumnWidth(110),
                         5: FixedColumnWidth(250),
                         6: FixedColumnWidth(120),
                         7: FixedColumnWidth(130),
                         8: FixedColumnWidth(130),
-                        9: FixedColumnWidth(150),
+                        9: FixedColumnWidth(140),
                         10: FixedColumnWidth(150),
                         11: FixedColumnWidth(90),
                         12: FixedColumnWidth(90),
-                        13: FixedColumnWidth(90),
+                        13: FixedColumnWidth(80),
+                        14: FixedColumnWidth(100),
+
                       },
                       children:
                           filteredData.map((item) {
@@ -660,7 +662,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     var displayText = (isActColumn && isHeader) ? '$text \$' : text;
 
     return Container(
-      height:  isHeader ? 40 : 80,
+      height:  isHeader ? 40 : 90,
       padding: isHeader ? EdgeInsets.only(top: 9) : null,
       alignment:
           isHeader
@@ -684,7 +686,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                     ? Alignment.center
                     : (isNumber ? Alignment.centerRight : Alignment.centerLeft),
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            child: Text(
+            child: SelectableText(
               displayText,
               textAlign: isNumber ? TextAlign.right : TextAlign.left,
               style: TextStyle(
@@ -692,7 +694,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 fontSize: isHeader ? 18 : 16,
                 color: isActColumn ? Colors.white : null,
               ),
-            ),
+            )
           ),
         ],
       ),

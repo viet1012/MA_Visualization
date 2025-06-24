@@ -13,6 +13,7 @@ class DetailsDataModel {
   final double qty;
   final String unit;
   final double amount; // mapped from 'act'
+  final String note;
 
   DetailsDataModel({
     required this.dept,
@@ -29,6 +30,7 @@ class DetailsDataModel {
     required this.qty,
     required this.unit,
     required this.amount,
+    required this.note,
   });
 
   factory DetailsDataModel.fromJson(Map<String, dynamic> json) {
@@ -49,6 +51,8 @@ class DetailsDataModel {
       bktxt: json['bktxt'] ?? '',
       qty: (json['qty'] as num?)?.toDouble() ?? 0.0,
       unit: json['unit'] ?? '',
+      note: json['note'] ?? '',
+
     );
   }
 
@@ -68,6 +72,7 @@ class DetailsDataModel {
       'qty': qty,
       'unit': unit,
       'act': amount,
+      'note': note,
     };
   }
 }
