@@ -3,12 +3,14 @@ import 'package:intl/intl.dart';
 import 'package:ma_visualization/Common/CustomTooltipWidget.dart';
 import 'package:ma_visualization/Common/RepairFeeStatusHelper.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
+import 'package:ma_visualization/Model/MachineData.dart';
 import 'package:ma_visualization/Model/RepairFeeModel.dart';
 import 'package:ma_visualization/Popup/DetailsDataPopup.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../API/ApiService.dart';
 import '../Common/CustomLegend.dart';
+import '../MachineData/TreeMapScreen.dart';
 
 class RepairFeeOverviewChart extends StatefulWidget {
   final List<RepairFeeModel> data;
@@ -142,6 +144,65 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                     : Colors.black,
           ),
         ),
+        onPointTap: (ChartPointDetails details) async {
+          final index = details.pointIndex ?? -1;
+          final item = data[index];
+
+          // Show loading dialog
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const Center(child: CircularProgressIndicator()),
+          );
+
+          try {
+            // Gọi API để lấy dữ liệu
+            List<DetailsDataModel> detailsData = await ApiService()
+                .fetchDetailsDataRF(widget.month, item.title);
+
+            // Tắt loading
+            Navigator.of(context).pop();
+
+            if (detailsData.isNotEmpty) {
+              // Hiển thị popup dữ liệu
+              showDialog(
+                context: context,
+                builder:
+                    (_) => DetailsDataPopup(
+                      title: widget.nameChart,
+                      data: detailsData,
+                    ),
+              );
+            } else {
+              // Có thể thêm thông báo nếu không có dữ liệu
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'No data available',
+                      style: TextStyle(
+                        fontSize: 22.0, // Tăng kích thước font chữ
+                        fontWeight: FontWeight.bold, // Tùy chọn để làm đậm
+                      ),
+                    ),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                  // Thêm khoảng cách trên/dưới
+                  behavior:
+                      SnackBarBehavior
+                          .fixed, // Tùy chọn hiển thị phía trên thay vì ở dưới
+                ),
+              );
+            }
+          } catch (e) {
+            Navigator.of(context).pop(); // Đảm bảo tắt loading nếu lỗi
+            print("Error fetching data: $e");
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Error fetching data')));
+          }
+        },
       ),
       ColumnSeries<RepairFeeModel, String>(
         animationDuration: 500,
@@ -179,8 +240,10 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
 
           try {
             // Gọi API để lấy dữ liệu
-            List<DetailsDataModel> detailsData = await ApiService()
-                .fetchDetailsDataRF(widget.month, item.title);
+            List<MachineData> detailsData = await ApiService().fetchMachineData(
+              widget.month,
+              item.title,
+            );
 
             // Tắt loading
             Navigator.of(context).pop();
@@ -189,11 +252,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
               // Hiển thị popup dữ liệu
               showDialog(
                 context: context,
-                builder:
-                    (_) => DetailsDataPopup(
-                      title: widget.nameChart,
-                      data: detailsData,
-                    ),
+                builder: (_) => TreeMapScreen(data: detailsData),
               );
             } else {
               // Có thể thêm thông báo nếu không có dữ liệu

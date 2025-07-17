@@ -47,7 +47,8 @@ dependencies:
   go_router: ^13.0.0
   dotted_border: ^2.1.0
   animated_text_kit: ^4.2.2
-
+  syncfusion_flutter_core: 29.2.4
+  syncfusion_flutter_treemap:  ^29.1.37+1
 dev_dependencies:
   flutter_test:
     sdk: flutter

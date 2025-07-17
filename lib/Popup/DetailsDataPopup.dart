@@ -804,7 +804,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       'UNIT',
     ]);
 
-
     // Dữ liệu theo đúng thứ tự như tiêu đề
     for (var item in data) {
       sheet.appendRow([
