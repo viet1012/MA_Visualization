@@ -163,7 +163,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           _buildStatItem(
             icon: Icons.attach_money,
             label: 'Repair',
-            value: '\$${totalRepairFee.toStringAsFixed(0)}',
+            value: totalRepairFee.toStringAsFixed(0),
             color: Colors.green[700]!,
           ),
         ],
@@ -196,7 +196,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
             color: color,
           ),
         ),
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey)),
       ],
     );
   }
@@ -451,11 +451,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
         SizedBox(width: 6),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -500,7 +496,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           ),
           SizedBox(height: 4),
           Text(
-            'Repair Fee: \$${repairFee.toStringAsFixed(0)}',
+            'Repair Fee: ${repairFee.toStringAsFixed(0)}\$',
             style: TextStyle(
               color: Colors.amber[300],
               fontSize: 18,

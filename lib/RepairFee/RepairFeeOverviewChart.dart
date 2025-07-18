@@ -55,7 +55,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     decorationThickness: 3,
-                    // decoration: TextDecoration.underline,
+                    decoration: TextDecoration.underline,
                   ),
                 );
               },
@@ -103,6 +103,141 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                 );
               },
             ),
+            onAxisLabelTapped: (AxisLabelTapArgs args) async {
+              final index = widget.data.indexWhere((e) => e.title == args.text);
+              if (index != -1) {
+                final item = widget.data[index];
+
+                await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: const Text(
+                        'View Information',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.shade50,
+                              child: const Icon(
+                                Icons.grid_view,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            title: Text(
+                              '${item.title} by Detail',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: const Text(
+                              'View data summarized by group',
+                            ),
+                            onTap: () async {
+                              // Show loading dialog
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder:
+                                    (_) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                              );
+
+                              try {
+                                // Gọi API để lấy dữ liệu
+                                List<DetailsDataModel> detailsData =
+                                    await ApiService().fetchDetailsDataRF(
+                                      widget.month,
+                                      item.title,
+                                    );
+
+                                // Tắt loading
+                                Navigator.of(context).pop();
+
+                                if (detailsData.isNotEmpty) {
+                                  // Hiển thị popup dữ liệu
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (_) => DetailsDataPopup(
+                                          title: widget.nameChart,
+                                          data: detailsData,
+                                        ),
+                                  );
+                                } else {
+                                  // Hiển thị SnackBar khi không có dữ liệu
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Text(
+                                          'No data available',
+                                          style: TextStyle(
+                                            fontSize: 22.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 20.0,
+                                      ),
+                                      behavior: SnackBarBehavior.fixed,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                Navigator.of(
+                                  context,
+                                ).pop(); // Đảm bảo tắt loading nếu lỗi
+                                print("Error fetching data: $e");
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error fetching data'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          const Divider(),
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.shade50,
+                              child: const Icon(
+                                Icons.analytics_outlined,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            title: Text(
+                              '${item.title} by Day',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: const Text(
+                              'View daily breakdown of data',
+                            ),
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }
+            },
           ),
         ),
         const SizedBox(height: 8),
