@@ -39,11 +39,11 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
   void _generateMacGrpColors() {
     final uniqueGroups = widget.data.map((e) => e.macGrp).toSet().toList();
     final colors = [
-      Colors.deepPurple,
-      Colors.green.shade600,
-      Colors.red.shade600,
-      Colors.purple.shade600,
-      Colors.orange,
+      Colors.deepPurple.shade700,
+      Colors.green.shade700,
+      Colors.red.shade700,
+      Colors.purple.shade700,
+      Colors.orange.shade700,
       Colors.teal,
       Colors.brown,
       Colors.pink,
@@ -60,10 +60,10 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
   Color getBlendedColor(String macGrp, double act) {
     final baseColor = macGrpColorMap[macGrp]!;
-    final t = ((act - minAct) / (maxAct - minAct)).clamp(0.2, 1.0);
+    final t = ((act - minAct) / (maxAct - minAct)).clamp(0.1, 1.0);
 
     // Blend với trắng để làm nhạt khi act nhỏ
-    return Color.lerp(Colors.white, baseColor, t)!;
+    return Color.lerp(Colors.white, baseColor.withOpacity(t), t)!;
   }
 
   @override
@@ -199,7 +199,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
-            border: BoxBorder.all(color: Colors.black),
+            border: Border.all(color: color),
           ),
           child: Icon(icon, color: color, size: 26),
         ),
@@ -284,8 +284,8 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         alignment: Alignment.center,
                         child: Shimmer.fromColors(
                           baseColor: Colors.white,
-                          highlightColor: Colors.blueAccent,
-                          period: Duration(seconds: 7),
+                          highlightColor: Colors.black26,
+                          period: Duration(seconds: 10),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -433,7 +433,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                   ),
                 ],
 
-                enableDrilldown: true, // ✅ bật drilldown
+                // enableDrilldown: true, // ✅ bật drilldown
                 breadcrumbs: TreemapBreadcrumbs(
                   builder: (
                     BuildContext context,
@@ -541,7 +541,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.black87,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(width: 2, color: Colors.white),
       ),
       child: Column(

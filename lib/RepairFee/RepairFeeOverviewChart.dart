@@ -229,7 +229,68 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                             subtitle: const Text(
                               'View daily breakdown of data',
                             ),
-                            onTap: () {},
+                            onTap: () async {
+                              // Show loading dialog
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder:
+                                    (_) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                              );
+
+                              try {
+                                // Gọi API để lấy dữ liệu
+                                List<MachineData> detailsData =
+                                    await ApiService().fetchMachineData(
+                                      widget.month,
+                                      item.title,
+                                    );
+
+                                // Tắt loading
+                                Navigator.of(context).pop();
+
+                                if (detailsData.isNotEmpty) {
+                                  // Hiển thị popup dữ liệu
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (_) => TreeMapScreen(data: detailsData),
+                                  );
+                                } else {
+                                  // Hiển thị SnackBar khi không có dữ liệu
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Text(
+                                          'No data available',
+                                          style: TextStyle(
+                                            fontSize: 22.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 20.0,
+                                      ),
+                                      behavior: SnackBarBehavior.fixed,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                Navigator.of(
+                                  context,
+                                ).pop(); // Đảm bảo tắt loading nếu lỗi
+                                print("Error fetching data: $e");
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error fetching data'),
+                                  ),
+                                );
+                              }
+                            },
                           ),
                         ],
                       ),
