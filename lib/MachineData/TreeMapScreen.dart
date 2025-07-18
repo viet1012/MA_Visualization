@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:syncfusion_flutter_treemap/treemap.dart';
 
 import '../Common/BlinkingText.dart';
@@ -20,11 +21,17 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
   Rect? drilldownRect; // lưu vị trí + kích thước tile cha
 
   final GlobalKey _treemapKey = GlobalKey();
+  late double minAct;
+  late double maxAct;
 
   @override
   void initState() {
     super.initState();
     _generateMacGrpColors();
+
+    final acts = widget.data.map((e) => e.act).toList();
+    minAct = acts.reduce((a, b) => a < b ? a : b);
+    maxAct = acts.reduce((a, b) => a > b ? a : b);
   }
 
   late Map<String, Color> macGrpColorMap;
@@ -32,10 +39,10 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
   void _generateMacGrpColors() {
     final uniqueGroups = widget.data.map((e) => e.macGrp).toSet().toList();
     final colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.red,
-      Colors.purple,
+      Colors.deepPurple,
+      Colors.green.shade600,
+      Colors.red.shade600,
+      Colors.purple.shade600,
       Colors.orange,
       Colors.teal,
       Colors.brown,
@@ -49,6 +56,14 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       for (int i = 0; i < uniqueGroups.length; i++)
         uniqueGroups[i]: colors[i % colors.length],
     };
+  }
+
+  Color getBlendedColor(String macGrp, double act) {
+    final baseColor = macGrpColorMap[macGrp]!;
+    final t = ((act - minAct) / (maxAct - minAct)).clamp(0.2, 1.0);
+
+    // Blend với trắng để làm nhạt khi act nhỏ
+    return Color.lerp(Colors.white, baseColor, t)!;
   }
 
   @override
@@ -137,8 +152,8 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
           colors: [
-            theme.colorScheme.primary.withOpacity(0.05),
-            theme.colorScheme.secondary.withOpacity(0.1),
+            theme.colorScheme.primary.withOpacity(0.2),
+            theme.colorScheme.secondary.withOpacity(0.4),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -158,7 +173,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
             icon: Icons.memory,
             label: 'Machines',
             value: '${widget.data.length}',
-            color: Colors.indigo,
+            color: Colors.indigo.shade900,
           ),
           _buildStatItem(
             icon: Icons.attach_money,
@@ -184,14 +199,15 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
+            border: BoxBorder.all(color: Colors.black),
           ),
-          child: Icon(icon, color: color, size: 24),
+          child: Icon(icon, color: color, size: 26),
         ),
         SizedBox(height: 8),
         Text(
           value,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: color,
           ),
@@ -203,7 +219,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
   Widget _buildTreemapCard(ThemeData theme) {
     return Container(
-      margin: EdgeInsets.all(8),
       decoration: BoxDecoration(
         // color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -239,15 +254,9 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
               child: SfTreemap(
                 dataCount: widget.data.length,
                 weightValueMapper: (int index) => widget.data[index].act,
-
                 levels: [
                   TreemapLevel(
                     groupMapper: (int index) => widget.data[index].macGrp,
-                    // labelBuilder: (BuildContext context, TreemapTile tile) {
-                    //   return _showDataLabels
-                    //       ? _buildLabel(tile.group, 18, Colors.white)
-                    //       : Container();
-                    // },
                     labelBuilder: (BuildContext context, TreemapTile tile) {
                       if (!_showDataLabels) return SizedBox.shrink();
 
@@ -256,15 +265,12 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                           .map((i) => widget.data[i].act)
                           .fold<double>(0, (prev, curr) => prev + curr);
 
-                      // Tổng act toàn bộ để tính phần trăm
                       final totalAll = widget.data
                           .map((e) => e.act)
                           .fold<double>(0, (prev, curr) => prev + curr);
 
-                      // Tính phần trăm, tránh chia cho 0
                       final percent =
                           totalAll == 0 ? 0 : (totalAct / totalAll) * 100;
-
                       final formattedAct = NumberFormat(
                         '#,###',
                         'en_US',
@@ -276,18 +282,67 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                           vertical: 4,
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          '${tile.group}\n$formattedAct \$\n(${percent.toStringAsFixed(1)}%)',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black87,
-                                offset: Offset(0, 1),
-                                blurRadius: 2,
+                        child: Shimmer.fromColors(
+                          baseColor: Colors.white,
+                          highlightColor: Colors.blueAccent,
+                          period: Duration(seconds: 7),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Tên nhóm máy (bên trái)
+                              Expanded(
+                                child: Text(
+                                  tile.group,
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black87,
+                                        offset: Offset(0, 1),
+                                        blurRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // Số liệu (bên phải)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '$formattedAct \$',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black87,
+                                          offset: Offset(0, 1),
+                                          blurRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    '(${percent.toStringAsFixed(1)}%)',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white70,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black87,
+                                          offset: Offset(0, 1),
+                                          blurRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -303,7 +358,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     padding: EdgeInsets.all(3),
                     border: RoundedRectangleBorder(
                       side: BorderSide(color: Colors.white, width: 2),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     tooltipBuilder: (BuildContext context, TreemapTile tile) {
                       return _buildTooltip('Machine Group', tile.group);
@@ -334,7 +389,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          '${tile.group}',
+                          tile.group,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -352,11 +407,16 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                       );
                     },
 
-                    // color: Color(0xFFFF9800),
+                    color: Color(0xFFFF9800),
+                    // colorValueMapper: (TreemapTile tile) {
+                    //   final macGrp = widget.data[tile.indices.first].macGrp;
+                    //   return macGrpColorMap[macGrp];
+                    // },
                     colorValueMapper: (TreemapTile tile) {
-                      final macGrp = widget.data[tile.indices.first].macGrp;
-                      return macGrpColorMap[macGrp];
+                      final data = widget.data[tile.indices.first];
+                      return getBlendedColor(data.macGrp, data.act);
                     },
+
                     padding: EdgeInsets.all(1),
                     border: RoundedRectangleBorder(
                       side: BorderSide(color: Colors.white, width: 1),
@@ -373,7 +433,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                   ),
                 ],
 
-                // enableDrilldown: true, // ✅ bật drilldown
+                enableDrilldown: true, // ✅ bật drilldown
                 breadcrumbs: TreemapBreadcrumbs(
                   builder: (
                     BuildContext context,
@@ -462,7 +522,8 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.black87,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        border: Border.all(width: 2, color: Colors.white),
       ),
       child: Text(
         '$label: $value',
@@ -480,7 +541,8 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.black87,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(width: 2, color: Colors.white),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
