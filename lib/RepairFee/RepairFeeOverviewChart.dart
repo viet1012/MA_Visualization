@@ -130,7 +130,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                             leading: CircleAvatar(
                               backgroundColor: Colors.blue.shade50,
                               child: const Icon(
-                                Icons.grid_view,
+                                Icons.account_tree,
                                 color: Colors.blue,
                               ),
                             ),

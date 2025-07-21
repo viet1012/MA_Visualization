@@ -263,7 +263,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         alignment: Alignment.center,
                         child: Shimmer.fromColors(
                           baseColor: Colors.white,
-                          highlightColor: Colors.black26,
+                          highlightColor: Colors.lightBlueAccent,
                           period: Duration(seconds: 10),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -346,11 +346,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
                   TreemapLevel(
                     groupMapper: (int index) => widget.data[index].macId,
-                    // labelBuilder: (BuildContext context, TreemapTile tile) {
-                    //   return _showDataLabels
-                    //       ? _buildLabel(tile.group, 12, Colors.white)
-                    //       : Container();
-                    // },
+
                     labelBuilder: (BuildContext context, TreemapTile tile) {
                       // if (!_showDataLabels) return SizedBox.shrink();
 
@@ -358,7 +354,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                       final totalAct = indices
                           .map((i) => widget.data[i].act)
                           .fold<double>(0, (prev, curr) => prev + curr);
-
+                      String macName = widget.data[indices.first].macName;
                       // Format số với dấu phân cách hàng nghìn cho dễ nhìn
 
                       return Container(
@@ -368,7 +364,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          tile.group,
+                          '${tile.group}\n${macName}',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
