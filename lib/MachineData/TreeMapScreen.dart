@@ -36,7 +36,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     super.initState();
     _treeMapMode = TreeMapMode.group;
 
-    // Gọi hàm async mà không dùng `await`
     _initAsync();
   }
 
@@ -51,7 +50,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       minAct = maxAct = 0;
     }
 
-    _generateMacGrpColors();
+    _generateColorMap();
 
     setState(() {
       _isInitialized = true;
@@ -75,37 +74,14 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
         widget.dept,
       );
     }
-
+    _generateColorMap();
     setState(() => _isLoading = false);
   }
 
   late Map<String, Color> macGrpColorMap;
   late Map<String, Color> cateColorMap;
 
-  void _generateMacGrpColors() {
-    final uniqueGroups = _treeMapData.map((e) => e.macGrp).toSet().toList();
-    final colors = [
-      Colors.deepPurple.shade700,
-      Colors.green.shade700,
-      Colors.red.shade700,
-      Colors.purple.shade700,
-      Colors.orange.shade700,
-      Colors.teal,
-      Colors.brown,
-      Colors.pink,
-      Colors.indigo,
-      Colors.cyan,
-      // Thêm bao nhiêu màu tùy số nhóm
-    ];
-
-    macGrpColorMap = {
-      for (int i = 0; i < uniqueGroups.length; i++)
-        uniqueGroups[i]: colors[i % colors.length],
-    };
-  }
-
-  void _generateCateColors() {
-    final uniqueCategories = _treeMapData.map((e) => e.cate).toSet().toList();
+  void _generateColorMap() {
     final colors = [
       Colors.blue.shade700,
       Colors.orange.shade700,
@@ -117,12 +93,25 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       Colors.lime.shade700,
       Colors.amber.shade700,
       Colors.deepOrange.shade700,
+      Colors.deepPurple.shade700,
+      Colors.green.shade700,
+      Colors.red.shade700,
+      Colors.purple.shade700,
     ];
 
-    cateColorMap = {
-      for (int i = 0; i < uniqueCategories.length; i++)
-        uniqueCategories[i]: colors[i % colors.length],
-    };
+    if (_treeMapMode == TreeMapMode.group) {
+      final uniqueGroups = _treeMapData.map((e) => e.macGrp).toSet().toList();
+      macGrpColorMap = {
+        for (int i = 0; i < uniqueGroups.length; i++)
+          uniqueGroups[i]: colors[i % colors.length],
+      };
+    } else {
+      final uniqueCategories = _treeMapData.map((e) => e.cate).toSet().toList();
+      cateColorMap = {
+        for (int i = 0; i < uniqueCategories.length; i++)
+          uniqueCategories[i]: colors[i % colors.length],
+      };
+    }
   }
 
   Color getBlendedColor(String key, double act) {
@@ -157,7 +146,15 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
         children: [
           _buildControlPanel(theme),
           _buildStatsCard(theme, totalRepairFee),
-          Expanded(child: _buildTreemapCard(theme)),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: Duration(milliseconds: 400),
+              child:
+                  _isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : _buildTreemapCard(theme),
+            ),
+          ),
         ],
       ),
     );
@@ -171,11 +168,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
     await _fetchData();
 
-    if (_treeMapMode == TreeMapMode.group) {
-      _generateMacGrpColors();
-    } else {
-      _generateCateColors();
-    }
+    _generateColorMap();
 
     final acts = _treeMapData.map((e) => e.act).toList();
     if (acts.isNotEmpty) {
@@ -480,7 +473,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
                       return colorMap[key] ?? Colors.grey; // fallback tránh lỗi
                     },
-
                     padding: EdgeInsets.all(3),
                     border: RoundedRectangleBorder(
                       side: BorderSide(color: Colors.white, width: 2),
@@ -594,13 +586,16 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
   }
 
   Widget _buildLegend() {
+    final colorMap =
+        _treeMapMode == TreeMapMode.group ? macGrpColorMap : cateColorMap;
+
     return Wrap(
       spacing: 12,
       runSpacing: 4,
       children:
-          macGrpColorMap.entries.map((entry) {
-            return _buildLegendItem(entry.key, entry.value);
-          }).toList(),
+          colorMap.entries
+              .map((entry) => _buildLegendItem(entry.key, entry.value))
+              .toList(),
     );
   }
 
