@@ -501,10 +501,16 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                       // if (!_showDataLabels) return SizedBox.shrink();
 
                       final indices = tile.indices;
+                      final index = indices.first;
+                      final data = _treeMapData[index];
 
                       String macName = _treeMapData[indices.first].macName;
-                      // Format số với dấu phân cách hàng nghìn cho dễ nhìn
+                      final double act = data.act;
 
+                      // Tính phần trăm so với act lớn nhất
+                      // Format số với dấu phân cách hàng nghìn cho dễ nhìn
+                      final percent =
+                          maxAct > 0 ? (act / maxAct * 100).clamp(0, 100) : 0;
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -512,7 +518,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          '${tile.group}\n${macName}',
+                          '${tile.group}\n$macName\n${percent.toStringAsFixed(1)}%',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
