@@ -135,99 +135,14 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                               ),
                             ),
                             title: Text(
-                              '${item.title} by Detail',
+                              '${item.title} (TreeMap)',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             subtitle: const Text(
-                              'View data summarized by group',
-                            ),
-                            onTap: () async {
-                              // Show loading dialog
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder:
-                                    (_) => const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                              );
-
-                              try {
-                                // Gọi API để lấy dữ liệu
-                                List<DetailsDataModel> detailsData =
-                                    await ApiService().fetchDetailsDataRF(
-                                      widget.month,
-                                      item.title,
-                                    );
-
-                                // Tắt loading
-                                Navigator.of(context).pop();
-
-                                if (detailsData.isNotEmpty) {
-                                  // Hiển thị popup dữ liệu
-                                  showDialog(
-                                    context: context,
-                                    builder:
-                                        (_) => DetailsDataPopup(
-                                          title: widget.nameChart,
-                                          data: detailsData,
-                                        ),
-                                  );
-                                } else {
-                                  // Hiển thị SnackBar khi không có dữ liệu
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Text(
-                                          'No data available',
-                                          style: TextStyle(
-                                            fontSize: 22.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 20.0,
-                                      ),
-                                      behavior: SnackBarBehavior.fixed,
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                Navigator.of(
-                                  context,
-                                ).pop(); // Đảm bảo tắt loading nếu lỗi
-                                print("Error fetching data: $e");
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error fetching data'),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                          const Divider(),
-                          ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.blue.shade50,
-                              child: const Icon(
-                                Icons.analytics_outlined,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            title: Text(
-                              '${item.title} by Day',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            subtitle: const Text(
-                              'View daily breakdown of data',
+                              'Tap to view grouped data summary',
                             ),
                             onTap: () async {
                               // Show loading dialog
@@ -292,6 +207,26 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                               }
                             },
                           ),
+                          const Divider(),
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.shade50,
+                              child: const Icon(
+                                Icons.analytics_outlined,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            title: Text(
+                              '${item.title} by Day',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: const Text(
+                              'View daily breakdown of data',
+                            ),
+                          ),
                         ],
                       ),
                     );
@@ -340,65 +275,6 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                     : Colors.black,
           ),
         ),
-        onPointTap: (ChartPointDetails details) async {
-          final index = details.pointIndex ?? -1;
-          final item = data[index];
-
-          // Show loading dialog
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (_) => const Center(child: CircularProgressIndicator()),
-          );
-
-          try {
-            // Gọi API để lấy dữ liệu
-            List<DetailsDataModel> detailsData = await ApiService()
-                .fetchDetailsDataRF(widget.month, item.title);
-
-            // Tắt loading
-            Navigator.of(context).pop();
-
-            if (detailsData.isNotEmpty) {
-              // Hiển thị popup dữ liệu
-              showDialog(
-                context: context,
-                builder:
-                    (_) => DetailsDataPopup(
-                      title: widget.nameChart,
-                      data: detailsData,
-                    ),
-              );
-            } else {
-              // Có thể thêm thông báo nếu không có dữ liệu
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'No data available',
-                      style: TextStyle(
-                        fontSize: 22.0, // Tăng kích thước font chữ
-                        fontWeight: FontWeight.bold, // Tùy chọn để làm đậm
-                      ),
-                    ),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 20.0),
-                  // Thêm khoảng cách trên/dưới
-                  behavior:
-                      SnackBarBehavior
-                          .fixed, // Tùy chọn hiển thị phía trên thay vì ở dưới
-                ),
-              );
-            }
-          } catch (e) {
-            Navigator.of(context).pop(); // Đảm bảo tắt loading nếu lỗi
-            print("Error fetching data: $e");
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Error fetching data')));
-          }
-        },
       ),
       ColumnSeries<RepairFeeModel, String>(
         animationDuration: 500,
@@ -436,10 +312,8 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
 
           try {
             // Gọi API để lấy dữ liệu
-            List<MachineData> detailsData = await ApiService().fetchMachineData(
-              widget.month,
-              item.title,
-            );
+            List<DetailsDataModel> detailsData = await ApiService()
+                .fetchDetailsDataRF(widget.month, item.title);
 
             // Tắt loading
             Navigator.of(context).pop();
@@ -448,7 +322,11 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
               // Hiển thị popup dữ liệu
               showDialog(
                 context: context,
-                builder: (_) => TreeMapScreen(data: detailsData),
+                builder:
+                    (_) => DetailsDataPopup(
+                      title: widget.nameChart,
+                      data: detailsData,
+                    ),
               );
             } else {
               // Có thể thêm thông báo nếu không có dữ liệu
