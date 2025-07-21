@@ -3,41 +3,87 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:syncfusion_flutter_treemap/treemap.dart';
 
+import '../API/ApiService.dart';
 import '../Common/BlinkingText.dart';
 import '../Model/MachineData.dart';
 
 class TreeMapScreen extends StatefulWidget {
-  final List<MachineData> data;
-
-  TreeMapScreen({required this.data});
+  final String dept;
+  TreeMapScreen({required this.dept});
 
   @override
   _TreeMapScreenState createState() => _TreeMapScreenState();
 }
 
+enum TreeMapMode { group, cate }
+
+TreeMapMode _treeMapMode = TreeMapMode.group;
+
+List<dynamic> _treeMapData = [];
+bool _isLoading = true;
+
 class _TreeMapScreenState extends State<TreeMapScreen> {
-  bool _showDataLabels = false;
+  bool _showDataLabels = true;
   String? drilldownMacGrp; // lưu node cha được drill
   Rect? drilldownRect; // lưu vị trí + kích thước tile cha
 
-  final GlobalKey _treemapKey = GlobalKey();
   late double minAct;
   late double maxAct;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    _treeMapMode = TreeMapMode.group;
+
+    // Gọi hàm async mà không dùng `await`
+    _initAsync();
+  }
+
+  Future<void> _initAsync() async {
+    await _fetchData(); // load mặc định
+
+    final acts = _treeMapData.map((e) => e.act).toList();
+    if (acts.isNotEmpty) {
+      minAct = acts.reduce((a, b) => a < b ? a : b);
+      maxAct = acts.reduce((a, b) => a > b ? a : b);
+    } else {
+      minAct = maxAct = 0;
+    }
+
     _generateMacGrpColors();
 
-    final acts = widget.data.map((e) => e.act).toList();
-    minAct = acts.reduce((a, b) => a < b ? a : b);
-    maxAct = acts.reduce((a, b) => a > b ? a : b);
+    setState(() {
+      _isInitialized = true;
+    });
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
+
+    final now = DateTime.now();
+    final month = DateFormat('yyyy-MM').format(now);
+
+    if (_treeMapMode == TreeMapMode.group) {
+      _treeMapData = await ApiService().fetchMachineDataByGroup(
+        month,
+        widget.dept,
+      );
+    } else {
+      _treeMapData = await ApiService().fetchMachineDataByCate(
+        month,
+        widget.dept,
+      );
+    }
+
+    setState(() => _isLoading = false);
   }
 
   late Map<String, Color> macGrpColorMap;
+  late Map<String, Color> cateColorMap;
 
   void _generateMacGrpColors() {
-    final uniqueGroups = widget.data.map((e) => e.macGrp).toSet().toList();
+    final uniqueGroups = _treeMapData.map((e) => e.macGrp).toSet().toList();
     final colors = [
       Colors.deepPurple.shade700,
       Colors.green.shade700,
@@ -58,9 +104,35 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     };
   }
 
-  Color getBlendedColor(String macGrp, double act) {
-    final baseColor = macGrpColorMap[macGrp]!;
-    final t = ((act - minAct) / (maxAct - minAct)).clamp(0.1, 1.0);
+  void _generateCateColors() {
+    final uniqueCategories = _treeMapData.map((e) => e.cate).toSet().toList();
+    final colors = [
+      Colors.blue.shade700,
+      Colors.orange.shade700,
+      Colors.teal.shade700,
+      Colors.pink.shade700,
+      Colors.indigo.shade700,
+      Colors.brown.shade700,
+      Colors.cyan.shade700,
+      Colors.lime.shade700,
+      Colors.amber.shade700,
+      Colors.deepOrange.shade700,
+    ];
+
+    cateColorMap = {
+      for (int i = 0; i < uniqueCategories.length; i++)
+        uniqueCategories[i]: colors[i % colors.length],
+    };
+  }
+
+  Color getBlendedColor(String key, double act) {
+    // Lấy màu base tùy theo mode
+    final baseColor =
+        _treeMapMode == TreeMapMode.group
+            ? macGrpColorMap[key]!
+            : cateColorMap[key]!;
+
+    final t = ((act - minAct) / (maxAct - minAct)).clamp(0.4, 1.0);
 
     // Blend với trắng để làm nhạt khi act nhỏ
     return Color.lerp(Colors.white, baseColor.withOpacity(t), t)!;
@@ -68,8 +140,16 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
     final theme = Theme.of(context);
-    final totalRepairFee = widget.data.fold(0.0, (sum, item) => sum + item.act);
+    // final totalRepairFee = widget.data.fold(0.0, (sum, item) => sum + item.act);
+
+    final totalRepairFee = _treeMapData.fold<double>(
+      0.0,
+      (sum, item) => sum + (item.act ?? 0),
+    );
 
     return Scaffold(
       appBar: _buildAppBar(theme),
@@ -81,6 +161,33 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _updateTreeMap(TreeMapMode mode) async {
+    setState(() {
+      _treeMapMode = mode;
+      _isLoading = true;
+    });
+
+    await _fetchData();
+
+    if (_treeMapMode == TreeMapMode.group) {
+      _generateMacGrpColors();
+    } else {
+      _generateCateColors();
+    }
+
+    final acts = _treeMapData.map((e) => e.act).toList();
+    if (acts.isNotEmpty) {
+      minAct = acts.reduce((a, b) => a < b ? a : b);
+      maxAct = acts.reduce((a, b) => a > b ? a : b);
+    } else {
+      minAct = maxAct = 0;
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   PreferredSizeWidget _buildAppBar(ThemeData theme) {
@@ -102,8 +209,8 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
   }
 
   Widget _buildControlPanel(ThemeData theme) {
-    return Align(
-      alignment: Alignment.centerLeft,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -117,6 +224,32 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
               });
             },
             activeColor: theme.colorScheme.primary,
+          ),
+          SizedBox(width: 32),
+
+          // Radio buttons
+          Text('View Mode:', style: TextStyle(fontSize: 14)),
+          SizedBox(width: 8),
+          Row(
+            children: [
+              Radio<TreeMapMode>(
+                value: TreeMapMode.group,
+                groupValue: _treeMapMode,
+                onChanged: (value) {
+                  _updateTreeMap(value!);
+                },
+              ),
+              Text('Group'),
+
+              Radio<TreeMapMode>(
+                value: TreeMapMode.cate,
+                groupValue: _treeMapMode,
+                onChanged: (value) {
+                  _updateTreeMap(value!);
+                },
+              ),
+              Text('Category'),
+            ],
           ),
         ],
       ),
@@ -150,7 +283,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           _buildStatItem(
             icon: Icons.memory,
             label: 'Machines',
-            value: '${widget.data.length}',
+            value: '${_treeMapData.length}',
             color: Colors.indigo.shade900,
           ),
           _buildStatItem(
@@ -230,21 +363,25 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
             child: Padding(
               padding: EdgeInsets.all(8),
               child: SfTreemap(
-                dataCount: widget.data.length,
-                weightValueMapper: (int index) => widget.data[index].act,
+                dataCount: _treeMapData.length,
+                weightValueMapper: (int index) => _treeMapData[index].act,
                 key: ValueKey(_showDataLabels),
                 levels: [
                   TreemapLevel(
-                    groupMapper: (int index) => widget.data[index].macGrp,
+                    groupMapper:
+                        (i) =>
+                            _treeMapMode == TreeMapMode.group
+                                ? _treeMapData[i].macGrp
+                                : _treeMapData[i].cate,
                     labelBuilder: (BuildContext context, TreemapTile tile) {
                       // if (!_showDataLabels) return SizedBox.shrink();
 
                       final indices = tile.indices;
                       final totalAct = indices
-                          .map((i) => widget.data[i].act)
+                          .map((i) => _treeMapData[i].act)
                           .fold<double>(0, (prev, curr) => prev + curr);
 
-                      final totalAll = widget.data
+                      final totalAll = _treeMapData
                           .map((e) => e.act)
                           .fold<double>(0, (prev, curr) => prev + curr);
 
@@ -330,8 +467,18 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     },
 
                     colorValueMapper: (TreemapTile tile) {
-                      final macGrp = widget.data[tile.indices.first].macGrp;
-                      return macGrpColorMap[macGrp];
+                      final index = tile.indices.first;
+                      final key =
+                          _treeMapMode == TreeMapMode.group
+                              ? _treeMapData[index].macGrp
+                              : _treeMapData[index].cate;
+
+                      final colorMap =
+                          _treeMapMode == TreeMapMode.group
+                              ? macGrpColorMap
+                              : cateColorMap;
+
+                      return colorMap[key] ?? Colors.grey; // fallback tránh lỗi
                     },
 
                     padding: EdgeInsets.all(3),
@@ -345,16 +492,14 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                   ),
 
                   TreemapLevel(
-                    groupMapper: (int index) => widget.data[index].macId,
+                    groupMapper: (int index) => _treeMapData[index].macId,
 
                     labelBuilder: (BuildContext context, TreemapTile tile) {
                       // if (!_showDataLabels) return SizedBox.shrink();
 
                       final indices = tile.indices;
-                      final totalAct = indices
-                          .map((i) => widget.data[i].act)
-                          .fold<double>(0, (prev, curr) => prev + curr);
-                      String macName = widget.data[indices.first].macName;
+
+                      // String macName = _treeMapData[indices.first].macName;
                       // Format số với dấu phân cách hàng nghìn cho dễ nhìn
 
                       return Container(
@@ -364,7 +509,8 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          '${tile.group}\n${macName}',
+                          // '${tile.group}\n${macName}',
+                          '${tile.group}',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -383,22 +529,29 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     },
 
                     color: Color(0xFFFF9800),
+
                     // colorValueMapper: (TreemapTile tile) {
                     //   final macGrp = widget.data[tile.indices.first].macGrp;
                     //   return macGrpColorMap[macGrp];
                     // },
                     colorValueMapper: (TreemapTile tile) {
-                      final data = widget.data[tile.indices.first];
-                      return getBlendedColor(data.macGrp, data.act);
-                    },
+                      final index = tile.indices.first;
+                      final key =
+                          _treeMapMode == TreeMapMode.group
+                              ? _treeMapData[index].macGrp
+                              : _treeMapData[index].cate;
 
+                      final act = _treeMapData[index].act;
+
+                      return getBlendedColor(key, act);
+                    },
                     padding: EdgeInsets.all(1),
                     border: RoundedRectangleBorder(
                       side: BorderSide(color: Colors.white, width: 1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     tooltipBuilder: (BuildContext context, TreemapTile tile) {
-                      final repairFee = widget.data[tile.indices.first].act;
+                      final repairFee = _treeMapData[tile.indices.first].act;
                       return _buildDetailedTooltip(
                         'Machine ID',
                         tile.group,
@@ -436,26 +589,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text, double fontSize, Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: fontSize,
-          fontWeight: FontWeight.w500,
-        ),
-        textAlign: TextAlign.center,
-        overflow: TextOverflow.fade,
       ),
     );
   }

@@ -190,8 +190,11 @@ class ApiService {
     }
   }
 
-  Future<List<MachineData>> fetchMachineData(String month, String dept) async {
-    final url = Uri.parse("$baseUrl/machineData?month=$month&dept=$dept");
+  Future<List<MachineDataByGroup>> fetchMachineDataByGroup(
+    String month,
+    String dept,
+  ) async {
+    final url = Uri.parse("$baseUrl/machineData/group?month=$month&dept=$dept");
     print("url: $url");
 
     try {
@@ -199,7 +202,29 @@ class ApiService {
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => MachineData.fromJson(json)).toList();
+        return data.map((json) => MachineDataByGroup.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Exception caught: $e");
+      return [];
+    }
+  }
+
+  Future<List<MachineDataByCate>> fetchMachineDataByCate(
+    String month,
+    String dept,
+  ) async {
+    final url = Uri.parse("$baseUrl/machineData/cate?month=$month&dept=$dept");
+    print("url: $url");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => MachineDataByCate.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }

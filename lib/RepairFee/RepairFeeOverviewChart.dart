@@ -157,8 +157,8 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
 
                               try {
                                 // Gọi API để lấy dữ liệu
-                                List<MachineData> detailsData =
-                                    await ApiService().fetchMachineData(
+                                List<MachineDataByGroup> detailsData =
+                                    await ApiService().fetchMachineDataByGroup(
                                       widget.month,
                                       item.title,
                                     );
@@ -171,7 +171,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                                   showDialog(
                                     context: context,
                                     builder:
-                                        (_) => TreeMapScreen(data: detailsData),
+                                        (_) => TreeMapScreen(dept: item.title),
                                   );
                                 } else {
                                   // Hiển thị SnackBar khi không có dữ liệu
