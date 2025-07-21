@@ -133,7 +133,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       return Center(child: CircularProgressIndicator());
     }
     final theme = Theme.of(context);
-    // final totalRepairFee = widget.data.fold(0.0, (sum, item) => sum + item.act);
 
     final totalRepairFee = _treeMapData.fold<double>(
       0.0,
@@ -367,8 +366,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                                 ? _treeMapData[i].macGrp
                                 : _treeMapData[i].cate,
                     labelBuilder: (BuildContext context, TreemapTile tile) {
-                      // if (!_showDataLabels) return SizedBox.shrink();
-
                       final indices = tile.indices;
                       final totalAct = indices
                           .map((i) => _treeMapData[i].act)
@@ -385,77 +382,88 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         'en_US',
                       ).format(totalAct);
 
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        alignment: Alignment.center,
-                        child: Shimmer.fromColors(
-                          baseColor: Colors.white,
-                          highlightColor: Colors.lightBlueAccent,
-                          period: Duration(seconds: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Tên nhóm máy (bên trái)
-                              Expanded(
-                                child: Text(
-                                  tile.group,
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black87,
-                                        offset: Offset(0, 1),
-                                        blurRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          final canShowText =
+                              constraints.maxWidth >= 120 &&
+                              constraints.maxHeight >= 50;
 
-                              // Số liệu (bên phải)
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '$formattedAct \$',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black87,
-                                          offset: Offset(0, 1),
-                                          blurRadius: 2,
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              // Có thể thêm màu nền, border nếu muốn
+                              // color: Colors.black.withOpacity(0.05),
+                            ),
+                            child:
+                                canShowText
+                                    ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        // Tên nhóm máy
+                                        Expanded(
+                                          child: Text(
+                                            tile.group,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                              shadows: [
+                                                Shadow(
+                                                  color: Colors.black87,
+                                                  offset: Offset(0, 1),
+                                                  blurRadius: 2,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        // Số liệu
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '$formattedAct \$',
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                shadows: [
+                                                  Shadow(
+                                                    color: Colors.black87,
+                                                    offset: Offset(0, 1),
+                                                    blurRadius: 2,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Text(
+                                              '(${percent.toStringAsFixed(1)}%)',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.white70,
+                                                shadows: [
+                                                  Shadow(
+                                                    color: Colors.black87,
+                                                    offset: Offset(0, 1),
+                                                    blurRadius: 2,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
-                                    ),
-                                  ),
-                                  Text(
-                                    '(${percent.toStringAsFixed(1)}%)',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white70,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black87,
-                                          offset: Offset(0, 1),
-                                          blurRadius: 2,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                                    )
+                                    : const SizedBox.shrink(), // Không hiện text nếu quá nhỏ
+                          );
+                        },
                       );
                     },
 
@@ -491,7 +499,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
                       final indices = tile.indices;
 
-                      // String macName = _treeMapData[indices.first].macName;
+                      String macName = _treeMapData[indices.first].macName;
                       // Format số với dấu phân cách hàng nghìn cho dễ nhìn
 
                       return Container(
@@ -501,8 +509,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          // '${tile.group}\n${macName}',
-                          '${tile.group}',
+                          '${tile.group}\n${macName}',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -521,11 +528,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     },
 
                     color: Color(0xFFFF9800),
-
-                    // colorValueMapper: (TreemapTile tile) {
-                    //   final macGrp = widget.data[tile.indices.first].macGrp;
-                    //   return macGrpColorMap[macGrp];
-                    // },
                     colorValueMapper: (TreemapTile tile) {
                       final index = tile.indices.first;
                       final key =
