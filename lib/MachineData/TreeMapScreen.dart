@@ -83,20 +83,19 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
   void _generateColorMap() {
     final colors = [
-      Colors.blue.shade700,
-      Colors.orange.shade700,
-      Colors.teal.shade700,
-      Colors.pink.shade700,
-      Colors.indigo.shade700,
-      Colors.brown.shade700,
-      Colors.cyan.shade700,
-      Colors.lime.shade700,
-      Colors.amber.shade700,
-      Colors.deepOrange.shade700,
-      Colors.deepPurple.shade700,
-      Colors.green.shade700,
-      Colors.red.shade700,
-      Colors.purple.shade700,
+      Colors.blue,
+      Colors.orange,
+      Colors.teal,
+      Colors.pink,
+      Colors.indigo,
+      Colors.cyan,
+      Colors.lime,
+      Colors.amber,
+      Colors.deepOrange,
+      Colors.deepPurple,
+      Colors.green,
+      Colors.red,
+      Colors.purple,
     ];
 
     if (_treeMapMode == TreeMapMode.group) {
@@ -121,10 +120,14 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
             ? macGrpColorMap[key]!
             : cateColorMap[key]!;
 
-    final t = ((act - minAct) / (maxAct - minAct)).clamp(0.4, 1.0);
+    final t = ((act - minAct) / (maxAct - minAct)).clamp(0.15, 1.0);
 
     // Blend với trắng để làm nhạt khi act nhỏ
-    return Color.lerp(Colors.white, baseColor.withOpacity(t), t)!;
+    return Color.lerp(
+      Colors.white.withOpacity(.8),
+      baseColor.withOpacity(t),
+      t,
+    )!;
   }
 
   @override
