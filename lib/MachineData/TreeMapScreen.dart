@@ -16,7 +16,7 @@ class TreeMapScreen extends StatefulWidget {
 }
 
 class _TreeMapScreenState extends State<TreeMapScreen> {
-  bool _showDataLabels = true;
+  bool _showDataLabels = false;
   String? drilldownMacGrp; // lưu node cha được drill
   Rect? drilldownRect; // lưu vị trí + kích thước tile cha
 
@@ -75,7 +75,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       appBar: _buildAppBar(theme),
       body: Column(
         children: [
-          // _buildControlPanel(theme),
+          _buildControlPanel(theme),
           _buildStatsCard(theme, totalRepairFee),
           Expanded(child: _buildTreemapCard(theme)),
         ],
@@ -102,43 +102,21 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
   }
 
   Widget _buildControlPanel(ThemeData theme) {
-    return Container(
-      margin: EdgeInsets.all(16),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+    return Align(
+      alignment: Alignment.centerLeft,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Icon(Icons.tune, color: theme.colorScheme.primary),
-          SizedBox(width: 12),
-          Text(
-            'Display Options',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          ),
-          Spacer(),
-          Row(
-            children: [
-              Text('Show Labels', style: TextStyle(fontSize: 14)),
-              SizedBox(width: 8),
-              Switch(
-                value: _showDataLabels,
-                onChanged: (value) {
-                  setState(() {
-                    _showDataLabels = value;
-                  });
-                },
-                activeColor: theme.colorScheme.primary,
-              ),
-            ],
+          Text('Show Labels', style: TextStyle(fontSize: 14)),
+          SizedBox(width: 8),
+          Switch(
+            value: _showDataLabels,
+            onChanged: (value) {
+              setState(() {
+                _showDataLabels = value;
+              });
+            },
+            activeColor: theme.colorScheme.primary,
           ),
         ],
       ),
@@ -254,11 +232,12 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
               child: SfTreemap(
                 dataCount: widget.data.length,
                 weightValueMapper: (int index) => widget.data[index].act,
+                key: ValueKey(_showDataLabels),
                 levels: [
                   TreemapLevel(
                     groupMapper: (int index) => widget.data[index].macGrp,
                     labelBuilder: (BuildContext context, TreemapTile tile) {
-                      if (!_showDataLabels) return SizedBox.shrink();
+                      // if (!_showDataLabels) return SizedBox.shrink();
 
                       final indices = tile.indices;
                       final totalAct = indices
@@ -373,7 +352,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     //       : Container();
                     // },
                     labelBuilder: (BuildContext context, TreemapTile tile) {
-                      if (!_showDataLabels) return SizedBox.shrink();
+                      // if (!_showDataLabels) return SizedBox.shrink();
 
                       final indices = tile.indices;
                       final totalAct = indices
@@ -433,7 +412,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                   ),
                 ],
 
-                // enableDrilldown: true, // ✅ bật drilldown
+                enableDrilldown: !_showDataLabels, // ✅ bật drilldown
                 breadcrumbs: TreemapBreadcrumbs(
                   builder: (
                     BuildContext context,
