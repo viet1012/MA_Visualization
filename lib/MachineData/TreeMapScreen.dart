@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ma_visualization/Common/WaterfallBackground.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:syncfusion_flutter_treemap/treemap.dart';
 
@@ -9,7 +10,9 @@ import '../Model/MachineData.dart';
 
 class TreeMapScreen extends StatefulWidget {
   final String dept;
-  TreeMapScreen({required this.dept});
+  final String month;
+
+  const TreeMapScreen({super.key, required this.dept, required this.month});
 
   @override
   _TreeMapScreenState createState() => _TreeMapScreenState();
@@ -60,21 +63,19 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
 
-    final now = DateTime.now();
-    final month = DateFormat('yyyy-MM').format(now);
-
     if (_treeMapMode == TreeMapMode.group) {
       _treeMapData = await ApiService().fetchMachineDataByGroup(
-        month,
+        widget.month,
         widget.dept,
       );
     } else {
       _treeMapData = await ApiService().fetchMachineDataByCate(
-        month,
+        widget.month,
         widget.dept,
       );
     }
     _generateColorMap();
+    calculateGroupTotals();
     setState(() => _isLoading = false);
   }
 
@@ -141,13 +142,19 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       0.0,
       (sum, item) => sum + (item.act ?? 0),
     );
+    final formattedAct = NumberFormat('#,###', 'en_US').format(totalRepairFee);
 
     return Scaffold(
       appBar: _buildAppBar(theme),
       body: Column(
         children: [
-          _buildControlPanel(theme),
-          _buildStatsCard(theme, totalRepairFee),
+          Row(
+            children: [
+              _buildControlPanel(theme),
+              Spacer(),
+              _buildStatsCard(theme, formattedAct),
+            ],
+          ),
           Expanded(
             child: AnimatedSwitcher(
               duration: Duration(milliseconds: 400),
@@ -251,43 +258,38 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     );
   }
 
-  Widget _buildStatsCard(ThemeData theme, double totalRepairFee) {
-    return Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary.withOpacity(0.2),
-            theme.colorScheme.secondary.withOpacity(0.4),
+  Widget _buildStatsCard(ThemeData theme, String totalRepairFee) {
+    return WaterfallBackground(
+      child: Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem(
-            icon: Icons.memory,
-            label: 'Machines',
-            value: '${_treeMapData.length}',
-            color: Colors.indigo.shade900,
-          ),
-          _buildStatItem(
-            icon: Icons.attach_money,
-            label: 'Repair',
-            value: totalRepairFee.toStringAsFixed(0),
-            color: Colors.green[700]!,
-          ),
-        ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildStatItem(
+              icon: Icons.memory,
+              label: 'Machines',
+              value: '${_treeMapData.length}',
+              color: Colors.blueAccent,
+            ),
+            SizedBox(width: 8),
+            _buildStatItem(
+              icon: Icons.attach_money,
+              label: 'Repair',
+              value: totalRepairFee,
+              color: Colors.green[700]!,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -298,7 +300,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     required String value,
     required Color color,
   }) {
-    return Column(
+    return Row(
       children: [
         Container(
           padding: EdgeInsets.all(8),
@@ -309,7 +311,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           ),
           child: Icon(icon, color: color, size: 26),
         ),
-        SizedBox(height: 8),
+        SizedBox(width: 8),
         Text(
           value,
           style: TextStyle(
@@ -318,9 +320,29 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
             color: color,
           ),
         ),
+        SizedBox(width: 8),
         Text(label, style: TextStyle(fontSize: 14, color: Colors.grey)),
       ],
     );
+  }
+
+  // Tạo trước (sau khi fetch data hoặc trong initState)
+  Map<String, double> groupTotalMap = {};
+
+  void calculateGroupTotals() {
+    groupTotalMap.clear();
+
+    for (final item in _treeMapData) {
+      final groupKey =
+          _treeMapMode == TreeMapMode.group ? item.macGrp : item.cate;
+      groupTotalMap[groupKey] = (groupTotalMap[groupKey] ?? 0) + item.act;
+    }
+
+    // In ra thông tin
+    print('📊 Tổng act theo group:');
+    groupTotalMap.forEach((key, totalAct) {
+      print('🔹 Group: $key | Tổng act: ${totalAct.toStringAsFixed(2)}');
+    });
   }
 
   Widget _buildTreemapCard(ThemeData theme) {
@@ -339,21 +361,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.all(8),
-            child: Row(
-              children: [
-                Icon(Icons.account_tree, color: theme.colorScheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'Hierarchical View',
-                  style: TextStyle(fontSize: 16, color: Colors.red),
-                ),
-                Spacer(),
-                _buildLegend(),
-              ],
-            ),
-          ),
           Expanded(
             child: Padding(
               padding: EdgeInsets.all(8),
@@ -380,6 +387,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
                       final percent =
                           totalAll == 0 ? 0 : (totalAct / totalAll) * 100;
+
                       final formattedAct = NumberFormat(
                         '#,###',
                         'en_US',
@@ -498,41 +506,46 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     groupMapper: (int index) => _treeMapData[index].macId,
 
                     labelBuilder: (BuildContext context, TreemapTile tile) {
-                      // if (!_showDataLabels) return SizedBox.shrink();
-
-                      final indices = tile.indices;
-                      final index = indices.first;
+                      final index = tile.indices.first;
                       final data = _treeMapData[index];
+                      final act = data.act;
 
-                      String macName = _treeMapData[indices.first].macName;
-                      final double act = data.act;
+                      // Dựa vào group hiện tại để lấy tổng act
+                      final groupKey =
+                          _treeMapMode == TreeMapMode.group
+                              ? data.macGrp
+                              : data.cate;
+                      final totalOfGroup = groupTotalMap[groupKey] ?? 1;
 
-                      // Tính phần trăm so với act lớn nhất
-                      // Format số với dấu phân cách hàng nghìn cho dễ nhìn
-                      final percent =
-                          maxAct > 0 ? (act / maxAct * 100).clamp(0, 100) : 0;
+                      final percent = (act / totalOfGroup) * 100;
+
+                      if (percent < 3) return const SizedBox.shrink();
+
+                      Widget titleWidget = Text(
+                        '${tile.group}\n${data.macName}\n${percent.toStringAsFixed(1)}%',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      );
+
+                      if (percent >= 80) {
+                        titleWidget = Shimmer.fromColors(
+                          baseColor: Colors.white,
+                          highlightColor: Colors.amberAccent,
+                          child: titleWidget,
+                        );
+                      }
+
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
                           vertical: 4,
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          '${tile.group}\n$macName\n${percent.toStringAsFixed(1)}%',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black87,
-                                offset: Offset(0, 1),
-                                blurRadius: 2,
-                              ),
-                            ],
-                          ),
-                        ),
+                        child: titleWidget,
                       );
                     },
 
@@ -555,10 +568,25 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     ),
                     tooltipBuilder: (BuildContext context, TreemapTile tile) {
                       final repairFee = _treeMapData[tile.indices.first].act;
+                      final macName = _treeMapData[tile.indices.first].macName;
+                      final index = tile.indices.first;
+                      final data = _treeMapData[index];
+                      final act = data.act;
+
+                      // Dựa vào group hiện tại để lấy tổng act
+                      final groupKey =
+                          _treeMapMode == TreeMapMode.group
+                              ? data.macGrp
+                              : data.cate;
+                      final totalOfGroup = groupTotalMap[groupKey] ?? 1;
+
+                      final percent = (act / totalOfGroup) * 100;
                       return _buildDetailedTooltip(
                         'Machine ID',
                         tile.group,
                         repairFee,
+                        macName,
+                        percent,
                       );
                     },
                   ),
@@ -650,7 +678,15 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     );
   }
 
-  Widget _buildDetailedTooltip(String label, String value, double repairFee) {
+  Widget _buildDetailedTooltip(
+    String label,
+    String value,
+    double repairFee,
+    String macName,
+    double percent,
+  ) {
+    final formattedAct = NumberFormat('#,###', 'en_US').format(repairFee);
+
     return Container(
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -672,7 +708,25 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           ),
           SizedBox(height: 4),
           Text(
-            'Repair Fee: ${repairFee.toStringAsFixed(0)}\$',
+            'Mac Name: $macName',
+            style: TextStyle(
+              color: Colors.amber[300],
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Repair Fee: $formattedAct\$',
+            style: TextStyle(
+              color: Colors.amber[300],
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Percent: ${percent.toStringAsFixed(1)}%',
             style: TextStyle(
               color: Colors.amber[300],
               fontSize: 18,

@@ -14,9 +14,9 @@ class MachineDataByGroup {
   // Constructor từ JSON
   factory MachineDataByGroup.fromJson(Map<String, dynamic> json) {
     return MachineDataByGroup(
-      macGrp: json['macGrp'] ?? '',
-      macId: json['macId'] ?? '',
-      macName: json['macName'] ?? '',
+      macGrp: json['macGrp'] ?? 'Null',
+      macId: json['macId'] ?? 'Null',
+      macName: json['macName'] ?? 'Null',
       act: (json['act'] ?? 0).toDouble(),
     );
   }
@@ -43,9 +43,9 @@ class MachineDataByCate {
   // Constructor từ JSON
   factory MachineDataByCate.fromJson(Map<String, dynamic> json) {
     return MachineDataByCate(
-      cate: json['cate'] ?? '',
-      macId: json['macId'] ?? '',
-      macName: json['macName'] ?? '',
+      cate: json['cate'] ?? 'Null',
+      macId: json['macId'] ?? 'Null',
+      macName: json['macName'] ?? 'Null',
       act: (json['act'] ?? 0).toDouble(),
     );
   }
