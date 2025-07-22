@@ -53,8 +53,6 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       minAct = maxAct = 0;
     }
 
-    _generateColorMap();
-
     setState(() {
       _isInitialized = true;
     });
@@ -76,6 +74,8 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     }
     _generateColorMap();
     calculateGroupTotals();
+    _generateIndexRankMap();
+
     setState(() => _isLoading = false);
   }
 
@@ -114,6 +114,54 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     }
   }
 
+  late Map<String, List<int>> groupMap = {};
+  late Map<int, int> indexRankMap = {};
+  late Map<String, int> groupSizeMap = {};
+
+  void _generateIndexRankMap() {
+    groupMap.clear();
+    for (int i = 0; i < _treeMapData.length; i++) {
+      final key =
+          _treeMapMode == TreeMapMode.group
+              ? _treeMapData[i].macGrp
+              : _treeMapData[i].cate;
+      groupMap.putIfAbsent(key, () => []).add(i);
+    }
+
+    // Tính rank trong từng group
+    indexRankMap.clear();
+    for (final entry in groupMap.entries) {
+      final indices = entry.value;
+      indices.sort((a, b) {
+        final actA = _treeMapData[a].act ?? 0;
+        final actB = _treeMapData[b].act ?? 0;
+        return actB.compareTo(actA); // sắp giảm dần theo act
+      });
+
+      for (int rank = 0; rank < indices.length; rank++) {
+        indexRankMap[indices[rank]] = rank;
+      }
+    }
+
+    // Tổng số item trong mỗi group
+    groupSizeMap = {for (var e in groupMap.entries) e.key: e.value.length};
+  }
+
+  Color getBlendedColorByRank(String key, int rank, int totalItems) {
+    final baseColor =
+        _treeMapMode == TreeMapMode.group
+            ? macGrpColorMap[key]!
+            : cateColorMap[key]!;
+
+    final t = (1 - (rank / (totalItems - 1))).clamp(0.1, 1.0);
+
+    return Color.lerp(
+      Colors.white.withOpacity(.8),
+      baseColor.withOpacity(t),
+      t,
+    )!;
+  }
+
   Color getBlendedColor(String key, double act) {
     // Lấy màu base tùy theo mode
     final baseColor =
@@ -146,25 +194,30 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
     return Scaffold(
       appBar: _buildAppBar(theme),
-      body: Column(
-        children: [
-          Row(
-            children: [
-              _buildControlPanel(theme),
-              Spacer(),
-              _buildStatsCard(theme, formattedAct),
-            ],
-          ),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: Duration(milliseconds: 400),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _buildControlPanel(theme),
+                Spacer(),
+                _buildStatsCard(theme, formattedAct),
+              ],
+            ),
+            SizedBox(height: 16),
+            SizedBox(
+              height:
+                  MediaQuery.of(context).size.height *
+                  .86, // hoặc đặt theo kích thước mong muốn
+
               child:
                   _isLoading
                       ? Center(child: CircularProgressIndicator())
                       : _buildTreemapCard(theme),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -216,18 +269,18 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text('Show Labels', style: TextStyle(fontSize: 14)),
-          SizedBox(width: 8),
-          Switch(
-            value: _showDataLabels,
-            onChanged: (value) {
-              setState(() {
-                _showDataLabels = value;
-              });
-            },
-            activeColor: theme.colorScheme.primary,
-          ),
-          SizedBox(width: 32),
+          // Text('Show Labels', style: TextStyle(fontSize: 14)),
+          // SizedBox(width: 8),
+          // Switch(
+          //   value: _showDataLabels,
+          //   onChanged: (value) {
+          //     setState(() {
+          //       _showDataLabels = value;
+          //     });
+          //   },
+          //   activeColor: theme.colorScheme.primary,
+          // ),
+          // SizedBox(width: 32),
 
           // Radio buttons
           Text('View Mode:', style: TextStyle(fontSize: 14)),
@@ -550,17 +603,30 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     },
 
                     color: Color(0xFFFF9800),
+                    // colorValueMapper: (TreemapTile tile) {
+                    //   final index = tile.indices.first;
+                    //   final key =
+                    //       _treeMapMode == TreeMapMode.group
+                    //           ? _treeMapData[index].macGrp
+                    //           : _treeMapData[index].cate;
+                    //
+                    //   final act = _treeMapData[index].act;
+                    //
+                    //   return getBlendedColor(key, act);
+                    // },
                     colorValueMapper: (TreemapTile tile) {
                       final index = tile.indices.first;
+                      final data = _treeMapData[index];
+                      final rank = indexRankMap[index]!;
                       final key =
                           _treeMapMode == TreeMapMode.group
-                              ? _treeMapData[index].macGrp
-                              : _treeMapData[index].cate;
+                              ? data.macGrp
+                              : data.cate;
+                      final totalItems = groupSizeMap[key]!;
 
-                      final act = _treeMapData[index].act;
-
-                      return getBlendedColor(key, act);
+                      return getBlendedColorByRank(key, rank, totalItems);
                     },
+
                     padding: EdgeInsets.all(1),
                     border: RoundedRectangleBorder(
                       side: BorderSide(color: Colors.white, width: 1),
