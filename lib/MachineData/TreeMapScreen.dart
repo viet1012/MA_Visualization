@@ -202,7 +202,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           children: [
             Row(
               children: [
-                _buildControlPanel(theme),
+                if (_selectedGroup == null) _buildControlPanel(theme),
                 Spacer(),
                 _buildStatsCard(theme, formattedAct),
               ],
@@ -403,6 +403,24 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     });
   }
 
+  // Thêm state variable để điều khiển drilldown
+  bool _isDrilledDown = true; // true = hiển thị cả cha và con
+  String? _selectedGroup; // group đang được focus
+  String? _justDrilledGroup;
+
+  List<dynamic> _getFilteredData() {
+    if (_selectedGroup == null) {
+      return _treeMapData; // Hiển thị tất cả
+    }
+
+    // Lọc chỉ items thuộc group được chọn
+    return _treeMapData.where((item) {
+      final groupKey =
+          _treeMapMode == TreeMapMode.group ? item.macGrp : item.cate;
+      return groupKey == _selectedGroup;
+    }).toList();
+  }
+
   Widget _buildTreemapCard(ThemeData theme) {
     return Container(
       decoration: BoxDecoration(
@@ -419,27 +437,53 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (_selectedGroup != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _selectedGroup = null;
+                        _isDrilledDown = true;
+                      });
+                    },
+                    icon: Icon(Icons.arrow_back),
+                    label: Text('Back to Overview'),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Focused: $_selectedGroup',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
           Flexible(
             child: Padding(
               padding: EdgeInsets.all(8),
               child: SfTreemap(
-                dataCount: _treeMapData.length,
-                weightValueMapper: (int index) => _treeMapData[index].act,
-                key: ValueKey(_showDataLabels),
+                dataCount: _getFilteredData().length,
+                weightValueMapper: (int index) => _getFilteredData()[index].act,
+                key: ValueKey('${_showDataLabels}_${_selectedGroup}'),
                 levels: [
                   TreemapLevel(
-                    groupMapper:
-                        (i) =>
-                            _treeMapMode == TreeMapMode.group
-                                ? _treeMapData[i].macGrp ?? 'Unknown'
-                                : _treeMapData[i].cate ?? 'Unknown',
+                    groupMapper: (i) {
+                      final data = _getFilteredData();
+                      return _treeMapMode == TreeMapMode.group
+                          ? data[i].macGrp ?? 'Unknown'
+                          : data[i].cate ?? 'Unknown';
+                    },
                     labelBuilder: (BuildContext context, TreemapTile tile) {
+                      final data = _getFilteredData();
+
                       final indices = tile.indices;
                       final totalAct = indices
-                          .map((i) => _treeMapData[i].act)
+                          .map((i) => data[i].act)
                           .fold<double>(0, (prev, curr) => prev + curr);
 
-                      final totalAll = _treeMapData
+                      final totalAll = data
                           .map((e) => e.act)
                           .fold<double>(0, (prev, curr) => prev + curr);
 
@@ -451,72 +495,53 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         'en_US',
                       ).format(totalAct);
 
-                      return LayoutBuilder(
-                        builder: (context, constraints) {
-                          // Điều kiện hiển thị text nghiêm ngặt hơn
-                          final canShowText =
-                              constraints.maxWidth >= 300 &&
-                              constraints.maxHeight >= 50;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedGroup = tile.group;
+                            _justDrilledGroup = tile.group;
+                          });
+                        },
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Điều kiện hiển thị text nghiêm ngặt hơn
+                            final canShowText =
+                                constraints.maxWidth >= 300 &&
+                                constraints.maxHeight >= 50;
 
-                          final canShowFullInfo =
-                              constraints.maxWidth >= 300 &&
-                              constraints.maxHeight >= 70;
+                            final canShowFullInfo =
+                                constraints.maxWidth >= 300 &&
+                                constraints.maxHeight >= 70;
 
-                          if (!canShowText) {
-                            return const SizedBox.shrink();
-                          }
+                            if (!canShowText) {
+                              return const SizedBox.shrink();
+                            }
 
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            child:
-                                canShowFullInfo
-                                    ? Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment
-                                              .spaceBetween, // 👉 đẩy 2 đầu
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        // Tên nhóm máy
-                                        Expanded(
-                                          child: Text(
-                                            tile.group,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: TextStyle(
-                                              fontSize: (constraints.maxWidth /
-                                                      8)
-                                                  .clamp(12, 20),
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                              shadows: const [
-                                                Shadow(
-                                                  color: Colors.black87,
-                                                  offset: Offset(0, 1),
-                                                  blurRadius: 2,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-
-                                        // Số liệu
-                                        Row(
-                                          mainAxisSize:
-                                              MainAxisSize
-                                                  .min, // 👉 chỉ chiếm đúng độ rộng nội dung
-                                          children: [
-                                            Text(
-                                              '$formattedAct \$',
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              child:
+                                  canShowFullInfo
+                                      ? Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment
+                                                .spaceBetween, // 👉 đẩy 2 đầu
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          // Tên nhóm máy
+                                          Expanded(
+                                            child: Text(
+                                              tile.group,
                                               overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
                                               style: TextStyle(
                                                 fontSize:
-                                                    (constraints.maxWidth / 10)
-                                                        .clamp(10, 16),
-                                                fontWeight: FontWeight.bold,
+                                                    (constraints.maxWidth / 8)
+                                                        .clamp(12, 20),
+                                                fontWeight: FontWeight.w600,
                                                 color: Colors.white,
                                                 shadows: const [
                                                   Shadow(
@@ -527,61 +552,90 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(width: 4),
+                                          ),
 
-                                            Text(
-                                              '(${percent.toStringAsFixed(1)}%)',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize:
-                                                    (constraints.maxWidth / 12)
-                                                        .clamp(8, 16),
-                                                color: Colors.white70,
-                                                shadows: const [
-                                                  Shadow(
-                                                    color: Colors.black87,
-                                                    offset: Offset(0, 1),
-                                                    blurRadius: 2,
-                                                  ),
-                                                ],
+                                          // Số liệu
+                                          Row(
+                                            mainAxisSize:
+                                                MainAxisSize
+                                                    .min, // 👉 chỉ chiếm đúng độ rộng nội dung
+                                            children: [
+                                              Text(
+                                                '$formattedAct \$',
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: (constraints
+                                                              .maxWidth /
+                                                          10)
+                                                      .clamp(10, 16),
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  shadows: const [
+                                                    Shadow(
+                                                      color: Colors.black87,
+                                                      offset: Offset(0, 1),
+                                                      blurRadius: 2,
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
+                                              const SizedBox(width: 4),
+
+                                              Text(
+                                                '(${percent.toStringAsFixed(1)}%)',
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: (constraints
+                                                              .maxWidth /
+                                                          12)
+                                                      .clamp(8, 16),
+                                                  color: Colors.white70,
+                                                  shadows: const [
+                                                    Shadow(
+                                                      color: Colors.black87,
+                                                      offset: Offset(0, 1),
+                                                      blurRadius: 2,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      )
+                                      : // Hiển thị đơn giản khi không gian nhỏ
+                                      Text(
+                                        tile.group,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: (constraints.maxWidth / 8)
+                                              .clamp(10, 14),
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                          shadows: const [
+                                            Shadow(
+                                              color: Colors.black87,
+                                              offset: Offset(0, 1),
+                                              blurRadius: 2,
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    )
-                                    : // Hiển thị đơn giản khi không gian nhỏ
-                                    Text(
-                                      tile.group,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: (constraints.maxWidth / 8)
-                                            .clamp(10, 14),
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                        shadows: const [
-                                          Shadow(
-                                            color: Colors.black87,
-                                            offset: Offset(0, 1),
-                                            blurRadius: 2,
-                                          ),
-                                        ],
                                       ),
-                                    ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       );
                     },
 
                     colorValueMapper: (TreemapTile tile) {
+                      final data = _getFilteredData();
                       final index = tile.indices.first;
                       final key =
                           _treeMapMode == TreeMapMode.group
-                              ? _treeMapData[index].macGrp
-                              : _treeMapData[index].cate;
-
+                              ? data[index].macGrp
+                              : data[index].cate;
                       final colorMap =
                           _treeMapMode == TreeMapMode.group
                               ? macGrpColorMap
@@ -596,8 +650,9 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                     ),
                     tooltipBuilder: (BuildContext context, TreemapTile tile) {
                       final indices = tile.indices;
+                      final data = _getFilteredData();
                       final totalAct = indices
-                          .map((i) => _treeMapData[i].act)
+                          .map((i) => data[i].act)
                           .fold<double>(0, (prev, curr) => prev + curr);
 
                       return _buildTooltip(
@@ -609,18 +664,20 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                   ),
 
                   TreemapLevel(
-                    groupMapper: (int index) => _treeMapData[index].macId,
-
+                    groupMapper: (int index) {
+                      final data = _getFilteredData();
+                      return data[index].macId;
+                    },
                     labelBuilder: (BuildContext context, TreemapTile tile) {
+                      final data = _getFilteredData();
                       final index = tile.indices.first;
-                      final data = _treeMapData[index];
-                      final act = data.act;
+                      final act = data[index].act;
 
                       // Dựa vào group hiện tại để lấy tổng act
                       final groupKey =
                           _treeMapMode == TreeMapMode.group
-                              ? data.macGrp
-                              : data.cate;
+                              ? data[index].macGrp
+                              : data[index].cate;
                       final totalOfGroup = groupTotalMap[groupKey] ?? 1;
 
                       final percent = (act / totalOfGroup) * 100;
@@ -628,7 +685,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                       final rank = indexRankMap[index]!;
 
                       // Chỉ hiển thị nếu phần trăm đủ lớn
-                      if (percent < 2) return const SizedBox.shrink();
+                      // if (percent < 2) return const SizedBox.shrink();
 
                       return LayoutBuilder(
                         builder: (context, constraints) {
@@ -644,8 +701,8 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                               constraints.maxHeight >= 100;
 
                           final canShowBasicInfo =
-                              constraints.maxWidth >= 50 &&
-                              constraints.maxHeight >= 100;
+                              constraints.maxWidth >= 40 &&
+                              constraints.maxHeight >= 80;
 
                           if (!canShowBasicInfo) {
                             return const SizedBox.shrink();
@@ -655,7 +712,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                           String displayText;
                           if (canShowFullInfo) {
                             displayText =
-                                '${tile.group}\n${data.macName}\n${percent.toStringAsFixed(1)}%';
+                                '${tile.group}\n${data[index].macName}\n${percent.toStringAsFixed(1)}%';
                           } else {
                             displayText =
                                 '${tile.group}\n${percent.toStringAsFixed(1)}%';
@@ -675,27 +732,61 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                             ),
                           );
 
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 2,
-                            ),
-                            alignment: Alignment.center,
-                            child: titleWidget,
-                          );
+                          final parentGroup =
+                              _treeMapMode == TreeMapMode.group
+                                  ? data[index].macGrp
+                                  : data[index].cate;
+
+                          if (parentGroup == _justDrilledGroup) {
+                            return TweenAnimationBuilder<double>(
+                              tween: Tween<double>(begin: 0, end: 1),
+                              duration: Duration(
+                                milliseconds: 500,
+                              ), // delay nhẹ theo index
+                              curve: Curves.easeOut,
+                              builder: (context, value, child) {
+                                return Transform.scale(
+                                  scaleX: value,
+                                  alignment: Alignment.centerLeft,
+                                  child: Opacity(
+                                    opacity: value,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      alignment: Alignment.center,
+                                      child: titleWidget,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          } else {
+                            return Container(
+                              padding: const EdgeInsets.all(4),
+                              alignment: Alignment.center,
+                              child: titleWidget,
+                            );
+                          }
                         },
                       );
                     },
 
                     color: Color(0xFFFF9800),
                     colorValueMapper: (TreemapTile tile) {
+                      final data = _getFilteredData();
                       final index = tile.indices.first;
-                      final data = _treeMapData[index];
-                      final rank = indexRankMap[index]!;
+
+                      // Tìm lại item gốc bằng item ID (ví dụ macId)
+                      final item = data[index];
+                      final originalIndex = _treeMapData.indexWhere(
+                        (e) => e.macId == item.macId,
+                      );
+
+                      final rank = indexRankMap[originalIndex]!;
+
                       final key =
                           _treeMapMode == TreeMapMode.group
-                              ? data.macGrp
-                              : data.cate;
+                              ? item.macGrp
+                              : item.cate;
                       final totalItems = groupSizeMap[key]!;
 
                       return getBlendedColorByRank(key, rank, totalItems);
@@ -707,17 +798,18 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     tooltipBuilder: (BuildContext context, TreemapTile tile) {
-                      final repairFee = _treeMapData[tile.indices.first].act;
-                      final macName = _treeMapData[tile.indices.first].macName;
+                      final data = _getFilteredData();
+
+                      final repairFee = data[tile.indices.first].act;
+                      final macName = data[tile.indices.first].macName;
                       final index = tile.indices.first;
-                      final data = _treeMapData[index];
-                      final act = data.act;
+                      final act = data[index].act;
 
                       // Dựa vào group hiện tại để lấy tổng act
                       final groupKey =
                           _treeMapMode == TreeMapMode.group
-                              ? data.macGrp
-                              : data.cate;
+                              ? data[index].macGrp
+                              : data[index].cate;
                       final totalOfGroup = groupTotalMap[groupKey] ?? 1;
 
                       final percent = (act / totalOfGroup) * 100;
