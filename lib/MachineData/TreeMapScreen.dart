@@ -332,7 +332,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
           children: [
             _buildStatItem(
               icon: Icons.attach_money,
-              label: 'Repair',
+              label: 'Repair Fee',
               value: totalRepairFee,
               color: Colors.green[700]!,
             ),
@@ -720,7 +720,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          Flexible(
             child: Padding(
               padding: EdgeInsets.all(8),
               child: SfTreemap(
@@ -756,11 +756,11 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                         builder: (context, constraints) {
                           // Điều kiện hiển thị text nghiêm ngặt hơn
                           final canShowText =
-                              constraints.maxWidth >= 100 &&
+                              constraints.maxWidth >= 300 &&
                               constraints.maxHeight >= 50;
 
                           final canShowFullInfo =
-                              constraints.maxWidth >= 150 &&
+                              constraints.maxWidth >= 300 &&
                               constraints.maxHeight >= 70;
 
                           if (!canShowText) {
@@ -933,11 +933,11 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
                           // Kiểm tra có đủ không gian để hiển thị text
                           final canShowFullInfo =
                               constraints.maxWidth >= 80 &&
-                              constraints.maxHeight >= 60;
+                              constraints.maxHeight >= 100;
 
                           final canShowBasicInfo =
                               constraints.maxWidth >= 50 &&
-                              constraints.maxHeight >= 30;
+                              constraints.maxHeight >= 100;
 
                           if (!canShowBasicInfo) {
                             return const SizedBox.shrink();
