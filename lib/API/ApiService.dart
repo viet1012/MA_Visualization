@@ -11,9 +11,9 @@ import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
 import 'package:ma_visualization/Model/RepairFeeModel.dart';
 
 class ApiService {
-  final String baseUrl = "http://F2PC24017:9999/api";
+  // final String baseUrl = "http://F2PC24017:9999/api";
 
-  // final String baseUrl = "http://192.168.122.15:9092/api";
+  final String baseUrl = "http://192.168.122.15:9092/api";
 
   Future<List<RepairFeeModel>> fetchRepairFee(String month) async {
     final url = Uri.parse("$baseUrl/repair_fee?month=$month");
