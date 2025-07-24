@@ -120,6 +120,21 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
   late Map<int, int> indexRankMap = {};
   late Map<String, int> groupSizeMap = {};
 
+  Map<int, int> get _currentIndexRankMap => indexRankMap;
+
+  Map<String, double> get _currentGroupTotalMap {
+    final map = <String, double>{};
+    for (final entry in groupMap.entries) {
+      final key = entry.key;
+      final total = entry.value.fold<double>(
+        0,
+        (sum, idx) => sum + (_treeMapData[idx].act ?? 0),
+      );
+      map[key] = total;
+    }
+    return map;
+  }
+
   void _generateIndexRankMap() {
     groupMap.clear();
     for (int i = 0; i < _treeMapData.length; i++) {
@@ -772,24 +787,41 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
 
                     color: Color(0xFFFF9800),
                     colorValueMapper: (TreemapTile tile) {
-                      final data = _getFilteredData();
+                      final data =
+                          _getFilteredData(); // hoặc _treeMapData nếu không dùng filter
                       final index = tile.indices.first;
 
-                      // Tìm lại item gốc bằng item ID (ví dụ macId)
                       final item = data[index];
-                      final originalIndex = _treeMapData.indexWhere(
-                        (e) => e.macId == item.macId,
-                      );
 
-                      final rank = indexRankMap[originalIndex]!;
+                      final originalIndex = _treeMapData.indexWhere((e) {
+                        final matchMacId = e.macId == item.macId;
+                        if (_treeMapMode == TreeMapMode.group) {
+                          return matchMacId && e.macGrp == item.macGrp;
+                        } else {
+                          return matchMacId && e.cate == item.cate;
+                        }
+                      });
 
-                      final key =
+                      final rank = _currentIndexRankMap[originalIndex] ?? 0;
+
+                      final groupKey =
                           _treeMapMode == TreeMapMode.group
                               ? item.macGrp
                               : item.cate;
-                      final totalItems = groupSizeMap[key]!;
 
-                      return getBlendedColorByRank(key, rank, totalItems);
+                      final totalItemsInGroup = groupSizeMap[groupKey] ?? 1;
+
+                      final color = getBlendedColorByRank(
+                        groupKey!,
+                        rank,
+                        totalItemsInGroup,
+                      );
+
+                      print(
+                        'colorValueMapper - groupKey: $groupKey, rank: $rank, totalOfGroup: $totalItemsInGroup, color: $color',
+                      );
+
+                      return color;
                     },
 
                     padding: EdgeInsets.all(1),
