@@ -192,7 +192,7 @@ class _TreeMapScreenState extends State<TreeMapScreen> {
     final formattedAct = NumberFormat('#,###', 'en_US').format(totalRepairFee);
 
     return Scaffold(
-      appBar: TreeMapWidgets.buildAppBar(theme),
+      appBar: TreeMapWidgets.buildAppBar(theme, 'Repair Fee Analytics'),
       body: SingleChildScrollView(
         child: Container(
           // width: MediaQuery.of(context).size.width * .5,

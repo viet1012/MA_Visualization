@@ -10,10 +10,12 @@ import 'package:ma_visualization/Model/PMModel.dart';
 import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
 import 'package:ma_visualization/Model/RepairFeeModel.dart';
 
-class ApiService {
-  // final String baseUrl = "http://F2PC24017:9999/api";
+import '../Model/MachineTrendModel.dart';
 
-  final String baseUrl = "http://192.168.122.15:9092/api";
+class ApiService {
+  final String baseUrl = "http://F2PC24017:9999/api";
+
+  // final String baseUrl = "http://192.168.122.15:9092/api";
 
   Future<List<RepairFeeModel>> fetchRepairFee(String month) async {
     final url = Uri.parse("$baseUrl/repair_fee?month=$month");
@@ -225,6 +227,33 @@ class ApiService {
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => MachineDataByCate.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Exception caught: $e");
+      return [];
+    }
+  }
+
+  Future<List<MachineTrendModel>> fetchMachineTrend({
+    required String month,
+    required String div,
+    required String mn,
+    int top = 10,
+  }) async {
+    final url = Uri.parse(
+      "$baseUrl/machine_trend?mn=$mn&div=$div&top=$top&month=$month",
+    );
+
+    print("url: $url");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => MachineTrendModel.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }

@@ -8,12 +8,12 @@ import '../Common/WaterfallBackground.dart';
 enum TreeMapMode { group, cate }
 
 class TreeMapWidgets {
-  static PreferredSizeWidget buildAppBar(ThemeData theme) {
+  static PreferredSizeWidget buildAppBar(ThemeData theme, String title) {
     return AppBar(
       title: Row(
         children: [
           Icon(Icons.analytics_outlined, size: 24),
-          BlinkingText(text: 'Repair Fee Analytics'),
+          BlinkingText(text: title),
         ],
       ),
       backgroundColor: theme.colorScheme.surface,
