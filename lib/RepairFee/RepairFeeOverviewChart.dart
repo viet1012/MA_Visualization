@@ -10,6 +10,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../API/ApiService.dart';
 import '../Common/CustomLegend.dart';
+import '../MachineAnalysis/MachineBubbleScreenChart.dart';
 import '../MachineData/TreeMapScreen.dart';
 
 class RepairFeeOverviewChart extends StatefulWidget {
@@ -103,6 +104,19 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                 );
               },
             ),
+            // onAxisLabelTapped: (AxisLabelTapArgs args) async {
+            //   final index = widget.data.indexWhere((e) => e.title == args.text);
+            //   if (index != -1) {
+            //     final item = widget.data[index];
+            //
+            //     await showDialog(
+            //       context: context,
+            //       builder: (context) {
+            //         return TreeMapScreen(dept: item.title, month: widget.month);
+            //       },
+            //     );
+            //   }
+            // },
             onAxisLabelTapped: (AxisLabelTapArgs args) async {
               final index = widget.data.indexWhere((e) => e.title == args.text);
               if (index != -1) {
@@ -111,7 +125,99 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                 await showDialog(
                   context: context,
                   builder: (context) {
-                    return TreeMapScreen(dept: item.title, month: widget.month);
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: const Text(
+                        'View Information',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.shade50,
+                              child: const Icon(
+                                Icons.grid_view,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            title: Text(
+                              '${item.title} by Group',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: const Text(
+                              'View data summarized by group',
+                            ),
+                            onTap: () async {
+                              final index = widget.data.indexWhere(
+                                (e) => e.title == args.text,
+                              );
+                              if (index != -1) {
+                                final item = widget.data[index];
+
+                                await showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return TreeMapScreen(
+                                      dept: item.title,
+                                      month: widget.month,
+                                    );
+                                  },
+                                );
+                              }
+                            },
+                          ),
+                          const Divider(),
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.shade50,
+                              child: const Icon(
+                                Icons.calendar_today,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            title: Text(
+                              '${item.title} by Day',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: const Text(
+                              'View daily breakdown of data',
+                            ),
+                            onTap: () async {
+                              final index = widget.data.indexWhere(
+                                (e) => e.title == args.text,
+                              );
+                              if (index != -1) {
+                                final item = widget.data[index];
+
+                                await showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return BubbleChartScreen(
+                                      div: item.title,
+                                      month: widget.month,
+                                    );
+                                  },
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    );
                   },
                 );
               }
