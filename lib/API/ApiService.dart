@@ -272,9 +272,7 @@ class ApiService {
     final response = await http.get(uri);
 
     // Debug
-    print("Request URL: $uri");
-    print("Status Code: ${response.statusCode}");
-    print("Response Body: ${response.body}");
+    print("url: $uri");
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = json.decode(response.body);

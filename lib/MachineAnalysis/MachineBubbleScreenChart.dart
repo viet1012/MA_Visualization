@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ma_visualization/API/ApiService.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -16,15 +17,62 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
   late TooltipBehavior _tooltipBehavior;
   late ZoomPanBehavior _zoomPanBehavior;
   late Future<List<MachineAnalysis>> _futureData;
+  List<String> _divisions = ['PRESS', 'MOLD', 'GUIDE'];
+  List<String> _selectedDivs = [];
+  final numberFormat = NumberFormat('#,###', 'en_US');
 
   @override
   void initState() {
     super.initState();
     _tooltipBehavior = TooltipBehavior(
       enable: true,
-      header: '',
-      canShowMarker: false,
-      format: 'point.x ca dừng\npoint.y giờ\npoint.size VNĐ phí sửa chữa',
+      header: '', // hoặc tên máy, nhưng để trống thì focus vào nội dung
+      canShowMarker: true,
+      color: Colors.black87,
+      elevation: 8,
+      shadowColor: Colors.grey.withOpacity(0.6),
+      textStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+      ),
+      borderColor: Colors.white,
+      borderWidth: 1.5,
+      animationDuration: 500,
+      builder: (
+        dynamic data,
+        ChartPoint<dynamic> point,
+        ChartSeries<dynamic, dynamic> series,
+        int pointIndex,
+        int seriesIndex,
+      ) {
+        final formattedAct = numberFormat.format(data.repairFee);
+
+        return Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black87,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Machine: ${data.macName}',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Stop Case: ${data.stopCase}',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Repair Fee: ${formattedAct}K',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        );
+      },
     );
 
     _zoomPanBehavior = ZoomPanBehavior(
@@ -43,19 +91,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Phân tích mối quan hệ Stop Case - Stop Hour',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        backgroundColor: Colors.blueGrey[800],
-        elevation: 0,
-        centerTitle: true,
-      ),
       body: FutureBuilder<List<MachineAnalysis>>(
         future: _futureData,
         builder: (context, snapshot) {
@@ -72,9 +107,37 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
           return SingleChildScrollView(
             child: Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children:
+                        _divisions.map((div) {
+                          final isSelected = _selectedDivs.contains(div);
+                          return FilterChip(
+                            label: Text(div),
+                            selected: isSelected,
+                            onSelected: (bool selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedDivs.add(div);
+                                } else {
+                                  _selectedDivs.remove(div);
+                                }
+                                // _fetchData();
+                              });
+                            },
+                            selectedColor: Colors.blueGrey,
+                            checkmarkColor: Colors.white,
+                          );
+                        }).toList(),
+                  ),
+                ),
+
                 // Biểu đồ chính
                 Container(
-                  height: MediaQuery.of(context).size.height * .9,
+                  height: MediaQuery.of(context).size.height * .8,
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   child: Card(
                     elevation: 12,
@@ -89,7 +152,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                       child: SfCartesianChart(
                         plotAreaBorderWidth: 0,
                         title: ChartTitle(
-                          text: 'Mối quan hệ: Số ca dừng máy vs Giờ dừng máy',
+                          text: '[Analysis] Repair Fee & Machine Stopping',
                           textStyle: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -120,6 +183,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                             textStyle: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                           majorGridLines: const MajorGridLines(width: 0),
@@ -129,7 +193,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                           interval: 2000,
-                          labelFormat: '{value}h',
+                          labelFormat: '{value}',
                         ),
                         series: <BubbleSeries<MachineAnalysis, num>>[
                           BubbleSeries<MachineAnalysis, num>(
@@ -167,7 +231,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                                 }
                                 return Text(
                                   textAlign: TextAlign.center,
-                                  '${machine.macName}\n${machine.repairFee}',
+                                  '${machine.macName}\n${numberFormat.format(machine.repairFee)}',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -184,10 +248,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                               },
                             ),
                             gradient: LinearGradient(
-                              colors: [
-                                Colors.blue,
-                                Colors.blueAccent.withOpacity(0.3),
-                              ],
+                              colors: [Colors.blueAccent, Colors.white],
                               stops: const [0.5, 1.0],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
