@@ -181,6 +181,7 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                     : Colors.black,
           ),
         ),
+
         onPointTap: (ChartPointDetails details) async {
           final index = details.pointIndex ?? -1;
           final item = data[index];

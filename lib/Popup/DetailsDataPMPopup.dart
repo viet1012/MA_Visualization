@@ -235,7 +235,10 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
   String? selectedCline;
   String? selectedIssueStatus;
 
-  List<String> _getUniqueValuesFromList(List<dynamic> list, String Function(dynamic) extractor) {
+  List<String> _getUniqueValuesFromList(
+    List<dynamic> list,
+    String Function(dynamic) extractor,
+  ) {
     final set = <String>{};
     for (var item in list) {
       final value = extractor(item);
@@ -250,20 +253,19 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
   Widget _buildDynamicDropdownHeader(String key) {
     final title = key.toUpperCase();
 
-    final tempFilteredData = widget.data.where((item) {
-      return
-        (selectedDept == null || item.dept == selectedDept) &&
-        (selectedCline == null || item.cLine == selectedCline) &&
-        (selectedIssueStatus == null || item.issueStatus == selectedIssueStatus);
-
-    }).toList();
+    final tempFilteredData =
+        widget.data.where((item) {
+          return (selectedDept == null || item.dept == selectedDept) &&
+              (selectedCline == null || item.cLine == selectedCline) &&
+              (selectedIssueStatus == null ||
+                  item.issueStatus == selectedIssueStatus);
+        }).toList();
 
     // Lấy danh sách giá trị duy nhất theo key trong kết quả đã lọc
     List<String> values = _getUniqueValuesFromList(
       tempFilteredData,
-          (item) => item.toJson()[key]?.toString() ?? '',
+      (item) => item.toJson()[key]?.toString() ?? '',
     );
-
 
     String? selectedValue;
     void Function(String?)? onChanged;
@@ -346,10 +348,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
                   value: v,
                   child: Text(
                     v,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ),
               ),
@@ -471,7 +470,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
       alignment: isHeader ? Alignment.center : null,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Text(
+        child: SelectableText(
           displayText,
           textAlign: isNumber ? TextAlign.right : TextAlign.left,
           style: TextStyle(
@@ -553,7 +552,6 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
       'FINISHTIME',
       'ISSUESTATUS',
     ]);
-
 
     // Dữ liệu theo đúng thứ tự như tiêu đề
     for (var item in data) {

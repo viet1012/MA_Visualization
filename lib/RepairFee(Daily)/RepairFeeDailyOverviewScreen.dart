@@ -83,10 +83,13 @@ class _RepairFeeDailyOverviewScreenState
           }
 
           if (provider.data.isEmpty) {
-            return const NoDataWidget(
+            return NoDataWidget(
               title: "No Data Available",
               message: "Please try again with a different time range.",
               icon: Icons.error_outline,
+              onRetry: () {
+                _fetchData(provider);
+              },
             );
           }
 
