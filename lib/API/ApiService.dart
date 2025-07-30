@@ -268,7 +268,10 @@ class ApiService {
     String month,
     String div,
   ) async {
-    final uri = Uri.parse('$baseUrl/machine/analysis?dept=$div&month=$month');
+    final monthParam = month.replaceAll('-', '');
+    final uri = Uri.parse(
+      '$baseUrl/machine/analysis?divisions=$div&month=$monthParam',
+    );
     final response = await http.get(uri);
 
     // Debug

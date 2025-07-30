@@ -1,4 +1,5 @@
 class MachineAnalysis {
+  final String div;
   final String macName;
   final int rank;
   final double stopCase;
@@ -6,6 +7,7 @@ class MachineAnalysis {
   final double repairFee;
 
   MachineAnalysis({
+    required this.div,
     required this.macName,
     required this.rank,
     required this.stopCase,
@@ -15,10 +17,11 @@ class MachineAnalysis {
 
   factory MachineAnalysis.fromJson(Map<String, dynamic> json) {
     return MachineAnalysis(
+      div: json['div'] ?? '',
       macName: json['macName'] ?? '',
       rank: json['rank'] ?? 0,
-      stopCase: (json['stop_Case'] ?? 0).toDouble(),
-      stopHour: (json['stop_Hour'] ?? 0).toDouble(),
+      stopCase: (json['stopCase'] ?? 0).toDouble(),
+      stopHour: (json['stopHour'] ?? 0).toDouble(),
       repairFee: (json['repairFee'] ?? 0).toDouble(),
     );
   }

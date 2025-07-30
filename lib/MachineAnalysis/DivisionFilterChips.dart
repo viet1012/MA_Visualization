@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DivisionFilterChips extends StatelessWidget {
   final List<String> divisions;
   final List<String> selectedDivs;
-  final void Function(String, bool) onSelectionChanged;
+  final Function(String, bool) onSelectionChanged;
 
   const DivisionFilterChips({
     required this.divisions,
@@ -12,22 +12,35 @@ class DivisionFilterChips extends StatelessWidget {
     super.key,
   });
 
+  bool get isKVHSelected => selectedDivs.contains('KVH');
+  bool get isOtherSelected =>
+      selectedDivs.any((div) => div != 'KVH'); // PRESS/MOLD/GUIDE selected
+
   @override
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 8,
-      runSpacing: 8,
       children:
           divisions.map((div) {
-            final isSelected = selectedDivs.contains(div);
+            bool isSelected = selectedDivs.contains(div);
+
+            // Logic disable:
+            bool isDisabled = false;
+            if (div == 'KVH' && isOtherSelected) {
+              isDisabled = true;
+            } else if (div != 'KVH' && isKVHSelected) {
+              isDisabled = true;
+            }
+
             return FilterChip(
               label: Text(div),
               selected: isSelected,
-              onSelected: (bool selected) {
-                onSelectionChanged(div, selected);
-              },
-              selectedColor: Colors.blueGrey,
-              checkmarkColor: Colors.white,
+              onSelected:
+                  isDisabled
+                      ? null
+                      : (selected) {
+                        onSelectionChanged(div, selected);
+                      },
             );
           }).toList(),
     );
