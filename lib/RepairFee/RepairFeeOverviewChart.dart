@@ -10,7 +10,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../API/ApiService.dart';
 import '../Common/CustomLegend.dart';
-import '../MachineAnalysis/MachineBubbleScreenChart.dart';
+import '../MachineAnalysis/MachineBubbleScreen.dart';
 import '../MachineData/TreeMapScreen.dart';
 
 class RepairFeeOverviewChart extends StatefulWidget {

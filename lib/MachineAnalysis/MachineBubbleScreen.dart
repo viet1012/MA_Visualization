@@ -4,6 +4,7 @@ import '../API/ApiService.dart';
 import '../Model/MachineAnalysis.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import 'DepartmentUtils.dart';
 import 'DivisionFilterChips.dart';
 import 'MachineBubbleChart.dart';
 
@@ -137,7 +138,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         elevation: 6,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -175,12 +176,14 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
 
                       return Container(
                         width: 330,
-                        padding: const EdgeInsets.all(14),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: getDepartmentColor(dept).withOpacity(0.08),
+                          color: DepartmentUtils.getDepartmentColor(
+                            dept,
+                          ).withOpacity(0.08),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: getDepartmentColor(dept),
+                            color: DepartmentUtils.getDepartmentColor(dept),
                             width: 1,
                           ),
                         ),
@@ -193,7 +196,9 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                                   width: 10,
                                   height: 10,
                                   decoration: BoxDecoration(
-                                    color: getDepartmentColor(dept),
+                                    color: DepartmentUtils.getDepartmentColor(
+                                      dept,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -203,7 +208,9 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
-                                    color: getDepartmentColor(dept),
+                                    color: DepartmentUtils.getDepartmentColor(
+                                      dept,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -231,21 +238,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         ),
       ),
     );
-  }
-
-  Color getDepartmentColor(String div) {
-    switch (div.toUpperCase()) {
-      case 'PRESS':
-        return const Color(0xFF2E7D32);
-      case 'MOLD':
-        return const Color(0xFF1565C0);
-      case 'GUIDE':
-        return const Color(0xFFE65100);
-      case 'KVH':
-        return const Color(0xFF7B1FA2);
-      default:
-        return const Color(0xFF424242);
-    }
   }
 
   @override
@@ -288,7 +280,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text('Không có dữ liệu'));
                 }
-
                 return SingleChildScrollView(
                   child: Column(
                     children: [

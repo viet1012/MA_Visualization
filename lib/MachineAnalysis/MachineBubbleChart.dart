@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Model/MachineAnalysis.dart';
+import 'DepartmentUtils.dart';
 
 class BubbleChart extends StatelessWidget {
   final List<MachineAnalysis> data;
@@ -18,25 +19,9 @@ class BubbleChart extends StatelessWidget {
     super.key,
   });
 
-  // Định nghĩa màu sắc cho từng department
-  Color getDepartmentColor(String div) {
-    switch (div.toUpperCase()) {
-      case 'PRESS':
-        return const Color(0xFF2E7D32); // Green
-      case 'MOLD':
-        return const Color(0xFF1565C0); // Blue
-      case 'GUIDE':
-        return const Color(0xFFE65100); // Orange
-      case 'KVH':
-        return const Color(0xFF7B1FA2); // Purple
-      default:
-        return const Color(0xFF424242); // Grey
-    }
-  }
-
   // Tạo gradient cho từng department
   LinearGradient getDepartmentGradient(String div) {
-    Color baseColor = getDepartmentColor(div);
+    Color baseColor = DepartmentUtils.getDepartmentColor(div);
     return LinearGradient(
       colors: [baseColor, baseColor.withOpacity(0.3)],
       stops: const [0.3, 1.0],
@@ -71,18 +56,18 @@ class BubbleChart extends StatelessWidget {
     groupedData.forEach((div, machines) {
       seriesList.add(
         BubbleSeries<MachineAnalysis, num>(
-          animationDuration: 800,
+          animationDuration: 500,
           dataSource: machines,
           xValueMapper: (MachineAnalysis d, _) => d.stopCase,
           yValueMapper: (MachineAnalysis d, _) => d.stopHour,
           sizeValueMapper: (MachineAnalysis d, _) => d.repairFee,
           name: div,
-          opacity: 0.85,
+          // opacity: 0.85,
           minimumRadius: 15,
           maximumRadius: 50,
           enableTooltip: true,
-          color: getDepartmentColor(div),
-          borderColor: getDepartmentColor(div).withOpacity(0.8),
+          color: DepartmentUtils.getDepartmentColor(div),
+          borderColor: DepartmentUtils.getDepartmentColor(div).withOpacity(0.8),
           borderWidth: 2,
           gradient: getDepartmentGradient(div),
           dataLabelSettings: DataLabelSettings(
@@ -166,7 +151,7 @@ class BubbleChart extends StatelessWidget {
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: getDepartmentColor(name),
+                    color: DepartmentUtils.getDepartmentColor(name),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                     boxShadow: [
@@ -184,7 +169,7 @@ class BubbleChart extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: getDepartmentColor(name),
+                    color: DepartmentUtils.getDepartmentColor(name),
                   ),
                 ),
               ],
@@ -205,10 +190,10 @@ class BubbleChart extends StatelessWidget {
         ),
         majorGridLines: MajorGridLines(
           width: 0.8,
-          color: Colors.grey[300],
+          color: Colors.grey[600],
           dashArray: const [5, 5],
         ),
-        minorGridLines: MinorGridLines(width: 0.5, color: Colors.grey[200]),
+        minorGridLines: MinorGridLines(width: 0.5, color: Colors.grey[600]),
         axisLine: AxisLine(width: 2, color: Colors.grey[600]),
         majorTickLines: MajorTickLines(
           size: 8,
