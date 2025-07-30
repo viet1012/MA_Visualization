@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../API/ApiService.dart';
+import '../Common/BlinkingText.dart';
 import '../Common/NoDataWidget.dart';
 import '../Model/MachineAnalysis.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -134,7 +135,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(8),
       child: Card(
         elevation: 6,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -165,7 +166,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                       );
 
                       return Container(
-                        width: 470,
+                        width: 550,
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: DepartmentUtils.getDepartmentColor(
@@ -207,7 +208,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Repair Fee:  ${numberFormat.format(totalRepairFee)}\$ | Stop Case: ${numberFormat.format(totalStopCase)} | Stop Hour:  ${numberFormat.format(totalStopHour)}h  ',
+                              '💰Repair Fee:  ${numberFormat.format(totalRepairFee)}\$ | 🔄Stop Case: ${numberFormat.format(totalStopCase)} | ⏰Stop Hour:  ${numberFormat.format(totalStopHour)}h  ',
                               style: const TextStyle(fontSize: 16),
                             ),
                           ],
@@ -228,7 +229,12 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Text("Machine Analysis by Department"),
+            Row(
+              children: [
+                Icon(Icons.analytics_outlined, size: 24),
+                BlinkingText(text: "Machine Analysis by Department"),
+              ],
+            ),
             Spacer(),
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -248,7 +254,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
             ),
           ],
         ),
-        backgroundColor: Colors.blueGrey[800],
         foregroundColor: Colors.white,
       ),
 
@@ -274,7 +279,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                 _buildDepartmentStats(snapshot.data!),
 
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * .8,
+                  height: MediaQuery.of(context).size.height * .82,
                   child: Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

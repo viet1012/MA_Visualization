@@ -16,7 +16,6 @@ class TreeMapWidgets {
           BlinkingText(text: title),
         ],
       ),
-      backgroundColor: Colors.blueGrey[900],
       foregroundColor: theme.colorScheme.onSurface,
       elevation: 0,
       bottom: PreferredSize(

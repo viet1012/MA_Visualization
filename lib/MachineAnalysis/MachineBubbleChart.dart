@@ -30,6 +30,18 @@ class BubbleChart extends StatelessWidget {
     );
   }
 
+  double _calculateMinX(List<MachineAnalysis> data) =>
+      data.map((e) => e.stopCase).reduce((a, b) => a < b ? a : b);
+
+  double _calculateMaxX(List<MachineAnalysis> data) =>
+      data.map((e) => e.stopCase).reduce((a, b) => a > b ? a : b);
+
+  double _calculateMinY(List<MachineAnalysis> data) =>
+      data.map((e) => e.stopHour).reduce((a, b) => a < b ? a : b);
+
+  double _calculateMaxY(List<MachineAnalysis> data) =>
+      data.map((e) => e.stopHour).reduce((a, b) => a > b ? a : b);
+
   @override
   Widget build(BuildContext context) {
     // Nhóm dữ liệu theo department
@@ -99,16 +111,14 @@ class BubbleChart extends StatelessWidget {
                       shortName,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     Text(
-                      numberFormat.format(machine.repairFee),
+                      '${numberFormat.format(machine.repairFee)}\$',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 8,
                         fontWeight: FontWeight.w500,
                         color: Colors.yellow[300],
                       ),
@@ -146,6 +156,11 @@ class BubbleChart extends StatelessWidget {
         ),
         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         interval: 200,
+        edgeLabelPlacement: EdgeLabelPlacement.shift, // dịch nhãn để tránh cắt
+        plotOffset: 30, // thêm khoảng cách 2 bên
+        minimum: _calculateMinX(data) - 10, // mở rộng range trái
+        maximum: _calculateMaxX(data) + 100, // mở rộng range phải
+        rangePadding: ChartRangePadding.round,
       ),
       primaryYAxis: NumericAxis(
         title: AxisTitle(
@@ -161,8 +176,11 @@ class BubbleChart extends StatelessWidget {
         axisLine: AxisLine(width: 1, color: Colors.grey[600]),
         majorTickLines: MajorTickLines(size: 8, width: 1.5),
         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        interval: 1000,
         labelFormat: '{value}h',
+        plotOffset: 30,
+        minimum: _calculateMinY(data) - 1000, // ví dụ - padding
+        maximum: _calculateMaxY(data) + 1000,
+        rangePadding: ChartRangePadding.round,
       ),
       series: seriesList,
     );

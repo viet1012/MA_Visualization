@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'DepartmentUtils.dart';
+
 class DivisionFilterChips extends StatelessWidget {
   final List<String> divisions;
   final List<String> selectedDivs;
@@ -22,6 +24,11 @@ class DivisionFilterChips extends StatelessWidget {
 
             return FilterChip(
               label: Text(div),
+              selectedColor: DepartmentUtils.getDepartmentColor(div),
+              backgroundColor: DepartmentUtils.getDepartmentColor(
+                div,
+              ).withOpacity(0.2),
+              checkmarkColor: Colors.white,
               selected: isSelected,
               onSelected: (selected) {
                 List<String> newSelected = List.from(selectedDivs);

@@ -61,7 +61,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final dayFormat = DateFormat('d/MMM/yyyy');
     return AppBar(
-      backgroundColor: Colors.blueGrey[900],
       elevation: 4,
       leading:
           showBackButton
