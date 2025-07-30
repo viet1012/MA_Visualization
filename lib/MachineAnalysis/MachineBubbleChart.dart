@@ -62,7 +62,7 @@ class BubbleChart extends StatelessWidget {
           yValueMapper: (MachineAnalysis d, _) => d.stopHour,
           sizeValueMapper: (MachineAnalysis d, _) => d.repairFee,
           name: div,
-          // opacity: 0.85,
+          opacity: 0.85,
           minimumRadius: 15,
           maximumRadius: 50,
           enableTooltip: true,
@@ -125,114 +125,42 @@ class BubbleChart extends StatelessWidget {
     return SfCartesianChart(
       plotAreaBorderWidth: 1,
       plotAreaBorderColor: Colors.grey[300],
-      backgroundColor: Colors.grey[50],
-
-      legend: Legend(
-        isVisible: true,
-        position: LegendPosition.bottom,
-        overflowMode: LegendItemOverflowMode.wrap,
-        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-        iconHeight: 15,
-        iconWidth: 15,
-        itemPadding: 8,
-        // Custom legend items với màu sắc department
-        legendItemBuilder: (
-          String name,
-          dynamic series,
-          dynamic point,
-          int seriesIndex,
-        ) {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: DepartmentUtils.getDepartmentColor(name),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 2,
-                        offset: const Offset(1, 1),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: DepartmentUtils.getDepartmentColor(name),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
       tooltipBehavior: tooltipBehavior,
       zoomPanBehavior: zoomPanBehavior,
       primaryXAxis: NumericAxis(
         title: AxisTitle(
-          text: 'Stop Case (Number of Stops)',
-          textStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          text: 'Stop Case',
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         majorGridLines: MajorGridLines(
-          width: 0.8,
+          width: 0.3,
           color: Colors.grey[600],
           dashArray: const [5, 5],
         ),
         minorGridLines: MinorGridLines(width: 0.5, color: Colors.grey[600]),
         axisLine: AxisLine(width: 2, color: Colors.grey[600]),
         majorTickLines: MajorTickLines(
-          size: 8,
+          size: 1,
           width: 1.5,
           color: Colors.grey[600],
         ),
-        labelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-        ),
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         interval: 200,
       ),
       primaryYAxis: NumericAxis(
         title: AxisTitle(
-          text: 'Stop Hour (Hours)',
-          textStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          text: 'Stop Hour',
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         majorGridLines: MajorGridLines(
-          width: 0.8,
-          color: Colors.grey[300],
+          width: 0.3,
+          color: Colors.grey[100],
           dashArray: const [5, 5],
         ),
         minorGridLines: MinorGridLines(width: 0.5, color: Colors.grey[200]),
-        axisLine: AxisLine(width: 2, color: Colors.grey[600]),
-        majorTickLines: MajorTickLines(
-          size: 8,
-          width: 1.5,
-          color: Colors.grey[600],
-        ),
-        labelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-        ),
+        axisLine: AxisLine(width: 1, color: Colors.grey[600]),
+        majorTickLines: MajorTickLines(size: 8, width: 1.5),
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         interval: 1000,
         labelFormat: '{value}h',
       ),

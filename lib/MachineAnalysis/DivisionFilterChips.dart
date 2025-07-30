@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DivisionFilterChips extends StatelessWidget {
   final List<String> divisions;
   final List<String> selectedDivs;
-  final Function(String, bool) onSelectionChanged;
+  final Function(List<String>) onSelectionChanged; // đổi callback nhận list mới
 
   const DivisionFilterChips({
     required this.divisions,
@@ -11,10 +11,6 @@ class DivisionFilterChips extends StatelessWidget {
     required this.onSelectionChanged,
     super.key,
   });
-
-  bool get isKVHSelected => selectedDivs.contains('KVH');
-  bool get isOtherSelected =>
-      selectedDivs.any((div) => div != 'KVH'); // PRESS/MOLD/GUIDE selected
 
   @override
   Widget build(BuildContext context) {
@@ -24,23 +20,32 @@ class DivisionFilterChips extends StatelessWidget {
           divisions.map((div) {
             bool isSelected = selectedDivs.contains(div);
 
-            // Logic disable:
-            bool isDisabled = false;
-            if (div == 'KVH' && isOtherSelected) {
-              isDisabled = true;
-            } else if (div != 'KVH' && isKVHSelected) {
-              isDisabled = true;
-            }
-
             return FilterChip(
               label: Text(div),
               selected: isSelected,
-              onSelected:
-                  isDisabled
-                      ? null
-                      : (selected) {
-                        onSelectionChanged(div, selected);
-                      },
+              onSelected: (selected) {
+                List<String> newSelected = List.from(selectedDivs);
+                if (selected) {
+                  if (div == 'KVH') {
+                    // chọn KVH thì bỏ hết nhóm khác
+                    newSelected = ['KVH'];
+                  } else {
+                    // chọn nhóm khác thì bỏ KVH nếu có
+                    newSelected.remove('KVH');
+                    newSelected.add(div);
+                  }
+                } else {
+                  // bỏ chọn nhóm này
+                  newSelected.remove(div);
+                }
+
+                // Không cho phép bỏ hết hết nhóm (bắt buộc phải chọn ít nhất 1 nhóm)
+                if (newSelected.isEmpty) {
+                  newSelected.add(div);
+                }
+
+                onSelectionChanged(newSelected);
+              },
             );
           }).toList(),
     );

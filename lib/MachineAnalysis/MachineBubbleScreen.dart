@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../API/ApiService.dart';
+import '../Common/NoDataWidget.dart';
 import '../Model/MachineAnalysis.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -139,20 +140,9 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
-                children: [
-                  Icon(Icons.bar_chart, color: Colors.blue),
-                  SizedBox(width: 8),
-                  Text(
-                    'Department Statistics',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
               Wrap(
                 spacing: 16,
                 runSpacing: 16,
@@ -175,7 +165,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                       );
 
                       return Container(
-                        width: 330,
+                        width: 470,
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: DepartmentUtils.getDepartmentColor(
@@ -217,15 +207,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '${machines.length} machines',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              '${numberFormat.format(totalRepairFee)} repair fee',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              '$totalStopCase stops • ${totalStopHour.toStringAsFixed(1)}h downtime',
+                              'Repair Fee:  ${numberFormat.format(totalRepairFee)}\$ | Stop Case: ${numberFormat.format(totalStopCase)} | Stop Hour:  ${numberFormat.format(totalStopHour)}h  ',
                               style: const TextStyle(fontSize: 16),
                             ),
                           ],
@@ -244,71 +226,72 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Machine Analysis by Department"),
+        title: Row(
+          children: [
+            const Text("Machine Analysis by Department"),
+            Spacer(),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 8.0,
+                horizontal: 12,
+              ),
+              child: DivisionFilterChips(
+                divisions: _divisions,
+                selectedDivs: _selectedDivs,
+                onSelectionChanged: (newSelectedDivs) {
+                  setState(() {
+                    _selectedDivs = newSelectedDivs;
+                  });
+                  _loadData();
+                },
+              ),
+            ),
+          ],
+        ),
         backgroundColor: Colors.blueGrey[800],
         foregroundColor: Colors.white,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: DivisionFilterChips(
-              divisions: _divisions,
-              selectedDivs: _selectedDivs,
-              onSelectionChanged: (div, selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedDivs.add(div);
-                  } else {
-                    _selectedDivs.remove(div);
-                  }
-                });
-                _loadData();
-              },
-            ),
-          ),
-          Expanded(
-            child: FutureBuilder<List<MachineAnalysis>>(
-              future: _futureData,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Lỗi: ${snapshot.error}'));
-                }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('Không có dữ liệu'));
-                }
-                return SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildDepartmentStats(snapshot.data!),
-                      Container(
-                        height: MediaQuery.of(context).size.height * .8,
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          elevation: 12,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: BubbleChart(
-                              data: snapshot.data!,
-                              tooltipBehavior: _tooltipBehavior,
-                              zoomPanBehavior: _zoomPanBehavior,
-                              numberFormat: numberFormat,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+
+      body: FutureBuilder<List<MachineAnalysis>>(
+        future: _futureData,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return NoDataWidget(
+              title: "No Data Available",
+              message: "Please try again with a different time range.",
+              icon: Icons.error_outline,
+            );
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Không có dữ liệu'));
+          }
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildDepartmentStats(snapshot.data!),
+
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * .8,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 12,
+                    child: BubbleChart(
+                      data: snapshot.data!,
+                      tooltipBehavior: _tooltipBehavior,
+                      zoomPanBehavior: _zoomPanBehavior,
+                      numberFormat: numberFormat,
+                    ),
                   ),
-                );
-              },
+                ),
+              ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
