@@ -9,6 +9,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'DepartmentStatsWidget.dart';
 import 'DepartmentUtils.dart';
 import 'DivisionFilterChips.dart';
+import 'EnhancedDropdown.dart';
 import 'MachineBubbleChart.dart';
 
 class BubbleChartScreen extends StatefulWidget {
@@ -34,6 +35,20 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
 
   late String _selectedMonth;
 
+  final List<String> _monthOptions = [
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+  ];
   int _selectedTopN = 10; // mặc định Top 10
 
   final List<int> _topOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // tuỳ chọn top
@@ -140,38 +155,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
     });
   }
 
-  void _selectMonthOnly(BuildContext context) async {
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) {
-        return ListView.builder(
-          itemCount: 12,
-          itemBuilder: (context, index) {
-            final month = index + 1;
-            final monthStr = month.toString().padLeft(2, '0');
-            return ListTile(
-              title: Text('$monthStr Month'),
-              onTap:
-                  () => {
-                    setState(() {
-                      _selectedMonth = monthStr;
-                    }),
-                    _loadData(),
-                    Navigator.pop(context),
-                  },
-            );
-          },
-        );
-      },
-    );
-
-    if (selected != null) {
-      setState(() {
-        _selectedMonth = selected;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,74 +172,40 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 children: [
-                  // Chọn tháng
-                  InkWell(
-                    onTap: () => _selectMonthOnly(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blueGrey.shade800,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_today,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '$_selectedMonth Month',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  EnhancedDropdown<String>(
+                    value: _selectedMonth,
+                    items: _monthOptions,
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedMonth = value;
+                        });
+                        _loadData();
+                      }
+                    },
+                    labelBuilder: (month) => '$month Month',
+                    icon: Icons.calendar_today_rounded,
+                    startColor: Colors.blueGrey.shade700,
+                    endColor: Colors.blueGrey.shade900,
+                    iconBackground: Colors.blue.shade600,
                   ),
-                  const SizedBox(width: 16),
-                  // Chọn Top N
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.blueGrey.shade800,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        value: _selectedTopN,
-                        dropdownColor: Colors.grey.shade900,
-                        iconEnabledColor: Colors.white,
-                        items:
-                            _topOptions.map((top) {
-                              return DropdownMenuItem<int>(
-                                value: top,
-                                child: Text(
-                                  'Top $top',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() {
-                              _selectedTopN = value;
-                            });
-                            _loadData();
-                          }
-                        },
-                      ),
-                    ),
+                  const SizedBox(width: 20),
+                  EnhancedDropdown<int>(
+                    value: _selectedTopN,
+                    items: _topOptions,
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedTopN = value;
+                        });
+                        _loadData();
+                      }
+                    },
+                    labelBuilder: (top) => 'Top $top',
+                    icon: Icons.add_chart,
+                    startColor: Colors.orange.shade600,
+                    endColor: Colors.grey.shade800,
+                    iconBackground: Colors.amber.shade600,
                   ),
                 ],
               ),

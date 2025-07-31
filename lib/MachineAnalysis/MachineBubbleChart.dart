@@ -369,10 +369,10 @@ class _BubbleChartState extends State<BubbleChart>
             const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           );
         },
-        interval: 1000,
+        interval: 500,
         plotOffset: 30,
-        minimum: _calculateMinY(widget.data) - 1000,
-        maximum: _calculateMaxY(widget.data) + 1000,
+        minimum: _calculateMinY(widget.data) - 500,
+        maximum: _calculateMaxY(widget.data) + 500,
         rangePadding: ChartRangePadding.round,
       ),
       series: seriesList,
