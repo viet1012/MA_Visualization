@@ -6,6 +6,7 @@ import '../Common/NoDataWidget.dart';
 import '../Model/MachineAnalysis.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import 'DepartmentStatsWidget.dart';
 import 'DepartmentUtils.dart';
 import 'DivisionFilterChips.dart';
 import 'MachineBubbleChart.dart';
@@ -26,9 +27,12 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
   late Future<List<MachineAnalysis>> _futureData;
 
   final List<String> _divisions = ['KVH', 'PRESS', 'MOLD', 'GUIDE'];
+
   List<String> _selectedDivs = [];
 
   final numberFormat = NumberFormat('#,###', 'en_US');
+
+  late String _selectedMonth;
 
   @override
   void initState() {
@@ -42,7 +46,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
       shadowColor: Colors.grey.withOpacity(0.6),
       textStyle: const TextStyle(
         color: Colors.white,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: FontWeight.w600,
       ),
       borderColor: Colors.white,
@@ -72,33 +76,33 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 '⚙️ Machine: ${data.macName}',
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               Text(
                 '🔄 Stop Case: ${data.stopCase?.toInt() ?? '-'}',
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               Text(
                 '⏰ Stop Hour: ${data.stopHour?.toStringAsFixed(1) ?? '-'}h',
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               Text(
-                '💰 Repair Fee: ${formattedFee}',
+                '💰 Repair Fee: $formattedFee\$',
                 style: const TextStyle(
                   color: Colors.yellow,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 '🏆 Rank: #${data.rank}',
-                style: const TextStyle(color: Colors.orange, fontSize: 12),
+                style: const TextStyle(color: Colors.orange, fontSize: 14),
               ),
             ],
           ),
@@ -114,6 +118,9 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
     );
 
     _selectedDivs = [widget.div];
+
+    _selectedMonth = '12'; // giữ giá trị ban đầu
+
     _loadData();
   }
 
@@ -121,106 +128,43 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
     final selectedString = _selectedDivs.join(',');
     setState(() {
       _futureData = ApiService().fetchMachineDataAnalysis(
-        widget.month,
-        selectedString,
+        month: widget.month,
+        div: selectedString,
+        monthBack: _selectedMonth,
       );
     });
   }
 
-  // Department statistics widget
-  Widget _buildDepartmentStats(List<MachineAnalysis> data) {
-    Map<String, List<MachineAnalysis>> deptData = {};
-    for (var item in data) {
-      deptData.putIfAbsent(item.div, () => []).add(item);
-    }
-
-    return Container(
-      margin: const EdgeInsets.all(8),
-      child: Card(
-        elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children:
-                    deptData.entries.map((entry) {
-                      String dept = entry.key;
-                      List<MachineAnalysis> machines = entry.value;
-
-                      double totalRepairFee = machines.fold(
-                        0,
-                        (sum, m) => sum + m.repairFee,
-                      );
-                      double totalStopHour = machines.fold(
-                        0,
-                        (sum, m) => sum + m.stopHour,
-                      );
-                      int totalStopCase = machines.fold(
-                        0,
-                        (sum, m) => sum + m.stopCase.toInt(),
-                      );
-
-                      return Container(
-                        width: 550,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: DepartmentUtils.getDepartmentColor(
-                            dept,
-                          ).withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: DepartmentUtils.getDepartmentColor(dept),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    color: DepartmentUtils.getDepartmentColor(
-                                      dept,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  dept,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: DepartmentUtils.getDepartmentColor(
-                                      dept,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '💰Repair Fee:  ${numberFormat.format(totalRepairFee)}\$ | 🔄Stop Case: ${numberFormat.format(totalStopCase)} | ⏰Stop Hour:  ${numberFormat.format(totalStopHour)}h  ',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-              ),
-            ],
-          ),
-        ),
-      ),
+  void _selectMonthOnly(BuildContext context) async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) {
+        return ListView.builder(
+          itemCount: 12,
+          itemBuilder: (context, index) {
+            final month = index + 1;
+            final monthStr = month.toString().padLeft(2, '0');
+            return ListTile(
+              title: Text('Month $monthStr'),
+              onTap:
+                  () => {
+                    setState(() {
+                      _selectedMonth = monthStr;
+                    }),
+                    _loadData(),
+                    Navigator.pop(context),
+                  },
+            );
+          },
+        );
+      },
     );
+
+    if (selected != null) {
+      setState(() {
+        _selectedMonth = selected;
+      });
+    }
   }
 
   @override
@@ -232,10 +176,34 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
             Row(
               children: [
                 Icon(Icons.analytics_outlined, size: 24),
-                BlinkingText(text: "Machine Analysis by Department"),
+                BlinkingText(text: "Machine Analysis"),
               ],
             ),
             Spacer(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: InkWell(
+                onTap: () => _selectMonthOnly(context),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Month $_selectedMonth',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(
                 vertical: 8.0,
@@ -263,23 +231,26 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
+          if (snapshot.hasError ||
+              !snapshot.hasData ||
+              snapshot.data!.isEmpty) {
             return NoDataWidget(
               title: "No Data Available",
               message: "Please try again with a different time range.",
               icon: Icons.error_outline,
             );
           }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Không có dữ liệu'));
-          }
+
           return SingleChildScrollView(
             child: Column(
               children: [
-                _buildDepartmentStats(snapshot.data!),
+                DepartmentStatsWidget(
+                  data: snapshot.data!,
+                  numberFormat: numberFormat,
+                ),
 
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * .82,
+                  height: MediaQuery.of(context).size.height * .83,
                   child: Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

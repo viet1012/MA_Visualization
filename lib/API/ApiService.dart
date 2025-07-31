@@ -264,13 +264,15 @@ class ApiService {
     }
   }
 
-  Future<List<MachineAnalysis>> fetchMachineDataAnalysis(
-    String month,
-    String div,
-  ) async {
+  Future<List<MachineAnalysis>> fetchMachineDataAnalysis({
+    required String month,
+    required String div,
+    required monthBack,
+    int topLimit = 10,
+  }) async {
     final monthParam = month.replaceAll('-', '');
     final uri = Uri.parse(
-      '$baseUrl/machine/analysis?divisions=$div&month=$monthParam',
+      '$baseUrl/machine/analysis?divisions=$div&month=$monthParam&monthBack=$monthBack&topLimit=$topLimit',
     );
     final response = await http.get(uri);
 

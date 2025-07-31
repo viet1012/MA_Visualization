@@ -187,14 +187,14 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                               ),
                             ),
                             title: Text(
-                              '${item.title} by Day',
+                              '${item.title} Analysis',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             subtitle: const Text(
-                              'View daily breakdown of data',
+                              'View detailed daily statistics and trends',
                             ),
                             onTap: () async {
                               final index = widget.data.indexWhere(

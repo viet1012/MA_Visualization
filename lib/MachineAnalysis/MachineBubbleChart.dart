@@ -4,8 +4,9 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Model/MachineAnalysis.dart';
 import 'DepartmentUtils.dart';
+import 'PieChartDetail.dart';
 
-class BubbleChart extends StatelessWidget {
+class BubbleChart extends StatefulWidget {
   final List<MachineAnalysis> data;
   final TooltipBehavior tooltipBehavior;
   final ZoomPanBehavior zoomPanBehavior;
@@ -18,6 +19,40 @@ class BubbleChart extends StatelessWidget {
     required this.numberFormat,
     super.key,
   });
+
+  @override
+  State<BubbleChart> createState() => _BubbleChartState();
+}
+
+class _BubbleChartState extends State<BubbleChart>
+    with SingleTickerProviderStateMixin {
+  MachineAnalysis? selectedMachine;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
+  bool showPieChart = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.3).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   // Tạo gradient cho từng department
   LinearGradient getDepartmentGradient(String div) {
@@ -42,26 +77,125 @@ class BubbleChart extends StatelessWidget {
   double _calculateMaxY(List<MachineAnalysis> data) =>
       data.map((e) => e.stopHour).reduce((a, b) => a > b ? a : b);
 
+  void _onBubbleTapped(MachineAnalysis machine) {
+    setState(() {
+      if (selectedMachine == machine) {
+        // If same machine clicked, deselect
+        selectedMachine = null;
+        _animationController.reverse();
+      } else {
+        // Select new machine
+        selectedMachine = machine;
+        _animationController.forward();
+      }
+    });
+  }
+
+  void _closePieChart() {
+    setState(() {
+      selectedMachine = null;
+      _animationController.reverse();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Nhóm dữ liệu theo department
     Map<String, List<MachineAnalysis>> groupedData = {};
-    for (var item in data) {
+    for (var item in widget.data) {
       if (!groupedData.containsKey(item.div)) {
         groupedData[item.div] = [];
       }
       groupedData[item.div]!.add(item);
     }
 
-    groupedData.forEach((div, list) {
-      print('Dept $div: ${list.length} machines');
-      for (var machine in list) {
-        print(
-          '  - ${machine.macName}: Stop=${machine.stopCase}, Hour=${machine.stopHour}, Fee=${machine.repairFee}',
-        );
-      }
-    });
+    return Stack(
+      children: [
+        // Main bubble chart
+        AnimatedBuilder(
+          animation: _fadeAnimation,
+          builder: (context, child) {
+            return AnimatedOpacity(
+              opacity: selectedMachine != null ? _fadeAnimation.value : 1.0,
+              duration: const Duration(milliseconds: 500),
+              child: _buildBubbleChart(groupedData),
+            );
+          },
+        ),
 
+        // Pie chart overlay
+        if (selectedMachine != null)
+          AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Container(
+                  color: Colors.black.withOpacity(0.2),
+                  child: Center(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.85,
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: PieChartDetail(
+                        machine: selectedMachine!,
+                        numberFormat: widget.numberFormat,
+                        onClose: _closePieChart,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
+        // Close button
+        if (selectedMachine != null)
+          Positioned(
+            top: 40,
+            right: 20,
+            child: AnimatedBuilder(
+              animation: _scaleAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      onPressed: _closePieChart,
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      iconSize: 24,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildBubbleChart(Map<String, List<MachineAnalysis>> groupedData) {
     // Tạo danh sách series cho từng department
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [];
 
@@ -74,16 +208,22 @@ class BubbleChart extends StatelessWidget {
           yValueMapper: (MachineAnalysis d, _) => d.stopHour,
           sizeValueMapper: (MachineAnalysis d, _) => d.repairFee,
           name: div,
-          opacity: 0.85,
+          opacity: selectedMachine != null ? 0.3 : 0.85,
           minimumRadius: 15,
           maximumRadius: 50,
-          enableTooltip: true,
+          enableTooltip: selectedMachine == null,
           color: DepartmentUtils.getDepartmentColor(div),
           borderColor: DepartmentUtils.getDepartmentColor(div).withOpacity(0.8),
           borderWidth: 2,
           gradient: getDepartmentGradient(div),
+          onPointTap: (ChartPointDetails details) {
+            // Handle point tap for individual bubbles
+            if (details.pointIndex != null) {
+              _onBubbleTapped(machines[details.pointIndex!]);
+            }
+          },
           dataLabelSettings: DataLabelSettings(
-            isVisible: true,
+            isVisible: selectedMachine == null,
             labelAlignment: ChartDataLabelAlignment.middle,
             builder: (
               dynamic d,
@@ -116,7 +256,7 @@ class BubbleChart extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${numberFormat.format(machine.repairFee)}\$',
+                      '${widget.numberFormat.format(machine.repairFee)}\$',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
@@ -135,12 +275,16 @@ class BubbleChart extends StatelessWidget {
     return SfCartesianChart(
       plotAreaBorderWidth: 1,
       plotAreaBorderColor: Colors.grey[300],
-      tooltipBehavior: tooltipBehavior,
-      zoomPanBehavior: zoomPanBehavior,
+      tooltipBehavior: widget.tooltipBehavior,
+      zoomPanBehavior: widget.zoomPanBehavior,
       primaryXAxis: NumericAxis(
         title: AxisTitle(
           text: 'Stop Case',
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+          ),
         ),
         majorGridLines: MajorGridLines(
           width: 0.3,
@@ -154,18 +298,23 @@ class BubbleChart extends StatelessWidget {
           width: 1.5,
           color: Colors.grey[600],
         ),
-        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         interval: 200,
-        edgeLabelPlacement: EdgeLabelPlacement.shift, // dịch nhãn để tránh cắt
-        plotOffset: 30, // thêm khoảng cách 2 bên
-        minimum: _calculateMinX(data) - 10, // mở rộng range trái
-        maximum: _calculateMaxX(data) + 100, // mở rộng range phải
+        edgeLabelPlacement: EdgeLabelPlacement.shift,
+        plotOffset: 30,
+        minimum: _calculateMinX(widget.data) - 10,
+        maximum: _calculateMaxX(widget.data) + 100,
         rangePadding: ChartRangePadding.round,
       ),
       primaryYAxis: NumericAxis(
         title: AxisTitle(
           text: 'Stop Hour',
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+
+            fontStyle: FontStyle.italic,
+          ),
         ),
         majorGridLines: MajorGridLines(
           width: 0.3,
@@ -175,11 +324,17 @@ class BubbleChart extends StatelessWidget {
         minorGridLines: MinorGridLines(width: 0.5, color: Colors.grey[200]),
         axisLine: AxisLine(width: 1, color: Colors.grey[600]),
         majorTickLines: MajorTickLines(size: 8, width: 1.5),
-        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        labelFormat: '{value}h',
+        labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        axisLabelFormatter: (AxisLabelRenderDetails details) {
+          final formatted = widget.numberFormat.format(details.value);
+          return ChartAxisLabel(
+            '$formatted',
+            const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          );
+        },
         plotOffset: 30,
-        minimum: _calculateMinY(data) - 1000, // ví dụ - padding
-        maximum: _calculateMaxY(data) + 1000,
+        minimum: _calculateMinY(widget.data) - 1000,
+        maximum: _calculateMaxY(widget.data) + 1000,
         rangePadding: ChartRangePadding.round,
       ),
       series: seriesList,
