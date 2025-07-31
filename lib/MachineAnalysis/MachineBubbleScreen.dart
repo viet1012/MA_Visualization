@@ -34,6 +34,10 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
 
   late String _selectedMonth;
 
+  int _selectedTopN = 10; // mặc định Top 10
+
+  final List<int> _topOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // tuỳ chọn top
+
   @override
   void initState() {
     super.initState();
@@ -101,7 +105,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                 ),
               ),
               Text(
-                '🏆 Rank: #${data.rank}',
+                '📊 Rank: #${data.rank}',
                 style: const TextStyle(color: Colors.orange, fontSize: 14),
               ),
             ],
@@ -131,6 +135,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         month: widget.month,
         div: selectedString,
         monthBack: _selectedMonth,
+        topLimit: _selectedTopN,
       );
     });
   }
@@ -145,7 +150,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
             final month = index + 1;
             final monthStr = month.toString().padLeft(2, '0');
             return ListTile(
-              title: Text('Month $monthStr'),
+              title: Text('$monthStr Month'),
               onTap:
                   () => {
                     setState(() {
@@ -182,26 +187,78 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
             Spacer(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: InkWell(
-                onTap: () => _selectMonthOnly(context),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Month $_selectedMonth',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
+              child: Row(
+                children: [
+                  // Chọn tháng
+                  InkWell(
+                    onTap: () => _selectMonthOnly(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.shade800,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$_selectedMonth Month',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Chọn Top N
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey.shade800,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        value: _selectedTopN,
+                        dropdownColor: Colors.grey.shade900,
+                        iconEnabledColor: Colors.white,
+                        items:
+                            _topOptions.map((top) {
+                              return DropdownMenuItem<int>(
+                                value: top,
+                                child: Text(
+                                  'Top $top',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedTopN = value;
+                            });
+                            _loadData();
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(
@@ -250,7 +307,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                 ),
 
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * .83,
+                  height: MediaQuery.of(context).size.height * .85,
                   child: Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

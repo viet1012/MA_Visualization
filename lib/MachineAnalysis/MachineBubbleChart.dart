@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -196,28 +198,232 @@ class _BubbleChartState extends State<BubbleChart>
   }
 
   Widget _buildBubbleChart(Map<String, List<MachineAnalysis>> groupedData) {
+    // ✅ Gộp tất cả machines vào 1 danh sách
+    List<MachineAnalysis> allMachines = [];
+    groupedData.forEach((div, machines) {
+      allMachines.addAll(machines);
+    });
+
+    // Debug: In ra để kiểm tra
+    print('=== SINGLE SERIES DEBUG ===');
+    allMachines.take(5).forEach((machine) {
+      print('${machine.macName} (${machine.div}): ${machine.repairFee}');
+    });
+
+    // ✅ Tạo chỉ 1 series duy nhất
+    List<BubbleSeries<MachineAnalysis, num>> seriesList = [
+      BubbleSeries<MachineAnalysis, num>(
+        animationDuration: 500,
+        dataSource: allMachines,
+        xValueMapper: (MachineAnalysis d, _) => d.stopCase,
+        yValueMapper: (MachineAnalysis d, _) => d.stopHour,
+        sizeValueMapper:
+            (MachineAnalysis d, _) => d.repairFee, // ✅ Dùng trực tiếp
+        // ✅ Màu sắc theo department
+        pointColorMapper:
+            (MachineAnalysis d, _) => DepartmentUtils.getDepartmentColor(d.div),
+        name: 'All Machines',
+        opacity: selectedMachine != null ? 0.3 : 0.85,
+        minimumRadius: 15,
+        maximumRadius: 50,
+        enableTooltip: selectedMachine == null,
+        borderWidth: 2,
+        onPointTap: (ChartPointDetails details) {
+          if (details.pointIndex != null) {
+            _onBubbleTapped(allMachines[details.pointIndex!]);
+          }
+        },
+        dataLabelSettings: DataLabelSettings(
+          isVisible: selectedMachine == null,
+          labelAlignment: ChartDataLabelAlignment.middle,
+          builder: (
+            dynamic d,
+            dynamic point,
+            dynamic series,
+            int pointIndex,
+            int seriesIndex,
+          ) {
+            MachineAnalysis machine = d as MachineAnalysis;
+            String shortName =
+                machine.macName.length > 10
+                    ? '${machine.macName.substring(0, 8)}..'
+                    : machine.macName;
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '#${machine.rank}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.grey[300],
+                      shadows: [
+                        Shadow(
+                          color: Colors.white.withOpacity(0.6),
+                          blurRadius: 4,
+                          offset: Offset(0, 0),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    shortName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.white,
+                          blurRadius: 4,
+                          offset: Offset(0, 0),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    '${widget.numberFormat.format(machine.repairFee)}\$',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.yellow[300],
+                      shadows: [
+                        Shadow(
+                          color: Colors.yellowAccent,
+                          blurRadius: 6,
+                          offset: Offset(0, 0),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    ];
+
+    return SfCartesianChart(
+      plotAreaBorderWidth: 1,
+      plotAreaBorderColor: Colors.grey[300],
+      tooltipBehavior: widget.tooltipBehavior,
+      zoomPanBehavior: widget.zoomPanBehavior,
+      // ✅ Tạo custom legend cho departments
+      legend: Legend(
+        isVisible: false, // Tắt legend mặc định
+      ),
+      primaryXAxis: NumericAxis(
+        title: AxisTitle(
+          text: 'Stop Case',
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        majorGridLines: MajorGridLines(
+          width: 0.3,
+          color: Colors.grey[600],
+          dashArray: const [5, 5],
+        ),
+        minorGridLines: MinorGridLines(width: 0.5, color: Colors.grey[600]),
+        axisLine: AxisLine(width: 2, color: Colors.grey[600]),
+        majorTickLines: MajorTickLines(
+          size: 1,
+          width: 1.5,
+          color: Colors.grey[600],
+        ),
+        labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        interval: 200,
+        edgeLabelPlacement: EdgeLabelPlacement.shift,
+        axisLabelFormatter: (AxisLabelRenderDetails details) {
+          final formatted = widget.numberFormat.format(details.value);
+          return ChartAxisLabel(
+            '$formatted',
+            const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          );
+        },
+        plotOffset: 30,
+        minimum: _calculateMinX(widget.data) - 10,
+        maximum: _calculateMaxX(widget.data) + 100,
+        rangePadding: ChartRangePadding.round,
+      ),
+      primaryYAxis: NumericAxis(
+        title: AxisTitle(
+          text: 'Stop Hour',
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        majorGridLines: MajorGridLines(
+          width: 0.3,
+          color: Colors.grey[100],
+          dashArray: const [5, 5],
+        ),
+        minorGridLines: MinorGridLines(width: 0.5, color: Colors.grey[200]),
+        axisLine: AxisLine(width: 1, color: Colors.grey[600]),
+        majorTickLines: MajorTickLines(size: 8, width: 1.5),
+        labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        axisLabelFormatter: (AxisLabelRenderDetails details) {
+          final formatted = widget.numberFormat.format(details.value);
+          return ChartAxisLabel(
+            '$formatted',
+            const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          );
+        },
+        plotOffset: 30,
+        minimum: _calculateMinY(widget.data) - 1000,
+        maximum: _calculateMaxY(widget.data) + 1000,
+        rangePadding: ChartRangePadding.round,
+      ),
+      series: seriesList,
+    );
+  }
+
+  Widget _buildBubbleChart1(Map<String, List<MachineAnalysis>> groupedData) {
     // Tạo danh sách series cho từng department
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [];
 
     groupedData.forEach((div, machines) {
+      // ✅ Tính min/max trong nhóm hiện tại
+      double minFee = machines
+          .map((e) => e.repairFee)
+          .reduce((a, b) => a < b ? a : b);
+      double maxFee = machines
+          .map((e) => e.repairFee)
+          .reduce((a, b) => a > b ? a : b);
+
+      // ✅ Chuẩn hóa repairFee trong nhóm hiện tại
+      double normalizeSize(double value) {
+        if (maxFee == minFee) return 1.0;
+        return (value - minFee) / (maxFee - minFee) * 100 + 1;
+      }
+
       seriesList.add(
         BubbleSeries<MachineAnalysis, num>(
           animationDuration: 500,
           dataSource: machines,
+
           xValueMapper: (MachineAnalysis d, _) => d.stopCase,
           yValueMapper: (MachineAnalysis d, _) => d.stopHour,
-          sizeValueMapper: (MachineAnalysis d, _) => d.repairFee,
+          sizeValueMapper:
+              (MachineAnalysis d, _) =>
+                  normalizeSize(d.repairFee), // ✅ apply theo nhóm
           name: div,
           opacity: selectedMachine != null ? 0.3 : 0.85,
-          minimumRadius: 15,
-          maximumRadius: 50,
+          // minimumRadius: 15,
+          // maximumRadius: 50,
           enableTooltip: selectedMachine == null,
           color: DepartmentUtils.getDepartmentColor(div),
           borderColor: DepartmentUtils.getDepartmentColor(div).withOpacity(0.8),
           borderWidth: 2,
           gradient: getDepartmentGradient(div),
           onPointTap: (ChartPointDetails details) {
-            // Handle point tap for individual bubbles
             if (details.pointIndex != null) {
               _onBubbleTapped(machines[details.pointIndex!]);
             }
@@ -271,7 +477,6 @@ class _BubbleChartState extends State<BubbleChart>
         ),
       );
     });
-
     return SfCartesianChart(
       plotAreaBorderWidth: 1,
       plotAreaBorderColor: Colors.grey[300],
