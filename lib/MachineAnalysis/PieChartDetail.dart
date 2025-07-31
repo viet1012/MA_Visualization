@@ -9,13 +9,11 @@ import 'DepartmentUtils.dart';
 class PieChartDetail extends StatelessWidget {
   final MachineAnalysis machine;
   final NumberFormat numberFormat;
-  final VoidCallback onClose;
 
   const PieChartDetail({
     super.key,
     required this.machine,
     required this.numberFormat,
-    required this.onClose,
   });
 
   @override
@@ -41,29 +39,6 @@ class PieChartDetail extends StatelessWidget {
                 ],
               ),
               child: _buildContent(),
-            ),
-          ),
-        ),
-
-        // Close Button
-        Positioned(
-          top: 40,
-          right: 20,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.grey),
-              onPressed: onClose,
             ),
           ),
         ),
