@@ -36,8 +36,16 @@ class _RepairFeeDailyOverviewScreenState
           context,
           listen: false,
         );
+        // final newMonth =
+        //     "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
+
+        final newAdjustedDate = adjustedDateForDataFetch(
+          dateProvider.selectedDate,
+        );
         final newMonth =
-            "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
+            "${newAdjustedDate.year}-${newAdjustedDate.month.toString().padLeft(2, '0')}";
+        repairFeeProvider.fetchRepairFee(newMonth);
+
         print("newMonth: $newMonth");
         repairFeeProvider.fetchRepairFee(newMonth);
       });
@@ -62,10 +70,27 @@ class _RepairFeeDailyOverviewScreenState
     super.dispose();
   }
 
+  DateTime adjustedDateForDataFetch(DateTime date) {
+    // Nếu là ngày 1 của tháng thì lùi lại 1 ngày để sang tháng trước
+    final now = DateTime.now();
+    final isSameMonth =
+        date.year == now.year && date.month == now.month && now.day == date.day;
+    if (isSameMonth && date.day == 1) {
+      return date.subtract(const Duration(days: 1));
+    }
+
+    return date;
+  }
+
   void _fetchData(RepairFeeDailyProvider provider) {
     final dateProvider = context.read<DateProvider>();
+    // final month =
+    //     "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
+
+    final adjustedDate = adjustedDateForDataFetch(dateProvider.selectedDate);
     final month =
-        "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
+        "${adjustedDate.year}-${adjustedDate.month.toString().padLeft(2, '0')}";
+
     provider.clearData(); // 👈 Reset trước khi fetch
     provider.fetchRepairFee(month);
   }
@@ -92,6 +117,10 @@ class _RepairFeeDailyOverviewScreenState
               },
             );
           }
+
+          final adjustedDate = adjustedDateForDataFetch(selectedDate);
+          final newMonth =
+              "${adjustedDate.year}-${adjustedDate.month.toString().padLeft(2, '0')}";
 
           return SingleChildScrollView(
             child: SizedBox(
@@ -122,8 +151,9 @@ class _RepairFeeDailyOverviewScreenState
                       child: RepairFeeDailyOverviewChart(
                         data: provider.data,
                         nameChart: nameChart,
-                        month:
-                            "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",
+                        // month:
+                        //     "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2, '0')}",
+                        month: newMonth,
                       ),
                     ),
                   ],

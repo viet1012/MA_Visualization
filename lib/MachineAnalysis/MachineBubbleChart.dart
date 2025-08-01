@@ -365,14 +365,14 @@ class _BubbleChartState extends State<BubbleChart>
         axisLabelFormatter: (AxisLabelRenderDetails details) {
           final formatted = widget.numberFormat.format(details.value);
           return ChartAxisLabel(
-            '$formatted',
+            formatted,
             const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           );
         },
         interval: 500,
         plotOffset: 30,
         minimum: _calculateMinY(widget.data) - 500,
-        maximum: _calculateMaxY(widget.data) + 500,
+        maximum: _calculateMaxY(widget.data) + 700,
         rangePadding: ChartRangePadding.round,
       ),
       series: seriesList,

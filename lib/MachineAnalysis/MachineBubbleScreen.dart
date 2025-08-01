@@ -81,11 +81,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         final formattedFee = numberFormat.format(data.repairFee);
         return Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.black87,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white, width: 1),
-          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
