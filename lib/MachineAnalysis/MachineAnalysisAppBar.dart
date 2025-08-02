@@ -46,7 +46,6 @@ class MachineAnalysisAppBar extends StatelessWidget
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -62,13 +61,15 @@ class MachineAnalysisAppBar extends StatelessWidget
                 Row(
                   children: [
                     AnimatedChoiceChip(
-                      label: 'Normal',
+                      label: 'Total',
                       icon: Icons.bar_chart,
-                      isSelected: selectedMode == AnalysisMode.normal,
-                      onTap: () => onModeChanged(AnalysisMode.normal),
+                      isSelected: selectedMode == AnalysisMode.total,
+                      onTap: () => onModeChanged(AnalysisMode.total),
                       selectedColor: Colors.blue,
                       selectedGradient: const LinearGradient(
-                        colors: [Colors.blueAccent, Colors.blue],
+                        colors: [Color(0xFF00F260), Color(0xFF0575E6)],
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
                       ),
                     ),
                     const SizedBox(width: 12),

@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../API/ApiService.dart';
-import '../Common/BlinkingText.dart';
 import '../Common/NoDataWidget.dart';
 import '../Model/MachineAnalysis.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import 'BubbleChartCard.dart';
 import 'DepartmentStatsWidget.dart';
-import 'DepartmentUtils.dart';
-import 'DivisionFilterChips.dart';
-import 'EnhancedDropdown.dart';
 import 'MachineAnalysisAppBar.dart';
-import 'MachineBubbleChart.dart';
 
 class BubbleChartScreen extends StatefulWidget {
   final String month;
@@ -24,7 +19,7 @@ class BubbleChartScreen extends StatefulWidget {
   _BubbleChartScreenState createState() => _BubbleChartScreenState();
 }
 
-enum AnalysisMode { normal, average }
+enum AnalysisMode { total, average }
 
 class _BubbleChartScreenState extends State<BubbleChartScreen> {
   late TooltipBehavior _tooltipBehavior;
@@ -39,24 +34,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
 
   late String _selectedMonth;
 
-  final List<String> _monthOptions = [
-    '01',
-    '02',
-    '03',
-    '04',
-    '05',
-    '06',
-    '07',
-    '08',
-    '09',
-    '10',
-    '11',
-    '12',
-  ];
-
   int _selectedTopN = 10; // mặc định Top 10
-
-  final List<int> _topOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // tuỳ chọn top
 
   @override
   void initState() {
@@ -194,12 +172,12 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
     _loadData();
   }
 
-  AnalysisMode _selectedMode = AnalysisMode.normal;
+  AnalysisMode _selectedMode = AnalysisMode.total;
 
   void _loadData() {
     final selectedString = _selectedDivs.join(',');
     setState(() {
-      if (_selectedMode == AnalysisMode.normal) {
+      if (_selectedMode == AnalysisMode.total) {
         _futureData = ApiService().fetchMachineDataAnalysis(
           month: widget.month,
           div: selectedString,

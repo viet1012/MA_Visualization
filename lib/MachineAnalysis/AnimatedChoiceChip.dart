@@ -170,6 +170,7 @@ class _AnimatedChoiceChipState extends State<AnimatedChoiceChip>
               color: Colors.transparent,
               borderRadius: borderRadius,
               child: InkWell(
+                splashFactory: InkRipple.splashFactory,
                 onTap: _handleTap,
                 onTapDown: _handleTapDown,
                 onTapUp: _handleTapUp,
