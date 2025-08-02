@@ -15,10 +15,22 @@ class DepartmentStatsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, List<MachineAnalysis>> deptData = {};
+    // Gom nhóm theo phòng ban (division)
+    final Map<String, List<MachineAnalysis>> deptData = {};
     for (var item in data) {
       deptData.putIfAbsent(item.div, () => []).add(item);
     }
+
+    // Định nghĩa thứ tự xuất hiện
+    List<String> predefinedOrder = ['KVH', 'PRESS', 'MOLD', 'GUIDE'];
+    List<String> departmentOrder = deptData.keys.toList();
+    departmentOrder.sort((a, b) {
+      int indexA = predefinedOrder.indexOf(a);
+      int indexB = predefinedOrder.indexOf(b);
+      if (indexA == -1) indexA = predefinedOrder.length;
+      if (indexB == -1) indexB = predefinedOrder.length;
+      return indexA.compareTo(indexB);
+    });
 
     return Card(
       elevation: 6,
@@ -32,9 +44,8 @@ class DepartmentStatsWidget extends StatelessWidget {
               spacing: 16,
               runSpacing: 16,
               children:
-                  deptData.entries.map((entry) {
-                    String dept = entry.key;
-                    List<MachineAnalysis> machines = entry.value;
+                  departmentOrder.map((dept) {
+                    List<MachineAnalysis> machines = deptData[dept]!;
 
                     double totalRepairFee = machines.fold(
                       0,
