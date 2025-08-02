@@ -17,13 +17,27 @@ class DepartmentStatsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // Gom nhóm theo phòng ban (division)
     final Map<String, List<MachineAnalysis>> deptData = {};
+
+    // Bước 1: Thêm vào Map và in ra
     for (var item in data) {
-      deptData.putIfAbsent(item.div, () => []).add(item);
+      deptData
+          .putIfAbsent(item.div, () {
+            print('➕ Tạo mới department: ${item.div}');
+            return [];
+          })
+          .add(item);
     }
 
-    // Định nghĩa thứ tự xuất hiện
+    // Bước 2: In ra danh sách trước khi sắp xếp
+    print('\n📋 Danh sách department ban đầu (chưa sắp xếp):');
+    deptData.forEach((key, value) {
+      print('- $key (${value.length} máy)');
+    });
+
+    // Bước 3: Sắp xếp theo predefinedOrder
     List<String> predefinedOrder = ['KVH', 'PRESS', 'MOLD', 'GUIDE'];
     List<String> departmentOrder = deptData.keys.toList();
+
     departmentOrder.sort((a, b) {
       int indexA = predefinedOrder.indexOf(a);
       int indexB = predefinedOrder.indexOf(b);
@@ -31,6 +45,12 @@ class DepartmentStatsWidget extends StatelessWidget {
       if (indexB == -1) indexB = predefinedOrder.length;
       return indexA.compareTo(indexB);
     });
+
+    // Bước 4: In ra sau khi sắp xếp
+    print('\n✅ Danh sách department sau khi sắp xếp:');
+    for (var dept in departmentOrder) {
+      print('🔸 $dept');
+    }
 
     return Card(
       elevation: 6,

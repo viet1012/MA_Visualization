@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_charts/flutter_charts.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -24,6 +25,10 @@ class BubbleChart extends StatefulWidget {
 
   @override
   State<BubbleChart> createState() => _BubbleChartState();
+}
+
+extension LogExtension on num {
+  double log10() => log(this) / ln10;
 }
 
 class _BubbleChartState extends State<BubbleChart>
@@ -79,27 +84,6 @@ class _BubbleChartState extends State<BubbleChart>
   double _calculateMaxY(List<MachineAnalysis> data) =>
       data.map((e) => e.stopHour).reduce((a, b) => a > b ? a : b);
 
-  void _onBubbleTapped(MachineAnalysis machine) {
-    setState(() {
-      if (selectedMachine == machine) {
-        // If same machine clicked, deselect
-        selectedMachine = null;
-        _animationController.reverse();
-      } else {
-        // Select new machine
-        selectedMachine = machine;
-        _animationController.forward();
-      }
-    });
-  }
-
-  void _closePieChart() {
-    setState(() {
-      selectedMachine = null;
-      _animationController.reverse();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // Nhóm dữ liệu theo department
@@ -124,76 +108,46 @@ class _BubbleChartState extends State<BubbleChart>
             );
           },
         ),
-
-        // Pie chart overlay
-        if (selectedMachine != null)
-          AnimatedBuilder(
-            animation: _scaleAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Container(
-                  color: Colors.black.withOpacity(0.2),
-                  child: Center(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.85,
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: PieChartDetail(
-                        machine: selectedMachine!,
-                        numberFormat: widget.numberFormat,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-
-        // Close button
-        if (selectedMachine != null)
-          Positioned(
-            top: 40,
-            right: 20,
-            child: AnimatedBuilder(
-              animation: _scaleAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      onPressed: _closePieChart,
-                      icon: const Icon(Icons.close, color: Colors.grey),
-                      iconSize: 24,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
       ],
     );
+  }
+
+  double getBubbleRadius(double repairFee, double minFee, double maxFee) {
+    const minRadius = 15;
+    const maxRadius = 50;
+    if (minFee == maxFee) return (minRadius + maxRadius) / 2;
+
+    return minRadius +
+        (repairFee - minFee) * (maxRadius - minRadius) / (maxFee - minFee);
+  }
+
+  double calculateAxisInterval(
+    double min,
+    double max, {
+    int targetTickCount = 5,
+  }) {
+    double range = max - min;
+    if (range <= 0) return 1;
+
+    // Ước lượng khoảng cách giữa các ticks
+    double rawInterval = range / targetTickCount;
+
+    // Làm tròn về 1 số có nghĩa
+    double magnitude = pow(10, rawInterval.log10().floor()).toDouble();
+    double normalized = rawInterval / magnitude;
+
+    double rounded;
+    if (normalized < 1.5) {
+      rounded = 1;
+    } else if (normalized < 3) {
+      rounded = 2;
+    } else if (normalized < 7) {
+      rounded = 5;
+    } else {
+      rounded = 10;
+    }
+
+    return rounded * magnitude;
   }
 
   Widget _buildBubbleChart(Map<String, List<MachineAnalysis>> groupedData) {
@@ -203,11 +157,16 @@ class _BubbleChartState extends State<BubbleChart>
       allMachines.addAll(machines);
     });
 
-    // Debug: In ra để kiểm tra
-    print('=== SINGLE SERIES DEBUG ===');
-    allMachines.take(5).forEach((machine) {
-      print('${machine.macName} (${machine.div}): ${machine.repairFee}');
-    });
+    double minRepairFee = allMachines.map((e) => e.repairFee).reduce(min);
+    double maxRepairFee = allMachines.map((e) => e.repairFee).reduce(max);
+
+    double minX = _calculateMinX(widget.data);
+    double maxX = _calculateMaxX(widget.data);
+    double minY = _calculateMinY(widget.data);
+    double maxY = _calculateMaxY(widget.data);
+
+    double intervalX = calculateAxisInterval(minX, maxX);
+    double intervalY = calculateAxisInterval(minY, maxY);
 
     // ✅ Tạo chỉ 1 series duy nhất
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [
@@ -227,11 +186,6 @@ class _BubbleChartState extends State<BubbleChart>
         maximumRadius: 50,
         enableTooltip: selectedMachine == null,
         borderWidth: 2,
-        onPointTap: (ChartPointDetails details) {
-          if (details.pointIndex != null) {
-            _onBubbleTapped(allMachines[details.pointIndex!]);
-          }
-        },
         dataLabelSettings: DataLabelSettings(
           isVisible: selectedMachine == null,
           labelAlignment: ChartDataLabelAlignment.middle,
@@ -248,8 +202,15 @@ class _BubbleChartState extends State<BubbleChart>
                     ? '${machine.macName.substring(0, 8)}..'
                     : machine.macName;
 
+            double radius = getBubbleRadius(
+              machine.repairFee,
+              minRepairFee,
+              maxRepairFee,
+            );
+            double maxLabelWidth = radius * 3.14; // Đường kính
+
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              constraints: BoxConstraints(maxWidth: maxLabelWidth),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -268,8 +229,10 @@ class _BubbleChartState extends State<BubbleChart>
                     ),
                   ),
                   Text(
-                    shortName,
+                    machine.macName,
                     textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -284,6 +247,7 @@ class _BubbleChartState extends State<BubbleChart>
                   ),
                   Text(
                     '${widget.numberFormat.format(machine.repairFee)}\$',
+                    maxLines: 1,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
@@ -330,7 +294,6 @@ class _BubbleChartState extends State<BubbleChart>
         ),
 
         labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        interval: 200,
         edgeLabelPlacement: EdgeLabelPlacement.shift,
         axisLabelFormatter: (AxisLabelRenderDetails details) {
           final formatted = widget.numberFormat.format(details.value);
@@ -340,8 +303,14 @@ class _BubbleChartState extends State<BubbleChart>
           );
         },
         plotOffset: 30,
-        minimum: _calculateMinX(widget.data) - 10,
-        maximum: _calculateMaxX(widget.data) + 100,
+
+        // interval: 200,
+        // minimum: _calculateMinX(widget.data) - 10,
+        // maximum: _calculateMaxX(widget.data) + 100,
+        interval: intervalX,
+        minimum: minX - intervalX,
+        maximum: maxX + intervalX,
+
         rangePadding: ChartRangePadding.round,
       ),
       primaryYAxis: NumericAxis(
@@ -369,10 +338,14 @@ class _BubbleChartState extends State<BubbleChart>
             const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           );
         },
-        interval: 500,
         plotOffset: 30,
-        minimum: _calculateMinY(widget.data) - 500,
-        maximum: _calculateMaxY(widget.data) + 700,
+
+        // interval: 1000,
+        // minimum: _calculateMinY(widget.data) - 500,
+        // maximum: _calculateMaxY(widget.data) + 3000,
+        interval: intervalY,
+        minimum: minY - intervalY,
+        maximum: maxY + intervalY,
         rangePadding: ChartRangePadding.round,
       ),
       series: seriesList,
