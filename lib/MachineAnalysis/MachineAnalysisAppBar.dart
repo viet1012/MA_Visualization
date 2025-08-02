@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../Common/BlinkingText.dart';
+import 'AnimatedChoiceChip.dart';
 import 'DivisionFilterChips.dart';
 import 'EnhancedDropdown.dart';
 import 'MachineBubbleScreen.dart';
@@ -42,68 +43,49 @@ class MachineAnalysisAppBar extends StatelessWidget
             ],
           ),
           const Spacer(),
-          Row(
-            children: [
-              ChoiceChip(
-                label: const Text('Normal'),
-                selected: selectedMode == AnalysisMode.normal,
-                onSelected: (val) {
-                  if (val) onModeChanged(AnalysisMode.normal);
-                },
-                backgroundColor: Colors.grey.shade200,
-                selectedColor: Colors.blue.shade600,
-                labelStyle: TextStyle(
-                  color:
-                      selectedMode == AnalysisMode.normal
-                          ? Colors.white
-                          : Colors.black87,
-                  fontWeight: FontWeight.w600,
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color:
-                        selectedMode == AnalysisMode.normal
-                            ? Colors.blue.shade600
-                            : Colors.grey.shade400,
-                  ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    AnimatedChoiceChip(
+                      label: 'Normal',
+                      icon: Icons.bar_chart,
+                      isSelected: selectedMode == AnalysisMode.normal,
+                      onTap: () => onModeChanged(AnalysisMode.normal),
+                      selectedColor: Colors.blue,
+                      selectedGradient: const LinearGradient(
+                        colors: [Colors.blueAccent, Colors.blue],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    AnimatedChoiceChip(
+                      label: 'Average',
+                      icon: Icons.show_chart,
+                      isSelected: selectedMode == AnalysisMode.average,
+                      onTap: () => onModeChanged(AnalysisMode.average),
+                      selectedColor: Colors.green,
+                      selectedGradient: const LinearGradient(
+                        colors: [Colors.lightGreen, Colors.green],
+                      ),
+                    ),
+                  ],
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-              ),
-              const SizedBox(width: 12),
-              ChoiceChip(
-                label: const Text('Average'),
-                selected: selectedMode == AnalysisMode.average,
-                onSelected: (val) {
-                  if (val) onModeChanged(AnalysisMode.average);
-                },
-                backgroundColor: Colors.grey.shade200,
-                selectedColor: Colors.green.shade600,
-                labelStyle: TextStyle(
-                  color:
-                      selectedMode == AnalysisMode.average
-                          ? Colors.white
-                          : Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color:
-                        selectedMode == AnalysisMode.average
-                            ? Colors.green.shade600
-                            : Colors.grey.shade400,
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),

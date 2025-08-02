@@ -92,18 +92,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         final formattedFee = numberFormat.format(data.repairFee);
         return Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.black87,
-            borderRadius: BorderRadius.circular(12), // ✅ Bo góc tooltip
-            border: Border.all(color: Colors.white, width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +109,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 24),
                   // ✅ Close button (tùy chọn)
                   GestureDetector(
                     onTap: () {
