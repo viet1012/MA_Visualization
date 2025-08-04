@@ -40,6 +40,10 @@ class _BubbleChartState extends State<BubbleChart>
 
   bool showPieChart = false;
 
+  final GlobalKey _chartKey = GlobalKey();
+  Offset? _selectedBubblePosition;
+  MachineAnalysis? _selectedMachine;
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +98,9 @@ class _BubbleChartState extends State<BubbleChart>
       }
       groupedData[item.div]!.add(item);
     }
+
+    double minRepairFee = widget.data.map((e) => e.repairFee).reduce(min);
+    double maxRepairFee = widget.data.map((e) => e.repairFee).reduce(max);
 
     return Stack(
       children: [
@@ -171,6 +178,39 @@ class _BubbleChartState extends State<BubbleChart>
     // ✅ Tạo chỉ 1 series duy nhất
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [
       BubbleSeries<MachineAnalysis, num>(
+        onPointTap: (ChartPointDetails details) {
+          final int pointIndex = details.pointIndex!;
+          final machine = allMachines[pointIndex];
+
+          final renderBox =
+              _chartKey.currentContext?.findRenderObject() as RenderBox?;
+          if (renderBox != null) {
+            final size = renderBox.size;
+
+            // Giả sử bạn đã tính min/max X,Y trước đó ở _buildBubbleChart
+            double minX = _calculateMinX(allMachines);
+            double maxX = _calculateMaxX(allMachines);
+            double minY = _calculateMinY(allMachines);
+            double maxY = _calculateMaxY(allMachines);
+
+            double xValue = machine.stopCase;
+            double yValue = machine.stopHour;
+
+            // Tính vị trí pixel trong chart area
+            double xPos = (xValue - minX) / (maxX - minX) * size.width;
+            double yPos =
+                size.height - (yValue - minY) / (maxY - minY) * size.height;
+
+            final bubblePosition = Offset(xPos, yPos);
+
+            setState(() {
+              _selectedBubblePosition = Offset(xPos, yPos);
+              _selectedMachine = machine;
+            });
+            print('Bubble pixel position: $bubblePosition');
+          }
+        },
+
         animationDuration: 500,
         dataSource: allMachines,
         xValueMapper: (MachineAnalysis d, _) => d.stopCase,
@@ -197,10 +237,6 @@ class _BubbleChartState extends State<BubbleChart>
             int seriesIndex,
           ) {
             MachineAnalysis machine = d as MachineAnalysis;
-            String shortName =
-                machine.macName.length > 10
-                    ? '${machine.macName.substring(0, 8)}..'
-                    : machine.macName;
 
             double radius = getBubbleRadius(
               machine.repairFee,
@@ -270,6 +306,8 @@ class _BubbleChartState extends State<BubbleChart>
     ];
 
     return SfCartesianChart(
+      key: _chartKey,
+
       plotAreaBorderWidth: 1,
       plotAreaBorderColor: Colors.grey[300],
       tooltipBehavior: widget.tooltipBehavior,

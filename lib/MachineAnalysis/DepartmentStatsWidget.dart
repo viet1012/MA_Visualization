@@ -1,16 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Model/MachineAnalysis.dart';
 import 'DepartmentUtils.dart';
+import 'MachineBubbleScreen.dart';
+import 'MachineTableScreen.dart';
 
 class DepartmentStatsWidget extends StatelessWidget {
   final List<MachineAnalysis> data;
   final NumberFormat numberFormat;
+  final AnalysisMode selectedMode; // 👈 thêm dòng này
+  final String div;
+  final String month;
+  final String monthBack;
+  final int topLimit;
 
   const DepartmentStatsWidget({
     super.key,
     required this.data,
     required this.numberFormat,
+    required this.selectedMode,
+    required this.div,
+    required this.month,
+    required this.monthBack,
+    required this.topLimit,
   });
 
   @override
@@ -18,17 +31,17 @@ class DepartmentStatsWidget extends StatelessWidget {
     // Gom nhóm theo phòng ban (division)
     final Map<String, List<MachineAnalysis>> deptData = {};
 
-    // // Bước 1: Thêm vào Map và in ra
-    // for (var item in data) {
-    //   deptData
-    //       .putIfAbsent(item.div, () {
-    //         print('➕ Tạo mới department: ${item.div}');
-    //         return [];
-    //       })
-    //       .add(item);
-    // }
-    //
-    // // Bước 2: In ra danh sách trước khi sắp xếp
+    // Bước 1: Thêm vào Map và in ra
+    for (var item in data) {
+      deptData
+          .putIfAbsent(item.div, () {
+            print('➕ Tạo mới department: ${item.div}');
+            return [];
+          })
+          .add(item);
+    }
+
+    // Bước 2: In ra danh sách trước khi sắp xếp
     // print('\n📋 Danh sách department ban đầu (chưa sắp xếp):');
     // deptData.forEach((key, value) {
     //   print('- $key (${value.length} máy)');
@@ -46,7 +59,7 @@ class DepartmentStatsWidget extends StatelessWidget {
       return indexA.compareTo(indexB);
     });
 
-    // // Bước 4: In ra sau khi sắp xếp
+    // Bước 4: In ra sau khi sắp xếp
     // print('\n✅ Danh sách department sau khi sắp xếp:');
     // for (var dept in departmentOrder) {
     //   print('🔸 $dept');
@@ -98,27 +111,87 @@ class DepartmentStatsWidget extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: DepartmentUtils.getDepartmentColor(
-                                    dept,
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: DepartmentUtils.getDepartmentColor(
+                                        dept,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                dept,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: DepartmentUtils.getDepartmentColor(
+                                  const SizedBox(width: 8),
+                                  Text(
                                     dept,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: DepartmentUtils.getDepartmentColor(
+                                        dept,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
+                              Spacer(),
+
+                              if (selectedMode == AnalysisMode.average)
+                                Row(
+                                  children: [
+                                    MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: TextButton.icon(
+                                        icon: const Icon(Icons.table_chart),
+                                        label: Shimmer(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.blue,
+                                              Colors.grey.shade100,
+                                              Colors.grey.shade300,
+                                            ],
+                                            stops: [0.1, 0.5, 0.9],
+                                            begin: Alignment(-1.0, -0.3),
+                                            end: Alignment(1.0, 0.3),
+                                          ),
+                                          child: Text("View Table"),
+                                        ),
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return Dialog(
+                                                insetPadding:
+                                                    EdgeInsets
+                                                        .zero, // để full sát mép màn hình ngang
+                                                child: Container(
+                                                  width:
+                                                      MediaQuery.of(
+                                                        context,
+                                                      ).size.width *
+                                                      .9,
+
+                                                  child: SingleChildScrollView(
+                                                    scrollDirection:
+                                                        Axis.horizontal,
+                                                    child: MachineTableDialog(
+                                                      div: div,
+                                                      month: month,
+                                                      monthBack: monthBack,
+                                                      topLimit: topLimit,
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                           const SizedBox(height: 8),

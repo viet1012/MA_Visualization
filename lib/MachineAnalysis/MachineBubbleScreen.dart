@@ -232,6 +232,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+
           if (snapshot.hasError ||
               !snapshot.hasData ||
               snapshot.data!.isEmpty) {
@@ -241,6 +242,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
               icon: Icons.error_outline,
             );
           }
+          final selectedString = _selectedDivs.join(',');
 
           return SingleChildScrollView(
             child: Column(
@@ -248,7 +250,13 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                 DepartmentStatsWidget(
                   data: snapshot.data!,
                   numberFormat: numberFormat,
+                  div: selectedString,
+                  selectedMode: _selectedMode,
+                  month: widget.month,
+                  monthBack: _selectedMonth,
+                  topLimit: _selectedTopN,
                 ),
+
                 BubbleChartCard(
                   data: snapshot.data!,
                   tooltipBehavior: _tooltipBehavior,

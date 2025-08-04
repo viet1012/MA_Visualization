@@ -11,12 +11,13 @@ import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
 import 'package:ma_visualization/Model/RepairFeeModel.dart';
 
 import '../Model/MachineAnalysis.dart';
+import '../Model/MachineAnalysisAve.dart';
 import '../Model/MachineTrendModel.dart';
 
 class ApiService {
-  // final String baseUrl = "http://F2PC24017:9999/api";
+  final String baseUrl = "http://F2PC24017:9999/api";
 
-  final String baseUrl = "http://192.168.122.15:9092/api";
+  // final String baseUrl = "http://192.168.122.15:9092/api";
 
   Future<List<RepairFeeModel>> fetchRepairFee(String month) async {
     final url = Uri.parse("$baseUrl/repair_fee?month=$month");
@@ -305,6 +306,29 @@ class ApiService {
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = json.decode(response.body);
       return jsonList.map((json) => MachineAnalysis.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load bubble data');
+    }
+  }
+
+  Future<List<MachineAnalysisAve>> fetchMachineDataAnalysisAvgFullResponse({
+    required String month,
+    required String div,
+    required monthBack,
+    required topLimit,
+  }) async {
+    final monthParam = month.replaceAll('-', '');
+    final uri = Uri.parse(
+      '$baseUrl/machine/analysis/avg/full?divisions=$div&month=$monthParam&monthBack=$monthBack&topLimit=$topLimit',
+    );
+    final response = await http.get(uri);
+
+    // Debug
+    print("url: $uri");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList.map((json) => MachineAnalysisAve.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load bubble data');
     }
