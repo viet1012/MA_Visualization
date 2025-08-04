@@ -68,6 +68,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         int seriesIndex,
       ) {
         final formattedFee = numberFormat.format(data.repairFee);
+        final formattedStopHour = numberFormat.format(data.stopHour);
         return Container(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -120,7 +121,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
               ),
               const SizedBox(height: 2),
               Text(
-                '⏰ Stop Hour: ${data.stopHour?.toStringAsFixed(1) ?? '-'}h',
+                '⏰ Stop Hour: ${formattedStopHour ?? '-'}h',
                 style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               const SizedBox(height: 2),
