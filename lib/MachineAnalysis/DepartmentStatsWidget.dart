@@ -35,7 +35,7 @@ class DepartmentStatsWidget extends StatelessWidget {
     for (var item in data) {
       deptData
           .putIfAbsent(item.div, () {
-            print('➕ Tạo mới department: ${item.div}');
+            // print('➕ Tạo mới department: ${item.div}');
             return [];
           })
           .add(item);
@@ -145,18 +145,22 @@ class DepartmentStatsWidget extends StatelessWidget {
                                       cursor: SystemMouseCursors.click,
                                       child: TextButton.icon(
                                         icon: const Icon(Icons.table_chart),
-                                        label: Shimmer(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.blue,
-                                              Colors.grey.shade100,
-                                              Colors.grey.shade300,
-                                            ],
-                                            stops: [0.1, 0.5, 0.9],
-                                            begin: Alignment(-1.0, -0.3),
-                                            end: Alignment(1.0, 0.3),
+                                        label: Shimmer.fromColors(
+                                          baseColor: Colors.grey.shade300,
+                                          highlightColor: Colors.blue,
+                                          period: const Duration(
+                                            milliseconds: 1800,
+                                          ), // tốc độ shimmer
+                                          child: Text(
+                                            "View Table",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  Colors
+                                                      .black, // màu gốc vẫn cần để giữ shape
+                                            ),
                                           ),
-                                          child: Text("View Table"),
                                         ),
                                         onPressed: () {
                                           showDialog(
@@ -166,7 +170,7 @@ class DepartmentStatsWidget extends StatelessWidget {
                                                 insetPadding:
                                                     EdgeInsets
                                                         .zero, // để full sát mép màn hình ngang
-                                                child: Container(
+                                                child: SizedBox(
                                                   width:
                                                       MediaQuery.of(
                                                         context,
@@ -181,6 +185,8 @@ class DepartmentStatsWidget extends StatelessWidget {
                                                       month: month,
                                                       monthBack: monthBack,
                                                       topLimit: topLimit,
+                                                      numberFormat:
+                                                          numberFormat,
                                                     ),
                                                   ),
                                                 ),

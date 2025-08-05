@@ -62,7 +62,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                   children: [
                     AnimatedChoiceChip(
                       label: 'Total',
-                      icon: Icons.bar_chart,
+                      icon: Icon(Icons.bar_chart, color: Colors.black),
                       isSelected: selectedMode == AnalysisMode.total,
                       onTap: () => onModeChanged(AnalysisMode.total),
                       selectedColor: Colors.blue,
@@ -75,7 +75,10 @@ class MachineAnalysisAppBar extends StatelessWidget
                     const SizedBox(width: 12),
                     AnimatedChoiceChip(
                       label: 'Average',
-                      icon: Icons.show_chart,
+                      icon: Image.asset(
+                        'assets/icon_ave.png',
+                        fit: BoxFit.cover,
+                      ),
                       isSelected: selectedMode == AnalysisMode.average,
                       onTap: () => onModeChanged(AnalysisMode.average),
                       selectedColor: Colors.green,
@@ -99,7 +102,10 @@ class MachineAnalysisAppBar extends StatelessWidget
                     (i) => (i + 1).toString().padLeft(2, '0'),
                   ),
                   onChanged: onMonthChanged,
-                  labelBuilder: (month) => '$month Month',
+                  labelBuilder: (month) {
+                    final int m = int.tryParse(month) ?? 1;
+                    return '$m Month${m == 1 ? '' : 's'}';
+                  },
                   icon: Icons.calendar_today_rounded,
                   startColor: Colors.blueGrey.shade700,
                   endColor: Colors.blueGrey.shade900,

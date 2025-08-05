@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AnimatedChoiceChip extends StatefulWidget {
   final String label;
-  final IconData icon;
+  final Widget icon;
   final bool isSelected;
   final VoidCallback onTap;
   final Color selectedColor;
@@ -20,7 +20,7 @@ class AnimatedChoiceChip extends StatefulWidget {
   const AnimatedChoiceChip({
     super.key,
     required this.label,
-    this.icon = Icons.check_circle_outline,
+    required this.icon,
     required this.isSelected,
     required this.onTap,
     required this.selectedColor,
@@ -216,19 +216,22 @@ class _AnimatedChoiceChipState extends State<AnimatedChoiceChip>
                               ),
                             );
                           },
-                          child: Icon(
-                            widget.isSelected
-                                ? Icons.check_circle
-                                : widget.icon,
-                            key: ValueKey(
-                              '${widget.label}-${widget.isSelected}',
-                            ),
-                            size: widget.iconSize ?? 18,
-                            color:
-                                widget.isSelected
-                                    ? Colors.white
-                                    : Colors.grey.shade600,
-                          ),
+                          child:
+                              widget.isSelected
+                                  ? const Icon(
+                                    Icons.check_circle,
+                                    key: ValueKey('selected-icon'),
+                                    size: 18,
+                                    color: Colors.white,
+                                  )
+                                  : SizedBox(
+                                    key: ValueKey(
+                                      '${widget.label}-${widget.isSelected}',
+                                    ),
+                                    width: widget.iconSize ?? 18,
+                                    height: widget.iconSize ?? 18,
+                                    child: widget.icon,
+                                  ),
                         ),
                         SizedBox(width: widget.showIcon ? 10 : 0),
                       ],

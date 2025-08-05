@@ -242,7 +242,23 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
               icon: Icons.error_outline,
             );
           }
-          final selectedString = _selectedDivs.join(',');
+
+          const List<String> divOrder = [
+            'PRESS',
+            'MOLD',
+            'GUIDE',
+          ]; // có thể mở rộng nếu cần
+
+          final orderedSelectedDivs = List<String>.from(_selectedDivs);
+          orderedSelectedDivs.sort((a, b) {
+            int indexA = divOrder.indexOf(a.toUpperCase());
+            int indexB = divOrder.indexOf(b.toUpperCase());
+            indexA = indexA == -1 ? divOrder.length : indexA;
+            indexB = indexB == -1 ? divOrder.length : indexB;
+            return indexA.compareTo(indexB);
+          });
+
+          final selectedString = orderedSelectedDivs.join(',');
 
           return SingleChildScrollView(
             child: Column(

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../API/ApiService.dart';
 import '../Model/MachineAnalysisAve.dart';
+import 'DepartmentUtils.dart';
 
 class MachineTableDialog extends StatelessWidget {
   final String div;
   final String month;
   final String monthBack;
   final int topLimit;
+  final NumberFormat numberFormat;
 
   const MachineTableDialog({
     super.key,
@@ -14,6 +17,7 @@ class MachineTableDialog extends StatelessWidget {
     required this.month,
     required this.monthBack,
     required this.topLimit,
+    required this.numberFormat,
   });
 
   @override
@@ -21,8 +25,7 @@ class MachineTableDialog extends StatelessWidget {
     return Dialog(
       child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.85,
-        height:
-            MediaQuery.of(context).size.height * 0.9, // thêm chiều cao cố định
+        height: MediaQuery.of(context).size.height * 0.9,
         child: Column(
           children: [
             Container(
@@ -79,17 +82,24 @@ class MachineTableDialog extends StatelessWidget {
                         rows:
                             machines.map((machine) {
                               return DataRow(
+                                color: MaterialStateProperty.all(
+                                  DepartmentUtils.getDepartmentColor(
+                                    machine.div,
+                                  ).withOpacity(.2),
+                                ),
                                 cells: [
                                   DataCell(Text(machine.div)),
                                   DataCell(Text(machine.rank.toString())),
                                   DataCell(Text(machine.macName ?? "-")),
                                   DataCell(
-                                    Text(machine.repairFee.toStringAsFixed(2)),
+                                    Text(
+                                      numberFormat.format(machine.repairFee),
+                                    ),
                                   ),
                                   DataCell(Text(machine.countMac.toString())),
                                   DataCell(
                                     Text(
-                                      machine.aveRepairFee.toStringAsFixed(2),
+                                      numberFormat.format(machine.aveRepairFee),
                                     ),
                                   ),
                                   DataCell(
@@ -97,14 +107,20 @@ class MachineTableDialog extends StatelessWidget {
                                   ),
                                   DataCell(
                                     Text(
-                                      machine.stopHour?.toStringAsFixed(2) ??
-                                          '-',
+                                      machine.stopHour != null
+                                          ? numberFormat.format(
+                                            machine.stopHour,
+                                          )
+                                          : '-',
                                     ),
                                   ),
                                   DataCell(
                                     Text(
-                                      machine.aveStopHour?.toStringAsFixed(2) ??
-                                          '-',
+                                      machine.aveStopHour != null
+                                          ? numberFormat.format(
+                                            machine.aveStopHour,
+                                          )
+                                          : '-',
                                     ),
                                   ),
                                 ],
