@@ -137,67 +137,66 @@ class DepartmentStatsWidget extends StatelessWidget {
                                 ],
                               ),
                               Spacer(),
-
-                              if (selectedMode == AnalysisMode.average)
-                                Row(
-                                  children: [
-                                    MouseRegion(
-                                      cursor: SystemMouseCursors.click,
-                                      child: TextButton.icon(
-                                        icon: const Icon(Icons.table_chart),
-                                        label: Shimmer.fromColors(
-                                          baseColor: Colors.grey.shade300,
-                                          highlightColor: Colors.blue,
-                                          period: const Duration(
-                                            milliseconds: 1800,
-                                          ), // tốc độ shimmer
-                                          child: Text(
-                                            "View Table",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color:
-                                                  Colors
-                                                      .black, // màu gốc vẫn cần để giữ shape
-                                            ),
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return Dialog(
-                                                insetPadding:
-                                                    EdgeInsets
-                                                        .zero, // để full sát mép màn hình ngang
-                                                child: SizedBox(
-                                                  width:
-                                                      MediaQuery.of(
-                                                        context,
-                                                      ).size.width *
-                                                      .9,
-
-                                                  child: SingleChildScrollView(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: MachineTableDialog(
-                                                      div: div,
-                                                      month: month,
-                                                      monthBack: monthBack,
-                                                      topLimit: topLimit,
-                                                      numberFormat:
-                                                          numberFormat,
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              // if (selectedMode == AnalysisMode.average)
+                              //   Row(
+                              //     children: [
+                              //       MouseRegion(
+                              //         cursor: SystemMouseCursors.click,
+                              //         child: TextButton.icon(
+                              //           icon: const Icon(Icons.table_chart),
+                              //           label: Shimmer.fromColors(
+                              //             baseColor: Colors.grey.shade300,
+                              //             highlightColor: Colors.blue,
+                              //             period: const Duration(
+                              //               milliseconds: 1800,
+                              //             ), // tốc độ shimmer
+                              //             child: Text(
+                              //               "View Table",
+                              //               style: TextStyle(
+                              //                 fontSize: 16,
+                              //                 fontWeight: FontWeight.bold,
+                              //                 color:
+                              //                     Colors
+                              //                         .black, // màu gốc vẫn cần để giữ shape
+                              //               ),
+                              //             ),
+                              //           ),
+                              //           onPressed: () {
+                              //             showDialog(
+                              //               context: context,
+                              //               builder: (context) {
+                              //                 return Dialog(
+                              //                   insetPadding:
+                              //                       EdgeInsets
+                              //                           .zero, // để full sát mép màn hình ngang
+                              //                   child: SizedBox(
+                              //                     width:
+                              //                         MediaQuery.of(
+                              //                           context,
+                              //                         ).size.width *
+                              //                         .9,
+                              //
+                              //                     child: SingleChildScrollView(
+                              //                       scrollDirection:
+                              //                           Axis.horizontal,
+                              //                       child: MachineTableDialog(
+                              //                         div: div,
+                              //                         month: month,
+                              //                         monthBack: monthBack,
+                              //                         topLimit: topLimit,
+                              //                         numberFormat:
+                              //                             numberFormat,
+                              //                       ),
+                              //                     ),
+                              //                   ),
+                              //                 );
+                              //               },
+                              //             );
+                              //           },
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
                             ],
                           ),
                           const SizedBox(height: 8),

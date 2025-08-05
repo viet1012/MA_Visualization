@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../Common/BlinkingText.dart';
 import 'AnimatedChoiceChip.dart';
 import 'DivisionFilterChips.dart';
 import 'EnhancedDropdown.dart';
 import 'MachineBubbleScreen.dart';
+import 'MachineTableScreen.dart';
 
 class MachineAnalysisAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -17,6 +20,9 @@ class MachineAnalysisAppBar extends StatelessWidget
   final List<String> selectedDivs;
   final List<String> allDivs;
   final ValueChanged<List<String>> onDivisionChanged;
+  final String month;
+  final String monthBack;
+  final NumberFormat numberFormat;
 
   const MachineAnalysisAppBar({
     super.key,
@@ -29,6 +35,9 @@ class MachineAnalysisAppBar extends StatelessWidget
     required this.selectedDivs,
     required this.allDivs,
     required this.onDivisionChanged,
+    required this.month,
+    required this.monthBack,
+    required this.numberFormat,
   });
 
   @override
@@ -43,6 +52,58 @@ class MachineAnalysisAppBar extends StatelessWidget
             ],
           ),
           const Spacer(),
+          Row(
+            children: [
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.table_chart),
+                  label: Shimmer.fromColors(
+                    baseColor: Colors.grey.shade300,
+                    highlightColor: Colors.blue,
+                    period: const Duration(
+                      milliseconds: 1800,
+                    ), // tốc độ shimmer
+                    child: Text(
+                      "View Table",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black, // màu gốc vẫn cần để giữ shape
+                      ),
+                    ),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        final selectedString = selectedDivs.join(',');
+
+                        return Dialog(
+                          insetPadding:
+                              EdgeInsets.zero, // để full sát mép màn hình ngang
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * .7,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: MachineTableDialog(
+                                selectedMode: selectedMode,
+                                div: selectedString,
+                                month: month,
+                                monthBack: monthBack,
+                                topLimit: selectedTopN,
+                                numberFormat: numberFormat,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
@@ -75,9 +136,9 @@ class MachineAnalysisAppBar extends StatelessWidget
                     const SizedBox(width: 12),
                     AnimatedChoiceChip(
                       label: 'Average',
-                      icon: Image.asset(
-                        'assets/icon_ave.png',
-                        fit: BoxFit.cover,
+                      icon: Icon(
+                        Icons.align_vertical_center,
+                        color: Colors.black,
                       ),
                       isSelected: selectedMode == AnalysisMode.average,
                       onTap: () => onModeChanged(AnalysisMode.average),
@@ -114,7 +175,11 @@ class MachineAnalysisAppBar extends StatelessWidget
                 const SizedBox(width: 20),
                 EnhancedDropdown<int>(
                   value: selectedTopN,
-                  items: List.generate(10, (i) => i + 1),
+                  items: [
+                    ...List.generate(10, (i) => i + 1), // 1 đến 10
+                    20,
+                    30,
+                  ],
                   onChanged: onTopNChanged,
                   labelBuilder: (top) => 'Top $top',
                   icon: Icons.add_chart,

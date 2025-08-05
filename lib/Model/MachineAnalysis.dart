@@ -28,6 +28,7 @@ class MachineAnalysis {
 
   Map<String, dynamic> toJson() {
     return {
+      'div': div,
       'macName': macName,
       'rank': rank,
       'stop_Case': stopCase,

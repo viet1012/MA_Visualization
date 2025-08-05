@@ -216,22 +216,7 @@ class _AnimatedChoiceChipState extends State<AnimatedChoiceChip>
                               ),
                             );
                           },
-                          child:
-                              widget.isSelected
-                                  ? const Icon(
-                                    Icons.check_circle,
-                                    key: ValueKey('selected-icon'),
-                                    size: 18,
-                                    color: Colors.white,
-                                  )
-                                  : SizedBox(
-                                    key: ValueKey(
-                                      '${widget.label}-${widget.isSelected}',
-                                    ),
-                                    width: widget.iconSize ?? 18,
-                                    height: widget.iconSize ?? 18,
-                                    child: widget.icon,
-                                  ),
+                          child: widget.icon,
                         ),
                         SizedBox(width: widget.showIcon ? 10 : 0),
                       ],
