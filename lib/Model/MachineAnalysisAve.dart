@@ -43,15 +43,15 @@ class MachineAnalysisAve {
 
   Map<String, dynamic> toJson() {
     return {
-      'div': div,
-      'rank': rank,
-      'macName': macName,
-      'repairFee': repairFee,
-      'countMac': countMac,
-      'aveRepairFee': aveRepairFee,
-      'stopCase': stopCase,
-      'stopHour': stopHour,
-      'aveStopHour': aveStopHour,
+      'Div': div,
+      'Rank': rank,
+      'MacName': macName,
+      'RepairFee': repairFee,
+      'CountMac': countMac,
+      'AveRepairFee': aveRepairFee,
+      'StopCase': stopCase,
+      'StopHour': stopHour,
+      'AveStopHour': aveStopHour,
     };
   }
 }

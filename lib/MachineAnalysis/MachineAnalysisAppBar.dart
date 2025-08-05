@@ -78,24 +78,13 @@ class MachineAnalysisAppBar extends StatelessWidget
                       context: context,
                       builder: (context) {
                         final selectedString = selectedDivs.join(',');
-
-                        return Dialog(
-                          insetPadding:
-                              EdgeInsets.zero, // để full sát mép màn hình ngang
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * .7,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: MachineTableDialog(
-                                selectedMode: selectedMode,
-                                div: selectedString,
-                                month: month,
-                                monthBack: monthBack,
-                                topLimit: selectedTopN,
-                                numberFormat: numberFormat,
-                              ),
-                            ),
-                          ),
+                        return MachineTableDialog(
+                          selectedMode: selectedMode,
+                          div: selectedString,
+                          month: month,
+                          monthBack: monthBack,
+                          topLimit: selectedTopN,
+                          numberFormat: numberFormat,
                         );
                       },
                     );

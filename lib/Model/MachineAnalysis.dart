@@ -28,12 +28,12 @@ class MachineAnalysis {
 
   Map<String, dynamic> toJson() {
     return {
-      'div': div,
-      'macName': macName,
-      'rank': rank,
-      'stop_Case': stopCase,
-      'stop_Hour': stopHour,
-      'repairFee': repairFee,
+      'Div': div,
+      'MacName': macName,
+      'Rank': rank,
+      'StopCase': stopCase,
+      'StopHour': stopHour,
+      'RepairFee': repairFee,
     };
   }
 }

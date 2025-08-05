@@ -11,7 +11,7 @@ class MachineTableDialog extends StatelessWidget {
   final String monthBack;
   final int topLimit;
   final NumberFormat numberFormat;
-  final AnalysisMode selectedMode; // 👈 thêm dòng này
+  final AnalysisMode selectedMode;
 
   const MachineTableDialog({
     super.key,
@@ -46,24 +46,37 @@ class MachineTableDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.7,
-        height: MediaQuery.of(context).size.height * 0.9,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      insetPadding: const EdgeInsets.all(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        height: MediaQuery.of(context).size.height * 0.85,
+        width: MediaQuery.of(context).size.width * 0.6,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            /// Title + Exit
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(selectedMode.name),
-                Container(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    icon: const Icon(Icons.exit_to_app),
-                    tooltip: 'Exit',
-                    onPressed: () => Navigator.of(context).pop(),
+                Text(
+                  selectedMode.name.toUpperCase(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Close',
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
+
+            const SizedBox(height: 10),
+
+            /// Table
             Expanded(
               child: FutureBuilder<List<Map<String, dynamic>>>(
                 future: getMachineDataAsMap(),
@@ -79,34 +92,66 @@ class MachineTableDialog extends StatelessWidget {
                   final dataList = snapshot.data!;
                   final headers = dataList.first.keys.toList();
 
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: DataTable(
-                      columns:
-                          headers
-                              .map((key) => DataColumn(label: Text(key)))
-                              .toList(),
-                      rows:
-                          dataList.map((dataRow) {
-                            return DataRow(
-                              color: MaterialStateProperty.all(
-                                DepartmentUtils.getDepartmentColor(
-                                  dataRow['div'],
-                                ).withOpacity(.6),
-                              ),
-                              cells:
-                                  headers.map((key) {
-                                    final value = dataRow[key];
-                                    return DataCell(
-                                      Text(
-                                        value is num
-                                            ? numberFormat.format(value)
-                                            : value.toString(),
+                  return Scrollbar(
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: MediaQuery.of(context).size.width * 0.6,
+                          ),
+                          child: DataTable(
+                            headingRowColor: MaterialStateProperty.all(
+                              Colors.blueGrey[200],
+                            ),
+                            columnSpacing: 16,
+                            columns:
+                                headers
+                                    .map(
+                                      (key) => DataColumn(
+                                        label: Text(
+                                          key,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
-                                    );
-                                  }).toList(),
-                            );
-                          }).toList(),
+                                    )
+                                    .toList(),
+                            rows:
+                                dataList.map((dataRow) {
+                                  final divValue =
+                                      dataRow['Div']?.toString() ?? '';
+                                  final rowColor =
+                                      DepartmentUtils.getDepartmentColor(
+                                        divValue,
+                                      ).withOpacity(.8);
+
+                                  return DataRow(
+                                    color: MaterialStateProperty.resolveWith<
+                                      Color?
+                                    >((Set<MaterialState> states) => rowColor),
+                                    cells:
+                                        headers.map((key) {
+                                          final value = dataRow[key];
+                                          return DataCell(
+                                            Text(
+                                              value is num
+                                                  ? numberFormat.format(value)
+                                                  : value?.toString() ?? '',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
+                      ),
                     ),
                   );
                 },
