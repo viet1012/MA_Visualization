@@ -129,7 +129,7 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
       child: Container(
         padding: const EdgeInsets.all(16),
         height: MediaQuery.of(context).size.height * 0.85,
-        width: MediaQuery.of(context).size.width * 0.6,
+        width: MediaQuery.of(context).size.width * 0.65,
         child: Column(
           children: [
             // Search box
@@ -188,7 +188,7 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
                                   minWidth:
-                                      MediaQuery.of(context).size.width * 0.6,
+                                      MediaQuery.of(context).size.width * 0.63,
                                 ),
                                 child: DataTable(
                                   headingRowColor: MaterialStateProperty.all(
