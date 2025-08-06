@@ -57,7 +57,7 @@ class _DepartmentStatsWidgetState extends State<DepartmentStatsWidget>
 
     // Rotation animation for stop case
     _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 5000),
       vsync: this,
     );
     _rotationAnimation = Tween<double>(begin: 0.0, end: 2.0).animate(

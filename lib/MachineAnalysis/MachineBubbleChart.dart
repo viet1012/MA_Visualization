@@ -220,12 +220,13 @@ class _BubbleChartState extends State<BubbleChart>
         // ✅ Màu sắc theo department
         pointColorMapper:
             (MachineAnalysis d, _) => DepartmentUtils.getDepartmentColor(d.div),
+        borderWidth: 2,
+        borderColor: Colors.grey.shade200,
         name: 'All Machines',
         opacity: selectedMachine != null ? 0.3 : 0.85,
         minimumRadius: 15,
         maximumRadius: 50,
         enableTooltip: selectedMachine == null,
-        borderWidth: 2,
         dataLabelSettings: DataLabelSettings(
           isVisible: selectedMachine == null,
           labelAlignment: ChartDataLabelAlignment.middle,
@@ -336,7 +337,7 @@ class _BubbleChartState extends State<BubbleChart>
         axisLabelFormatter: (AxisLabelRenderDetails details) {
           final formatted = widget.numberFormat.format(details.value);
           return ChartAxisLabel(
-            '$formatted',
+            formatted,
             const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           );
         },

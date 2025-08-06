@@ -127,7 +127,7 @@ class MachineTableDialog extends StatelessWidget {
                                   final rowColor =
                                       DepartmentUtils.getDepartmentColor(
                                         divValue,
-                                      ).withOpacity(.8);
+                                      ).withOpacity(.3);
 
                                   return DataRow(
                                     color: MaterialStateProperty.resolveWith<
