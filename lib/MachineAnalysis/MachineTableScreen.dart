@@ -5,7 +5,7 @@ import '../Model/MachineAnalysisAve.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
 
-class MachineTableDialog extends StatelessWidget {
+class MachineTableDialog extends StatefulWidget {
   final String div;
   final String month;
   final String monthBack;
@@ -13,7 +13,7 @@ class MachineTableDialog extends StatelessWidget {
   final NumberFormat numberFormat;
   final AnalysisMode selectedMode;
 
-  const MachineTableDialog({
+  MachineTableDialog({
     super.key,
     required this.div,
     required this.month,
@@ -23,21 +23,94 @@ class MachineTableDialog extends StatelessWidget {
     required this.selectedMode,
   });
 
+  @override
+  State<MachineTableDialog> createState() => _MachineTableDialogState();
+}
+
+class _MachineTableDialogState extends State<MachineTableDialog> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchText = '';
+  Map<String, Set<String>> _columnFilters = {};
+  List<Map<String, dynamic>> _originalData = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData(); // Call once
+  }
+
+  Future<void> _loadData() async {
+    try {
+      List<Map<String, dynamic>> data;
+      if (widget.selectedMode == AnalysisMode.average) {
+        final result = await ApiService()
+            .fetchMachineDataAnalysisAvgFullResponse(
+              month: widget.month,
+              monthBack: widget.monthBack,
+              topLimit: widget.topLimit,
+              div: widget.div,
+            );
+        data = result.map((e) => e.toJson()).toList();
+      } else {
+        final result = await ApiService().fetchMachineDataAnalysis(
+          month: widget.month,
+          monthBack: widget.monthBack,
+          topLimit: widget.topLimit,
+          div: widget.div,
+        );
+        data = result.map((e) => e.toJson()).toList();
+      }
+
+      setState(() {
+        _originalData = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> _applyFilters() {
+    return _originalData.where((row) {
+      final matchesGlobal =
+          _searchText.isEmpty ||
+          row.values.any(
+            (value) => value.toString().toLowerCase().contains(
+              _searchText.toLowerCase(),
+            ),
+          );
+
+      final matchesColumnFilters = _columnFilters.entries.every((entry) {
+        final key = entry.key;
+        final selectedValues = entry.value;
+        if (selectedValues.isEmpty) return true;
+        return selectedValues.contains(row[key]?.toString());
+      });
+
+      return matchesGlobal && matchesColumnFilters;
+    }).toList();
+  }
+
   Future<List<Map<String, dynamic>>> getMachineDataAsMap() async {
-    if (selectedMode == AnalysisMode.average) {
+    if (widget.selectedMode == AnalysisMode.average) {
       final result = await ApiService().fetchMachineDataAnalysisAvgFullResponse(
-        month: month,
-        monthBack: monthBack,
-        topLimit: topLimit,
-        div: div,
+        month: widget.month,
+        monthBack: widget.monthBack,
+        topLimit: widget.topLimit,
+        div: widget.div,
       );
       return result.map((e) => e.toJson()).toList();
     } else {
       final result = await ApiService().fetchMachineDataAnalysis(
-        month: month,
-        monthBack: monthBack,
-        topLimit: topLimit,
-        div: div,
+        month: widget.month,
+        monthBack: widget.monthBack,
+        topLimit: widget.topLimit,
+        div: widget.div,
       );
       return result.map((e) => e.toJson()).toList();
     }
@@ -45,6 +118,11 @@ class MachineTableDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ScrollController verticalController = ScrollController();
+    final ScrollController horizontalController = ScrollController();
+
+    final dataList = _applyFilters();
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: const EdgeInsets.all(16),
@@ -53,14 +131,25 @@ class MachineTableDialog extends StatelessWidget {
         height: MediaQuery.of(context).size.height * 0.85,
         width: MediaQuery.of(context).size.width * 0.6,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            /// Title + Exit
+            // Search box
+            TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(labelText: '🔍 Tìm kiếm...'),
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+
+            // Title + Close
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  selectedMode.name.toUpperCase(),
+                  widget.selectedMode.name.toUpperCase(),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -68,94 +157,105 @@ class MachineTableDialog extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
-                  tooltip: 'Close',
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
-
             const SizedBox(height: 10),
 
-            /// Table
             Expanded(
-              child: FutureBuilder<List<Map<String, dynamic>>>(
-                future: getMachineDataAsMap(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Lỗi: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('Không có dữ liệu'));
-                  }
-
-                  final dataList = snapshot.data!;
-                  final headers = dataList.first.keys.toList();
-
-                  return Scrollbar(
-                    thumbVisibility: true,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth: MediaQuery.of(context).size.width * 0.6,
-                          ),
-                          child: DataTable(
-                            headingRowColor: MaterialStateProperty.all(
-                              Colors.blueGrey[200],
-                            ),
-                            columnSpacing: 16,
-                            columns:
-                                headers
-                                    .map(
-                                      (key) => DataColumn(
-                                        label: Text(
-                                          key,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                            rows:
-                                dataList.map((dataRow) {
-                                  final divValue =
-                                      dataRow['Div']?.toString() ?? '';
-                                  final rowColor =
-                                      DepartmentUtils.getDepartmentColor(
-                                        divValue,
-                                      ).withOpacity(.3);
-
-                                  return DataRow(
-                                    color: MaterialStateProperty.resolveWith<
-                                      Color?
-                                    >((Set<MaterialState> states) => rowColor),
-                                    cells:
-                                        headers.map((key) {
-                                          final value = dataRow[key];
-                                          return DataCell(
-                                            Text(
-                                              value is num
-                                                  ? numberFormat.format(value)
-                                                  : value?.toString() ?? '',
-                                              style: const TextStyle(
-                                                fontSize: 14,
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null
+                      ? Center(child: Text('Lỗi: $_error'))
+                      : dataList.isEmpty
+                      ? const Center(
+                        child: Text('Không có dữ liệu sau khi lọc'),
+                      )
+                      : Scrollbar(
+                        controller: verticalController,
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          controller: verticalController,
+                          scrollDirection: Axis.vertical,
+                          child: Scrollbar(
+                            controller: horizontalController,
+                            thumbVisibility: true,
+                            child: SingleChildScrollView(
+                              controller: horizontalController,
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minWidth:
+                                      MediaQuery.of(context).size.width * 0.6,
+                                ),
+                                child: DataTable(
+                                  headingRowColor: MaterialStateProperty.all(
+                                    Colors.blueGrey,
+                                  ),
+                                  columns:
+                                      dataList.first.keys
+                                          .map(
+                                            (key) => DataColumn(
+                                              label: Text(
+                                                key,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
-                                          );
-                                        }).toList(),
-                                  );
-                                }).toList(),
+                                          )
+                                          .toList(),
+                                  rows:
+                                      dataList.map((dataRow) {
+                                        final divValue =
+                                            dataRow['Div']?.toString() ?? '';
+                                        final rowColor =
+                                            DepartmentUtils.getDepartmentColor(
+                                              divValue,
+                                            ).withOpacity(0.3);
+                                        return DataRow(
+                                          color: MaterialStateProperty.all(
+                                            rowColor,
+                                          ),
+                                          cells:
+                                              dataRow.entries.map((entry) {
+                                                final isHighlighted =
+                                                    entry.key == 'AveRepairFee';
+                                                final text =
+                                                    entry.value is num
+                                                        ? widget.numberFormat
+                                                            .format(entry.value)
+                                                        : entry.value
+                                                            .toString();
+
+                                                return DataCell(
+                                                  Text(
+                                                    text,
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          isHighlighted
+                                                              ? FontWeight.bold
+                                                              : FontWeight
+                                                                  .normal,
+                                                      color:
+                                                          isHighlighted
+                                                              ? Colors.orange
+                                                              : Colors.white,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                        );
+                                      }).toList(),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
             ),
           ],
         ),
