@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import '../API/ApiService.dart';
 import '../Model/MachineAnalysisAve.dart';
 import 'DepartmentUtils.dart';
@@ -135,7 +136,23 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
             // Search box
             TextField(
               controller: _searchController,
-              decoration: const InputDecoration(labelText: '🔍 Tìm kiếm...'),
+              decoration: InputDecoration(
+                labelText: 'Search...',
+                prefixIcon: const Icon(Icons.search, color: Colors.blue),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.blueGrey[200]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
+                filled: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 16,
+                ),
+              ),
               onChanged: (value) {
                 setState(() {
                   _searchText = value;
@@ -170,8 +187,23 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                       : _error != null
                       ? Center(child: Text('Lỗi: $_error'))
                       : dataList.isEmpty
-                      ? const Center(
-                        child: Text('Không có dữ liệu sau khi lọc'),
+                      ? Center(
+                        child: Shimmer.fromColors(
+                          baseColor: Colors.grey.shade300,
+                          highlightColor: Colors.blue,
+                          period: const Duration(
+                            milliseconds: 1800,
+                          ), // tốc độ shimmer
+                          child: Text(
+                            'No data found for your search',
+                            style: TextStyle(
+                              fontSize: 64,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  Colors.black, // màu gốc vẫn cần để giữ shape
+                            ),
+                          ),
+                        ),
                       )
                       : Scrollbar(
                         controller: verticalController,
@@ -192,7 +224,7 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                 ),
                                 child: DataTable(
                                   headingRowColor: MaterialStateProperty.all(
-                                    Colors.blueGrey,
+                                    Colors.blueGrey.shade700,
                                   ),
                                   columns:
                                       dataList.first.keys
@@ -214,7 +246,7 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                         final rowColor =
                                             DepartmentUtils.getDepartmentColor(
                                               divValue,
-                                            ).withOpacity(0.3);
+                                            ).withOpacity(0.2);
                                         return DataRow(
                                           color: MaterialStateProperty.all(
                                             rowColor,

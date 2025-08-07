@@ -51,7 +51,7 @@ class _DepartmentStatsWidgetState extends State<DepartmentStatsWidget>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _moneyAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+    _moneyAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
       CurvedAnimation(parent: _moneyController, curve: Curves.elasticInOut),
     );
 
@@ -69,7 +69,7 @@ class _DepartmentStatsWidgetState extends State<DepartmentStatsWidget>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    _clockAnimation = Tween<double>(begin: -0.2, end: 0.2).animate(
+    _clockAnimation = Tween<double>(begin: -0.4, end: 0.4).animate(
       CurvedAnimation(parent: _clockController, curve: Curves.easeInOut),
     );
 
