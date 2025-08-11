@@ -197,7 +197,7 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                           child: Text(
                             'No data found for your search',
                             style: TextStyle(
-                              fontSize: 64,
+                              fontSize: 58,
                               fontWeight: FontWeight.bold,
                               color:
                                   Colors.black, // màu gốc vẫn cần để giữ shape
