@@ -1,13 +1,10 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_charts/flutter_charts.dart';
-import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:intl/intl.dart';
 
 import '../Model/MachineAnalysis.dart';
 import 'DepartmentUtils.dart';
-import 'PieChartDetail.dart';
 
 class BubbleChart extends StatefulWidget {
   final List<MachineAnalysis> data;
@@ -34,15 +31,15 @@ extension LogExtension on num {
 class _BubbleChartState extends State<BubbleChart>
     with SingleTickerProviderStateMixin {
   MachineAnalysis? selectedMachine;
+  int? selectedIndex;
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-
   bool showPieChart = false;
 
   final GlobalKey _chartKey = GlobalKey();
   Offset? _selectedBubblePosition;
-  MachineAnalysis? _selectedMachine;
 
   @override
   void initState() {
@@ -57,6 +54,9 @@ class _BubbleChartState extends State<BubbleChart>
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
+    _animationController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -65,7 +65,6 @@ class _BubbleChartState extends State<BubbleChart>
     super.dispose();
   }
 
-  // Tạo gradient cho từng department
   LinearGradient getDepartmentGradient(String div) {
     Color baseColor = DepartmentUtils.getDepartmentColor(div);
     return LinearGradient(
@@ -90,7 +89,6 @@ class _BubbleChartState extends State<BubbleChart>
 
   @override
   Widget build(BuildContext context) {
-    // Nhóm dữ liệu theo department
     Map<String, List<MachineAnalysis>> groupedData = {};
     for (var item in widget.data) {
       if (!groupedData.containsKey(item.div)) {
@@ -104,15 +102,10 @@ class _BubbleChartState extends State<BubbleChart>
 
     return Stack(
       children: [
-        // Main bubble chart
         AnimatedBuilder(
           animation: _fadeAnimation,
           builder: (context, child) {
-            return AnimatedOpacity(
-              opacity: selectedMachine != null ? _fadeAnimation.value : 1.0,
-              duration: const Duration(milliseconds: 500),
-              child: _buildBubbleChart(groupedData),
-            );
+            return _buildBubbleChart(groupedData, minRepairFee, maxRepairFee);
           },
         ),
       ],
@@ -120,8 +113,8 @@ class _BubbleChartState extends State<BubbleChart>
   }
 
   double getBubbleRadius(double repairFee, double minFee, double maxFee) {
-    const minRadius = 15;
-    const maxRadius = 50;
+    const minRadius = 15; // tăng từ 15 lên 20
+    const maxRadius = 50; // tăng từ 50 lên 60
     if (minFee == maxFee) return (minRadius + maxRadius) / 2;
 
     return minRadius +
@@ -136,10 +129,7 @@ class _BubbleChartState extends State<BubbleChart>
     double range = max - min;
     if (range <= 0) return 1;
 
-    // Ước lượng khoảng cách giữa các ticks
     double rawInterval = range / targetTickCount;
-
-    // Làm tròn về 1 số có nghĩa
     double magnitude = pow(10, rawInterval.log10().floor()).toDouble();
     double normalized = rawInterval / magnitude;
 
@@ -157,15 +147,15 @@ class _BubbleChartState extends State<BubbleChart>
     return rounded * magnitude;
   }
 
-  Widget _buildBubbleChart(Map<String, List<MachineAnalysis>> groupedData) {
-    // ✅ Gộp tất cả machines vào 1 danh sách
+  Widget _buildBubbleChart(
+    Map<String, List<MachineAnalysis>> groupedData,
+    double minRepairFee,
+    double maxRepairFee,
+  ) {
     List<MachineAnalysis> allMachines = [];
     groupedData.forEach((div, machines) {
       allMachines.addAll(machines);
     });
-
-    double minRepairFee = allMachines.map((e) => e.repairFee).reduce(min);
-    double maxRepairFee = allMachines.map((e) => e.repairFee).reduce(max);
 
     double minX = _calculateMinX(widget.data);
     double maxX = _calculateMaxX(widget.data);
@@ -175,7 +165,6 @@ class _BubbleChartState extends State<BubbleChart>
     double intervalX = calculateAxisInterval(minX, maxX);
     double intervalY = calculateAxisInterval(minY, maxY);
 
-    // ✅ Tạo chỉ 1 series duy nhất
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [
       BubbleSeries<MachineAnalysis, num>(
         onPointTap: (ChartPointDetails details) {
@@ -187,45 +176,48 @@ class _BubbleChartState extends State<BubbleChart>
           if (renderBox != null) {
             final size = renderBox.size;
 
-            // Giả sử bạn đã tính min/max X,Y trước đó ở _buildBubbleChart
-            double minX = _calculateMinX(allMachines);
-            double maxX = _calculateMaxX(allMachines);
-            double minY = _calculateMinY(allMachines);
-            double maxY = _calculateMaxY(allMachines);
-
             double xValue = machine.stopCase;
             double yValue = machine.stopHour;
 
-            // Tính vị trí pixel trong chart area
             double xPos = (xValue - minX) / (maxX - minX) * size.width;
             double yPos =
                 size.height - (yValue - minY) / (maxY - minY) * size.height;
 
-            final bubblePosition = Offset(xPos, yPos);
-
             setState(() {
               _selectedBubblePosition = Offset(xPos, yPos);
-              _selectedMachine = machine;
+              selectedIndex = pointIndex;
+              if (selectedMachine == machine) {
+                // If the same bubble is clicked again, reset selection
+                selectedMachine = null;
+                _animationController.reverse();
+              } else {
+                // Select new bubble
+                selectedMachine = machine;
+                _animationController.forward(from: 0.0);
+              }
             });
-            print('Bubble pixel position: $bubblePosition');
           }
         },
-
         animationDuration: 500,
         dataSource: allMachines,
         xValueMapper: (MachineAnalysis d, _) => d.stopCase,
         yValueMapper: (MachineAnalysis d, _) => d.stopHour,
-        sizeValueMapper:
-            (MachineAnalysis d, _) => d.repairFee, // ✅ Dùng trực tiếp
-        // ✅ Màu sắc theo department
-        pointColorMapper:
-            (MachineAnalysis d, _) => DepartmentUtils.getDepartmentColor(d.div),
-        borderWidth: 2,
-        borderColor: Colors.grey.shade200,
-        name: 'All Machines',
-        opacity: selectedMachine != null ? 0.3 : 0.85,
+        sizeValueMapper: (MachineAnalysis d, _) => d.repairFee,
+        pointColorMapper: (MachineAnalysis d, _) {
+          Color baseColor = DepartmentUtils.getDepartmentColor(d.div);
+          return selectedMachine == null || selectedMachine == d
+              ? baseColor
+              : baseColor.withOpacity(_fadeAnimation.value);
+        },
         minimumRadius: 15,
         maximumRadius: 50,
+        borderWidth: 2,
+        borderColor:
+            selectedMachine == null && selectedIndex == null
+                ? Colors.grey.shade200
+                : Colors.black12,
+        name: 'All Machines',
+        opacity: 1.0,
         enableTooltip: selectedMachine == null,
         dataLabelSettings: DataLabelSettings(
           isVisible: selectedMachine == null,
@@ -244,7 +236,7 @@ class _BubbleChartState extends State<BubbleChart>
               minRepairFee,
               maxRepairFee,
             );
-            double maxLabelWidth = radius * 3.14; // Đường kính
+            double maxLabelWidth = radius * 3.14;
 
             return Container(
               constraints: BoxConstraints(maxWidth: maxLabelWidth),
@@ -308,15 +300,11 @@ class _BubbleChartState extends State<BubbleChart>
 
     return SfCartesianChart(
       key: _chartKey,
-
       plotAreaBorderWidth: 1,
       plotAreaBorderColor: Colors.grey[300],
       tooltipBehavior: widget.tooltipBehavior,
       zoomPanBehavior: widget.zoomPanBehavior,
-      // ✅ Tạo custom legend cho departments
-      legend: Legend(
-        isVisible: false, // Tắt legend mặc định
-      ),
+      legend: Legend(isVisible: false),
       primaryXAxis: NumericAxis(
         title: AxisTitle(
           text: 'Stop Case',
@@ -331,7 +319,6 @@ class _BubbleChartState extends State<BubbleChart>
           color: Colors.grey[100],
           dashArray: const [5, 5],
         ),
-
         labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         edgeLabelPlacement: EdgeLabelPlacement.shift,
         axisLabelFormatter: (AxisLabelRenderDetails details) {
@@ -342,14 +329,9 @@ class _BubbleChartState extends State<BubbleChart>
           );
         },
         plotOffset: 30,
-
-        // interval: 200,
-        // minimum: _calculateMinX(widget.data) - 10,
-        // maximum: _calculateMaxX(widget.data) + 100,
         interval: intervalX,
         minimum: minX - intervalX,
         maximum: maxX + intervalX,
-
         rangePadding: ChartRangePadding.round,
       ),
       primaryYAxis: NumericAxis(
@@ -378,10 +360,6 @@ class _BubbleChartState extends State<BubbleChart>
           );
         },
         plotOffset: 30,
-
-        // interval: 1000,
-        // minimum: _calculateMinY(widget.data) - 500,
-        // maximum: _calculateMaxY(widget.data) + 3000,
         interval: intervalY,
         minimum: minY - intervalY,
         maximum: maxY + intervalY,
