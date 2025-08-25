@@ -36,6 +36,8 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
 
   int _selectedTopN = 10; // mặc định Top 10
 
+  String? _lastClickedMachine;
+
   @override
   void initState() {
     super.initState();
@@ -185,6 +187,15 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
           monthBack: _selectedMonth,
           topLimit: _selectedTopN,
         );
+      } else if (_lastClickedMachine != null &&
+          _lastClickedMachine!.isNotEmpty) {
+        _futureData = ApiService().fetchMachineDataAnalysisAvg(
+          month: widget.month,
+          div: selectedString,
+          monthBack: _selectedMonth,
+          topLimit: _selectedTopN,
+          macName: _lastClickedMachine,
+        );
       } else {
         _futureData = ApiService().fetchMachineDataAnalysisAvg(
           month: widget.month,
@@ -194,7 +205,10 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         );
       }
     });
+    setState(() {});
   }
+
+  String? _selectedMachine; // 🔹 lưu máy được click
 
   @override
   Widget build(BuildContext context) {
@@ -281,6 +295,37 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                   tooltipBehavior: _tooltipBehavior,
                   zoomPanBehavior: _zoomPanBehavior,
                   numberFormat: numberFormat,
+                  onBubbleTap: (String machineName) {
+                    print('Clicked machine: $machineName');
+
+                    setState(() {
+                      if (machineName.isEmpty) {
+                        // 👉 Nếu con gửi chuỗi rỗng => reset
+                        _selectedMachine = null;
+                        _lastClickedMachine = null;
+                      } else {
+                        // 👉 Nếu có máy => lưu lại
+                        _selectedMachine = machineName;
+                        _lastClickedMachine = machineName;
+                      }
+                      _loadData();
+                    });
+                  },
+
+                  // onBubbleTap: (String machineName) {
+                  //   // ✅ Khi người dùng click bubble
+                  //   print('Clicked machine: $machineName');
+                  //
+                  //   // Nếu muốn hiển thị trong UI, gọi setState
+                  //   setState(() {
+                  //     _selectedMachine = machineName; // 🔹 nhớ lại máy đã click
+                  //     // Ví dụ lưu tên máy vừa click
+                  //     _lastClickedMachine = machineName;
+                  //     _loadData();
+                  //   });
+                  // },
+                  selectedMachine:
+                      _selectedMachine, // 🔹 truyền xuống BubbleChart,
                 ),
               ],
             ),

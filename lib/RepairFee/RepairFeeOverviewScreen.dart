@@ -70,7 +70,8 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
 
   DateTime adjustedDateForDataFetch(DateTime date) {
     final now = DateTime.now();
-    final isSameMonth = date.year == now.year && date.month == now.month;
+    final isSameMonth =
+        date.year == now.year && date.month == now.month && now.day == date.day;
     if (isSameMonth && date.day == 1) {
       return date.subtract(const Duration(days: 1));
     }
@@ -85,6 +86,7 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
     final adjustedDate = adjustedDateForDataFetch(dateProvider.selectedDate);
     final month =
         "${adjustedDate.year}-${adjustedDate.month.toString().padLeft(2, '0')}";
+    print("month of overview: $month");
 
     provider.clearData(); // 👈 Reset trước khi fetch
     provider.fetchRepairFee(month);

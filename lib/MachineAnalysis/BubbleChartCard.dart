@@ -10,6 +10,8 @@ class BubbleChartCard extends StatelessWidget {
   final TooltipBehavior tooltipBehavior;
   final ZoomPanBehavior zoomPanBehavior;
   final NumberFormat numberFormat;
+  final void Function(String machineName)? onBubbleTap; // ✅ callback
+  final String? selectedMachine;
 
   const BubbleChartCard({
     super.key,
@@ -17,6 +19,8 @@ class BubbleChartCard extends StatelessWidget {
     required this.tooltipBehavior,
     required this.zoomPanBehavior,
     required this.numberFormat,
+    this.onBubbleTap,
+    this.selectedMachine,
   });
 
   @override
@@ -33,6 +37,8 @@ class BubbleChartCard extends StatelessWidget {
               tooltipBehavior: tooltipBehavior,
               zoomPanBehavior: zoomPanBehavior,
               numberFormat: numberFormat,
+              onBubbleTap: onBubbleTap, // ✅ truyền thẳng lên
+              selectedMachine: selectedMachine,
             ),
           ],
         ),

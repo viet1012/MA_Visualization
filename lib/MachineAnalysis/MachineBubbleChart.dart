@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 
+import '../API/ApiService.dart';
 import '../Model/MachineAnalysis.dart';
 import 'DepartmentUtils.dart';
 
@@ -11,12 +12,16 @@ class BubbleChart extends StatefulWidget {
   final TooltipBehavior tooltipBehavior;
   final ZoomPanBehavior zoomPanBehavior;
   final NumberFormat numberFormat;
+  final void Function(String machineName)? onBubbleTap; // ✅ callback
+  final String? selectedMachine;
 
   const BubbleChart({
     required this.data,
     required this.tooltipBehavior,
     required this.zoomPanBehavior,
     required this.numberFormat,
+    this.onBubbleTap,
+    this.selectedMachine,
     super.key,
   });
 
@@ -35,12 +40,12 @@ class _BubbleChartState extends State<BubbleChart>
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+
   bool showPieChart = false;
 
   final GlobalKey _chartKey = GlobalKey();
-  Offset? _selectedBubblePosition;
 
+  List<MachineAnalysis> allMachines = []; // ✅ giữ data ở state
   @override
   void initState() {
     super.initState();
@@ -51,9 +56,7 @@ class _BubbleChartState extends State<BubbleChart>
     _fadeAnimation = Tween<double>(begin: 1.0, end: 0.3).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
-    );
+
     _animationController.addListener(() {
       setState(() {});
     });
@@ -174,40 +177,87 @@ class _BubbleChartState extends State<BubbleChart>
           final renderBox =
               _chartKey.currentContext?.findRenderObject() as RenderBox?;
           if (renderBox != null) {
-            final size = renderBox.size;
-
-            double xValue = machine.stopCase;
-            double yValue = machine.stopHour;
-
-            double xPos = (xValue - minX) / (maxX - minX) * size.width;
-            double yPos =
-                size.height - (yValue - minY) / (maxY - minY) * size.height;
-
             setState(() {
-              _selectedBubblePosition = Offset(xPos, yPos);
-              selectedIndex = pointIndex;
-              if (selectedMachine == machine) {
-                // If the same bubble is clicked again, reset selection
+              print(
+                "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
+              );
+              // if (selectedMachine?.macName == machine.macName)
+              if (machine.macName == widget.selectedMachine) {
+                // 👉 Bấm lần 2 => reset
+                selectedIndex = null;
                 selectedMachine = null;
                 _animationController.reverse();
+
+                if (widget.onBubbleTap != null) {
+                  widget.onBubbleTap!(""); // gửi rỗng
+                }
               } else {
-                // Select new bubble
+                print(
+                  "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
+                );
+                // 👉 Bấm bubble mới => chọn
+                selectedIndex = pointIndex;
                 selectedMachine = machine;
                 _animationController.forward(from: 0.0);
+
+                if (widget.onBubbleTap != null) {
+                  widget.onBubbleTap!(machine.macName); // gửi tên machine
+                }
               }
             });
           }
         },
+
+        // onPointTap: (ChartPointDetails details) {
+        //   final index = details.pointIndex!;
+        //   final machine = widget.data[index];
+        //
+        //   setState(() {
+        //     if (selectedMachine == machine) {
+        //       // Nếu bấm lại vào cùng bubble → bỏ chọn
+        //       selectedMachine = null;
+        //       _animationController.reverse();
+        //     } else {
+        //       // Chọn bubble mới
+        //       selectedMachine = machine;
+        //       _animationController.forward(from: 0.0);
+        //     }
+        //   });
+        //
+        //   // Gọi callback về BubbleChartScreen
+        //   if (widget.onBubbleTap != null) {
+        //     widget.onBubbleTap!(machine.macName);
+        //   }
+        // },
         animationDuration: 500,
         dataSource: allMachines,
         xValueMapper: (MachineAnalysis d, _) => d.stopCase,
         yValueMapper: (MachineAnalysis d, _) => d.stopHour,
         sizeValueMapper: (MachineAnalysis d, _) => d.repairFee,
-        pointColorMapper: (MachineAnalysis d, _) {
+
+        // pointColorMapper: (MachineAnalysis d, _) {
+        //   Color baseColor = DepartmentUtils.getDepartmentColor(d.div);
+        //   return selectedMachine == null || selectedMachine == d
+        //       ? baseColor
+        //       : baseColor.withOpacity(_fadeAnimation.value);
+        // },
+        pointColorMapper: (d, _) {
           Color baseColor = DepartmentUtils.getDepartmentColor(d.div);
-          return selectedMachine == null || selectedMachine == d
-              ? baseColor
-              : baseColor.withOpacity(_fadeAnimation.value);
+          // print(
+          //   "widget.selectedMachine ${widget.selectedMachine} d.macName: ${d.macName}",
+          // );
+          // ❌ chưa chọn gì → tất cả sáng
+          if (widget.selectedMachine == null || selectedMachine == d) {
+            return baseColor;
+          }
+
+          // ✅ nếu cùng machineName → sáng
+          if (d.macName == widget.selectedMachine) {
+            return baseColor;
+          }
+
+          // ✅ còn lại mờ đi
+          return baseColor.withOpacity(.1);
         },
         minimumRadius: 15,
         maximumRadius: 50,

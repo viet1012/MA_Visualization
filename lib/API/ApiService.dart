@@ -15,9 +15,9 @@ import '../Model/MachineAnalysisAve.dart';
 import '../Model/MachineTrendModel.dart';
 
 class ApiService {
-  // final String baseUrl = "http://F2PC24017:9999/api";
+  final String baseUrl = "http://F2PC24017:9999/api";
 
-  final String baseUrl = "http://192.168.122.15:9092/api";
+  // final String baseUrl = "http://192.168.122.15:9092/api";
 
   Future<List<RepairFeeModel>> fetchRepairFee(String month) async {
     final url = Uri.parse("$baseUrl/repair_fee?month=$month");
@@ -293,10 +293,11 @@ class ApiService {
     required String div,
     required monthBack,
     required topLimit,
+    String? macName,
   }) async {
     final monthParam = month.replaceAll('-', '');
     final uri = Uri.parse(
-      '$baseUrl/machine/analysis/avg?divisions=$div&month=$monthParam&monthBack=$monthBack&topLimit=$topLimit',
+      '$baseUrl/machine/analysis/avg?divisions=$div&month=$monthParam&monthBack=$monthBack&topLimit=$topLimit&macName=$macName',
     );
     final response = await http.get(uri);
 

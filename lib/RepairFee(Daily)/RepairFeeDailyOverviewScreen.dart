@@ -90,6 +90,7 @@ class _RepairFeeDailyOverviewScreenState
     final adjustedDate = adjustedDateForDataFetch(dateProvider.selectedDate);
     final month =
         "${adjustedDate.year}-${adjustedDate.month.toString().padLeft(2, '0')}";
+    print("month of detail: $month");
 
     provider.clearData(); // 👈 Reset trước khi fetch
     provider.fetchRepairFee(month);
