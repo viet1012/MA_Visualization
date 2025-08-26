@@ -9,6 +9,8 @@ import 'BubbleChartCard.dart';
 import 'DepartmentStatsWidget.dart';
 import 'MachineAnalysisAppBar.dart';
 
+enum AnalysisMode { total, average }
+
 class BubbleChartScreen extends StatefulWidget {
   final String month;
   final String div;
@@ -18,8 +20,6 @@ class BubbleChartScreen extends StatefulWidget {
   @override
   _BubbleChartScreenState createState() => _BubbleChartScreenState();
 }
-
-enum AnalysisMode { total, average }
 
 class _BubbleChartScreenState extends State<BubbleChartScreen> {
   late TooltipBehavior _tooltipBehavior;
@@ -326,6 +326,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                   // },
                   selectedMachine:
                       _selectedMachine, // 🔹 truyền xuống BubbleChart,
+                  selectedMode: _selectedMode, // ✅ truyền xuống
                 ),
               ],
             ),

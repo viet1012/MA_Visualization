@@ -177,324 +177,376 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: const EdgeInsets.all(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        height: MediaQuery.of(context).size.height * 0.85,
-        width: MediaQuery.of(context).size.width * 0.65,
-        child: Column(
-          children: [
-            // Search box
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Search...',
-                prefixIcon: const Icon(Icons.search, color: Colors.blue),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blueGrey[200]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.blue, width: 2),
-                ),
-                filled: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 16,
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchText = value;
-                });
-              },
-            ),
-            const SizedBox(height: 10),
-
-            // Title + Filter Info + Close
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ConstrainedBox(
+        // padding: const EdgeInsets.all(16),
+        // height: MediaQuery.of(context).size.height * 0.85,
+        // width: MediaQuery.of(context).size.width * 0.74,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+          maxWidth: MediaQuery.of(context).size.width * 0.95,
+        ),
+        child: IntrinsicWidth(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.selectedMode.name.toUpperCase(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                // Search box
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Search...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.blue),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.blueGrey[200]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Colors.blue,
+                        width: 2,
                       ),
                     ),
-                    if (activeFiltersCount > 0)
-                      Container(
-                        margin: EdgeInsets.only(top: 4),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.filter_alt,
-                              size: 16,
-                              color: Colors.orange,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              '$activeFiltersCount filter(s) active',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.orange,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            InkWell(
-                              onTap: _clearAllFilters,
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.red[50],
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: Colors.red[200]!),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.clear,
-                                      size: 14,
-                                      color: Colors.red,
-                                    ),
-                                    SizedBox(width: 2),
-                                    Text(
-                                      'Clear All',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Results count
-            if (!_isLoading && _error == null)
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.table_rows, color: Colors.blue, size: 16),
-                    SizedBox(width: 8),
-                    Text(
-                      'Showing ${dataList.length} of ${_originalData.length} records',
-                      style: TextStyle(
-                        color: Colors.blue[800],
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                    filled: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 16,
                     ),
-                  ],
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchText = value;
+                    });
+                  },
                 ),
-              ),
-            const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-            Expanded(
-              child:
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _error != null
-                      ? Center(child: Text('Lỗi: $_error'))
-                      : dataList.isEmpty
-                      ? Center(
-                        child: Shimmer.fromColors(
-                          baseColor: Colors.grey.shade300,
-                          highlightColor: Colors.blue,
-                          period: const Duration(milliseconds: 1800),
-                          child: Text(
-                            'No data found for your search',
-                            style: TextStyle(
-                              fontSize: 58,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
+                // Title + Filter Info + Close
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.selectedMode.name.toUpperCase(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
                         ),
-                      )
-                      : Scrollbar(
-                        controller: verticalController,
-                        thumbVisibility: true,
-                        child: SingleChildScrollView(
-                          controller: verticalController,
-                          scrollDirection: Axis.vertical,
-                          child: Scrollbar(
-                            controller: horizontalController,
+                        if (activeFiltersCount > 0)
+                          Container(
+                            margin: EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.filter_alt,
+                                  size: 16,
+                                  color: Colors.orange,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  '$activeFiltersCount filter(s) active',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                InkWell(
+                                  onTap: _clearAllFilters,
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red[50],
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: Colors.red[200]!,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.clear,
+                                          size: 14,
+                                          color: Colors.red,
+                                        ),
+                                        SizedBox(width: 2),
+                                        Text(
+                                          'Clear All',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // Results count
+                if (!_isLoading && _error == null)
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.table_rows, color: Colors.blue, size: 16),
+                        SizedBox(width: 8),
+                        Text(
+                          'Showing ${dataList.length} of ${_originalData.length} records',
+                          style: TextStyle(
+                            color: Colors.blue[800],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 10),
+
+                Expanded(
+                  child:
+                      _isLoading
+                          ? Center(
+                            child: SizedBox(
+                              width: double.infinity, // chiếm max ngang
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    color: Colors.blue,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                          : _error != null
+                          ? Center(child: Text('Lỗi: $_error'))
+                          : dataList.isEmpty
+                          ? Center(
+                            child: Shimmer.fromColors(
+                              baseColor: Colors.grey.shade300,
+                              highlightColor: Colors.blue,
+                              period: const Duration(milliseconds: 1800),
+                              child: Text(
+                                'No data found for your search',
+                                style: TextStyle(
+                                  fontSize: 58,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          )
+                          : Scrollbar(
+                            controller: verticalController,
                             thumbVisibility: true,
                             child: SingleChildScrollView(
-                              controller: horizontalController,
-                              scrollDirection: Axis.horizontal,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minWidth:
-                                      MediaQuery.of(context).size.width * 0.63,
-                                ),
-                                child: DataTable(
-                                  headingRowColor: MaterialStateProperty.all(
-                                    Colors.blueGrey.shade700,
-                                  ),
-                                  columns:
-                                      dataList.first.keys.map((key) {
-                                        final hasFilter =
-                                            _columnFilters.containsKey(key) &&
-                                            _columnFilters[key]!.isNotEmpty;
-
-                                        return DataColumn(
-                                          label: InkWell(
-                                            onTap:
-                                                () => _showColumnFilterDialog(
+                              controller: verticalController,
+                              scrollDirection: Axis.vertical,
+                              child: Scrollbar(
+                                controller: horizontalController,
+                                thumbVisibility: true,
+                                child: SingleChildScrollView(
+                                  controller: horizontalController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minWidth:
+                                          MediaQuery.of(context).size.width *
+                                          0.63,
+                                    ),
+                                    child: DataTable(
+                                      headingRowColor:
+                                          MaterialStateProperty.all(
+                                            Colors.blueGrey.shade700,
+                                          ),
+                                      columns:
+                                          dataList.first.keys.map((key) {
+                                            final hasFilter =
+                                                _columnFilters.containsKey(
                                                   key,
-                                                ),
-                                            child: Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    hasFilter
-                                                        ? Colors.orange
-                                                            .withOpacity(0.2)
-                                                        : Colors.transparent,
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
-                                                    key,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color:
-                                                          hasFilter
-                                                              ? Colors.orange
-                                                              : Colors.white,
-                                                    ),
+                                                ) &&
+                                                _columnFilters[key]!.isNotEmpty;
+
+                                            return DataColumn(
+                                              label: InkWell(
+                                                onTap:
+                                                    () =>
+                                                        _showColumnFilterDialog(
+                                                          key,
+                                                        ),
+                                                child: Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
                                                   ),
-                                                  SizedBox(width: 4),
-                                                  Icon(
-                                                    hasFilter
-                                                        ? Icons.filter_alt
-                                                        : Icons
-                                                            .filter_alt_outlined,
-                                                    size: 16,
+                                                  decoration: BoxDecoration(
                                                     color:
                                                         hasFilter
                                                             ? Colors.orange
-                                                            : Colors.white70,
+                                                                .withOpacity(
+                                                                  0.2,
+                                                                )
+                                                            : Colors
+                                                                .transparent,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          4,
+                                                        ),
                                                   ),
-                                                  if (hasFilter)
-                                                    Container(
-                                                      margin: EdgeInsets.only(
-                                                        left: 4,
-                                                      ),
-                                                      padding: EdgeInsets.all(
-                                                        2,
-                                                      ),
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.orange,
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              8,
-                                                            ),
-                                                      ),
-                                                      child: Text(
-                                                        '${_columnFilters[key]!.length}',
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        key,
                                                         style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 10,
                                                           fontWeight:
                                                               FontWeight.bold,
+                                                          color:
+                                                              hasFilter
+                                                                  ? Colors
+                                                                      .orange
+                                                                  : Colors
+                                                                      .white,
                                                         ),
                                                       ),
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                  rows:
-                                      dataList.map((dataRow) {
-                                        final divValue =
-                                            dataRow['Div']?.toString() ?? '';
-                                        final rowColor =
-                                            DepartmentUtils.getDepartmentColor(
-                                              divValue,
-                                            ).withOpacity(0.2);
-
-                                        return DataRow(
-                                          color: MaterialStateProperty.all(
-                                            rowColor,
-                                          ),
-                                          cells:
-                                              dataRow.entries.map((entry) {
-                                                final isHighlighted =
-                                                    entry.key == 'AveRepairFee';
-                                                final text =
-                                                    entry.value is num
-                                                        ? widget.numberFormat
-                                                            .format(entry.value)
-                                                        : entry.value
-                                                            .toString();
-
-                                                return DataCell(
-                                                  Text(
-                                                    text,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          isHighlighted
-                                                              ? FontWeight.bold
-                                                              : FontWeight
-                                                                  .normal,
-                                                      color:
-                                                          isHighlighted
-                                                              ? Colors.orange
-                                                              : Colors.white,
-                                                      fontSize: 14,
-                                                    ),
+                                                      SizedBox(width: 4),
+                                                      Icon(
+                                                        hasFilter
+                                                            ? Icons.filter_alt
+                                                            : Icons
+                                                                .filter_alt_outlined,
+                                                        size: 16,
+                                                        color:
+                                                            hasFilter
+                                                                ? Colors.orange
+                                                                : Colors
+                                                                    .white70,
+                                                      ),
+                                                      if (hasFilter)
+                                                        Container(
+                                                          margin:
+                                                              EdgeInsets.only(
+                                                                left: 4,
+                                                              ),
+                                                          padding:
+                                                              EdgeInsets.all(2),
+                                                          decoration: BoxDecoration(
+                                                            color:
+                                                                Colors.orange,
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                          ),
+                                                          child: Text(
+                                                            '${_columnFilters[key]!.length}',
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 10,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ],
                                                   ),
-                                                );
-                                              }).toList(),
-                                        );
-                                      }).toList(),
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                      rows:
+                                          dataList.map((dataRow) {
+                                            final divValue =
+                                                dataRow['Div']?.toString() ??
+                                                '';
+                                            final rowColor =
+                                                DepartmentUtils.getDepartmentColor(
+                                                  divValue,
+                                                ).withOpacity(0.2);
+
+                                            return DataRow(
+                                              color: MaterialStateProperty.all(
+                                                rowColor,
+                                              ),
+                                              cells:
+                                                  dataRow.entries.map((entry) {
+                                                    final isHighlighted =
+                                                        entry.key ==
+                                                        'AveRepairFee';
+                                                    final text =
+                                                        entry.value is num
+                                                            ? widget
+                                                                .numberFormat
+                                                                .format(
+                                                                  entry.value,
+                                                                )
+                                                            : entry.value
+                                                                .toString();
+
+                                                    return DataCell(
+                                                      Text(
+                                                        text,
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              isHighlighted
+                                                                  ? FontWeight
+                                                                      .bold
+                                                                  : FontWeight
+                                                                      .normal,
+                                                          color:
+                                                              isHighlighted
+                                                                  ? Colors
+                                                                      .orange
+                                                                  : Colors
+                                                                      .white,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                            );
+                                          }).toList(),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

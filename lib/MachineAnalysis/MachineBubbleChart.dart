@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../API/ApiService.dart';
 import '../Model/MachineAnalysis.dart';
 import 'DepartmentUtils.dart';
+import 'MachineBubbleScreen.dart';
 
 class BubbleChart extends StatefulWidget {
   final List<MachineAnalysis> data;
@@ -14,6 +15,7 @@ class BubbleChart extends StatefulWidget {
   final NumberFormat numberFormat;
   final void Function(String machineName)? onBubbleTap; // ✅ callback
   final String? selectedMachine;
+  final AnalysisMode selectedMode; // 🔹 nhận từ parent
 
   const BubbleChart({
     required this.data,
@@ -22,6 +24,7 @@ class BubbleChart extends StatefulWidget {
     required this.numberFormat,
     this.onBubbleTap,
     this.selectedMachine,
+    required this.selectedMode,
     super.key,
   });
 
@@ -150,6 +153,22 @@ class _BubbleChartState extends State<BubbleChart>
     return rounded * magnitude;
   }
 
+  Color myColor = Colors.white;
+
+  Color getTextColor({
+    required String machineName,
+    String? selectedMachine,
+    Color selectedColor = Colors.white,
+    Color unselectedColor = Colors.grey,
+    double unselectedOpacity = 0.3,
+  }) {
+    if (selectedMachine == null || machineName == selectedMachine) {
+      return selectedColor;
+    } else {
+      return unselectedColor.withOpacity(unselectedOpacity);
+    }
+  }
+
   Widget _buildBubbleChart(
     Map<String, List<MachineAnalysis>> groupedData,
     double minRepairFee,
@@ -170,43 +189,49 @@ class _BubbleChartState extends State<BubbleChart>
 
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [
       BubbleSeries<MachineAnalysis, num>(
-        onPointTap: (ChartPointDetails details) {
-          final int pointIndex = details.pointIndex!;
-          final machine = allMachines[pointIndex];
+        onPointTap:
+            (widget.selectedMode == AnalysisMode.total)
+                ? (ChartPointDetails details) {} // ❌ Không làm gì khi tab Total
+                : (ChartPointDetails details) {
+                  final int pointIndex = details.pointIndex!;
+                  final machine = allMachines[pointIndex];
 
-          final renderBox =
-              _chartKey.currentContext?.findRenderObject() as RenderBox?;
-          if (renderBox != null) {
-            setState(() {
-              print(
-                "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
-              );
-              // if (selectedMachine?.macName == machine.macName)
-              if (machine.macName == widget.selectedMachine) {
-                // 👉 Bấm lần 2 => reset
-                selectedIndex = null;
-                selectedMachine = null;
-                _animationController.reverse();
+                  final renderBox =
+                      _chartKey.currentContext?.findRenderObject()
+                          as RenderBox?;
+                  if (renderBox != null) {
+                    setState(() {
+                      print(
+                        "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
+                      );
+                      // if (selectedMachine?.macName == machine.macName)
+                      if (machine.macName == widget.selectedMachine) {
+                        // 👉 Bấm lần 2 => reset
+                        selectedIndex = null;
+                        selectedMachine = null;
+                        _animationController.reverse();
 
-                if (widget.onBubbleTap != null) {
-                  widget.onBubbleTap!(""); // gửi rỗng
-                }
-              } else {
-                print(
-                  "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
-                );
-                // 👉 Bấm bubble mới => chọn
-                selectedIndex = pointIndex;
-                selectedMachine = machine;
-                _animationController.forward(from: 0.0);
+                        if (widget.onBubbleTap != null) {
+                          widget.onBubbleTap!(""); // gửi rỗng
+                        }
+                      } else {
+                        print(
+                          "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
+                        );
+                        // 👉 Bấm bubble mới => chọn
+                        selectedIndex = pointIndex;
+                        selectedMachine = machine;
+                        _animationController.forward(from: 0.0);
 
-                if (widget.onBubbleTap != null) {
-                  widget.onBubbleTap!(machine.macName); // gửi tên machine
-                }
-              }
-            });
-          }
-        },
+                        if (widget.onBubbleTap != null) {
+                          widget.onBubbleTap!(
+                            machine.macName,
+                          ); // gửi tên machine
+                        }
+                      }
+                    });
+                  }
+                },
 
         // onPointTap: (ChartPointDetails details) {
         //   final index = details.pointIndex!;
@@ -261,7 +286,7 @@ class _BubbleChartState extends State<BubbleChart>
         },
         minimumRadius: 15,
         maximumRadius: 50,
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor:
             selectedMachine == null && selectedIndex == null
                 ? Colors.grey.shade200
@@ -288,6 +313,25 @@ class _BubbleChartState extends State<BubbleChart>
             );
             double maxLabelWidth = radius * 3.14;
 
+            // gán màu label dựa theo selectedMachine
+            Color macNameColor = getTextColor(
+              machineName: machine.macName,
+              selectedMachine: widget.selectedMachine,
+              selectedColor:
+                  Colors.white, // 👉 bạn muốn highlight bằng màu khác
+              unselectedColor: Colors.white, // 👉 màu khi không chọn
+              unselectedOpacity: 0.2, // 👉 tuỳ chỉnh opacity
+            );
+
+            Color repairFeeColor = getTextColor(
+              machineName: machine.macName,
+              selectedMachine: widget.selectedMachine,
+              selectedColor:
+                  Colors.yellow, // 👉 bạn muốn highlight bằng màu khác
+              unselectedColor: Colors.yellow, // 👉 màu khi không chọn
+              unselectedOpacity: 0.2, // 👉 tuỳ chỉnh opacity
+            );
+
             return Container(
               constraints: BoxConstraints(maxWidth: maxLabelWidth),
               child: Column(
@@ -297,7 +341,7 @@ class _BubbleChartState extends State<BubbleChart>
                     '#${machine.rank}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.grey[300],
+                      color: macNameColor,
                       shadows: [
                         Shadow(
                           color: Colors.white.withOpacity(0.6),
@@ -312,10 +356,10 @@ class _BubbleChartState extends State<BubbleChart>
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [
+                      color: macNameColor,
+                      shadows: const [
                         Shadow(
                           color: Colors.white,
                           blurRadius: 4,
@@ -330,7 +374,7 @@ class _BubbleChartState extends State<BubbleChart>
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: Colors.yellow[300],
+                      color: repairFeeColor,
                       shadows: [
                         Shadow(
                           color: Colors.yellowAccent,
@@ -415,6 +459,7 @@ class _BubbleChartState extends State<BubbleChart>
         maximum: maxY + intervalY,
         rangePadding: ChartRangePadding.round,
       ),
+
       series: seriesList,
     );
   }

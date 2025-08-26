@@ -4,6 +4,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Model/MachineAnalysis.dart';
 import 'MachineBubbleChart.dart';
+import 'MachineBubbleScreen.dart';
 
 class BubbleChartCard extends StatelessWidget {
   final List<MachineAnalysis> data;
@@ -12,6 +13,7 @@ class BubbleChartCard extends StatelessWidget {
   final NumberFormat numberFormat;
   final void Function(String machineName)? onBubbleTap; // ✅ callback
   final String? selectedMachine;
+  final AnalysisMode selectedMode; // 🔹 nhận từ parent
 
   const BubbleChartCard({
     super.key,
@@ -21,6 +23,7 @@ class BubbleChartCard extends StatelessWidget {
     required this.numberFormat,
     this.onBubbleTap,
     this.selectedMachine,
+    required this.selectedMode,
   });
 
   @override
@@ -39,6 +42,7 @@ class BubbleChartCard extends StatelessWidget {
               numberFormat: numberFormat,
               onBubbleTap: onBubbleTap, // ✅ truyền thẳng lên
               selectedMachine: selectedMachine,
+              selectedMode: selectedMode,
             ),
           ],
         ),
