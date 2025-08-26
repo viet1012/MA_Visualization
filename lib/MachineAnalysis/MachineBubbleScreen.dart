@@ -216,7 +216,10 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
       appBar: MachineAnalysisAppBar(
         selectedMode: _selectedMode,
         onModeChanged: (mode) {
-          setState(() => _selectedMode = mode);
+          setState(() {
+            _selectedMode = mode;
+            _selectedMachine = null; // reset khi đổi tab
+          });
           _loadData();
         },
         selectedMonth: _selectedMonth,

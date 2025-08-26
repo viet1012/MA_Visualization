@@ -7,78 +7,30 @@ import 'ColumnFilterDialog.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
 
-class MachineTableDialog extends StatefulWidget {
-  final String div;
-  final String month;
-  final String monthBack;
-  final int topLimit;
+class MachineTableDialogContent extends StatefulWidget {
+  final List<Map<String, dynamic>> data;
   final NumberFormat numberFormat;
   final AnalysisMode selectedMode;
 
-  MachineTableDialog({
+  const MachineTableDialogContent({
     super.key,
-    required this.div,
-    required this.month,
-    required this.monthBack,
-    required this.topLimit,
+    required this.data,
     required this.numberFormat,
     required this.selectedMode,
   });
 
   @override
-  State<MachineTableDialog> createState() => _MachineTableDialogState();
+  State<MachineTableDialogContent> createState() =>
+      _MachineTableDialogContentState();
 }
 
-class _MachineTableDialogState extends State<MachineTableDialog> {
+class _MachineTableDialogContentState extends State<MachineTableDialogContent> {
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
   Map<String, Set<String>> _columnFilters = {};
-  List<Map<String, dynamic>> _originalData = [];
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    try {
-      List<Map<String, dynamic>> data;
-      if (widget.selectedMode == AnalysisMode.average) {
-        final result = await ApiService()
-            .fetchMachineDataAnalysisAvgFullResponse(
-              month: widget.month,
-              monthBack: widget.monthBack,
-              topLimit: widget.topLimit,
-              div: widget.div,
-            );
-        data = result.map((e) => e.toJson()).toList();
-      } else {
-        final result = await ApiService().fetchMachineDataAnalysis(
-          month: widget.month,
-          monthBack: widget.monthBack,
-          topLimit: widget.topLimit,
-          div: widget.div,
-        );
-        data = result.map((e) => e.toJson()).toList();
-      }
-
-      setState(() {
-        _originalData = data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
 
   List<Map<String, dynamic>> _applyFilters() {
-    return _originalData.where((row) {
+    return widget.data.where((row) {
       final matchesGlobal =
           _searchText.isEmpty ||
           row.values.any(
@@ -98,20 +50,17 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
     }).toList();
   }
 
-  // Lấy tất cả giá trị unique cho một cột
   Set<String> _getUniqueValuesForColumn(String columnName) {
-    return _originalData
+    return widget.data
         .map((row) => row[columnName]?.toString() ?? '')
         .where((value) => value.isNotEmpty)
         .toSet();
   }
 
-  // Đếm số filter đang active
   int _getActiveFiltersCount() {
     return _columnFilters.values.where((filters) => filters.isNotEmpty).length;
   }
 
-  // Reset tất cả filters
   void _clearAllFilters() {
     setState(() {
       _columnFilters.clear();
@@ -120,7 +69,6 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
     });
   }
 
-  // Hiển thị dialog filter cho cột
   void _showColumnFilterDialog(String columnName) async {
     final uniqueValues = _getUniqueValuesForColumn(columnName);
     final currentFilters = _columnFilters[columnName] ?? <String>{};
@@ -146,31 +94,10 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getMachineDataAsMap() async {
-    if (widget.selectedMode == AnalysisMode.average) {
-      final result = await ApiService().fetchMachineDataAnalysisAvgFullResponse(
-        month: widget.month,
-        monthBack: widget.monthBack,
-        topLimit: widget.topLimit,
-        div: widget.div,
-      );
-      return result.map((e) => e.toJson()).toList();
-    } else {
-      final result = await ApiService().fetchMachineDataAnalysis(
-        month: widget.month,
-        monthBack: widget.monthBack,
-        topLimit: widget.topLimit,
-        div: widget.div,
-      );
-      return result.map((e) => e.toJson()).toList();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final ScrollController verticalController = ScrollController();
     final ScrollController horizontalController = ScrollController();
-
     final dataList = _applyFilters();
     final activeFiltersCount = _getActiveFiltersCount();
 
@@ -178,9 +105,6 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: const EdgeInsets.all(16),
       child: ConstrainedBox(
-        // padding: const EdgeInsets.all(16),
-        // height: MediaQuery.of(context).size.height * 0.85,
-        // width: MediaQuery.of(context).size.width * 0.74,
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.9,
           maxWidth: MediaQuery.of(context).size.width * 0.95,
@@ -237,28 +161,28 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                         ),
                         if (activeFiltersCount > 0)
                           Container(
-                            margin: EdgeInsets.only(top: 4),
+                            margin: const EdgeInsets.only(top: 4),
                             child: Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.filter_alt,
                                   size: 16,
                                   color: Colors.orange,
                                 ),
-                                SizedBox(width: 4),
+                                const SizedBox(width: 4),
                                 Text(
                                   '$activeFiltersCount filter(s) active',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors.orange,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 InkWell(
                                   onTap: _clearAllFilters,
                                   child: Container(
-                                    padding: EdgeInsets.symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 8,
                                       vertical: 4,
                                     ),
@@ -271,7 +195,7 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: [
+                                      children: const [
                                         Icon(
                                           Icons.clear,
                                           size: 14,
@@ -304,60 +228,49 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                 const SizedBox(height: 10),
 
                 // Results count
-                if (!_isLoading && _error == null)
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.table_rows, color: Colors.blue, size: 16),
-                        SizedBox(width: 8),
-                        Text(
-                          'Showing ${dataList.length} of ${_originalData.length} records',
-                          style: TextStyle(
-                            color: Colors.blue[800],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
                   ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.table_rows,
+                        color: Colors.blue,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Showing ${dataList.length} of ${widget.data.length} records',
+                        style: TextStyle(
+                          color: Colors.blue[800],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 10),
 
                 Expanded(
                   child:
-                      _isLoading
-                          ? Center(
-                            child: SizedBox(
-                              width: double.infinity, // chiếm max ngang
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    color: Colors.blue,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                          : _error != null
-                          ? Center(child: Text('Lỗi: $_error'))
-                          : dataList.isEmpty
+                      dataList.isEmpty
                           ? Center(
                             child: Shimmer.fromColors(
                               baseColor: Colors.grey.shade300,
                               highlightColor: Colors.blue,
                               period: const Duration(milliseconds: 1800),
-                              child: Text(
+                              child: const Text(
                                 'No data found for your search',
                                 style: TextStyle(
-                                  fontSize: 58,
+                                  fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
@@ -394,7 +307,6 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                                   key,
                                                 ) &&
                                                 _columnFilters[key]!.isNotEmpty;
-
                                             return DataColumn(
                                               label: InkWell(
                                                 onTap:
@@ -403,10 +315,11 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                                           key,
                                                         ),
                                                 child: Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4,
+                                                      ),
                                                   decoration: BoxDecoration(
                                                     color:
                                                         hasFilter
@@ -438,7 +351,7 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                                                       .white,
                                                         ),
                                                       ),
-                                                      SizedBox(width: 4),
+                                                      const SizedBox(width: 4),
                                                       Icon(
                                                         hasFilter
                                                             ? Icons.filter_alt
@@ -454,11 +367,13 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                                       if (hasFilter)
                                                         Container(
                                                           margin:
-                                                              EdgeInsets.only(
+                                                              const EdgeInsets.only(
                                                                 left: 4,
                                                               ),
                                                           padding:
-                                                              EdgeInsets.all(2),
+                                                              const EdgeInsets.all(
+                                                                2,
+                                                              ),
                                                           decoration: BoxDecoration(
                                                             color:
                                                                 Colors.orange,
@@ -469,14 +384,16 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                                           ),
                                                           child: Text(
                                                             '${_columnFilters[key]!.length}',
-                                                            style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontSize: 10,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
+                                                                  fontSize: 10,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
                                                           ),
                                                         ),
                                                     ],
@@ -513,7 +430,6 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
                                                                 )
                                                             : entry.value
                                                                 .toString();
-
                                                     return DataCell(
                                                       Text(
                                                         text,
@@ -551,4 +467,62 @@ class _MachineTableDialogState extends State<MachineTableDialog> {
       ),
     );
   }
+}
+
+/// Hàm tiện ích show dialog và load dữ liệu trước
+Future<void> showMachineTableDialog({
+  required BuildContext context,
+  required String div,
+  required String month,
+  required String monthBack,
+  required int topLimit,
+  required NumberFormat numberFormat,
+  required AnalysisMode selectedMode,
+}) async {
+  // Show loading spinner
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const Center(child: CircularProgressIndicator()),
+  );
+
+  List<Map<String, dynamic>> dataList = [];
+  try {
+    if (selectedMode == AnalysisMode.average) {
+      final result = await ApiService().fetchMachineDataAnalysisAvgFullResponse(
+        month: month,
+        monthBack: monthBack,
+        topLimit: topLimit,
+        div: div,
+      );
+      dataList = result.map((e) => e.toJson()).toList();
+    } else {
+      final result = await ApiService().fetchMachineDataAnalysis(
+        month: month,
+        monthBack: monthBack,
+        topLimit: topLimit,
+        div: div,
+      );
+      dataList = result.map((e) => e.toJson()).toList();
+    }
+  } catch (e) {
+    Navigator.of(context).pop(); // Close loading
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Load data lỗi: ${e.toString()}')));
+    return;
+  }
+
+  Navigator.of(context).pop(); // Close loading
+
+  // Show dialog chính với dữ liệu đã load
+  showDialog(
+    context: context,
+    builder:
+        (_) => MachineTableDialogContent(
+          data: dataList,
+          numberFormat: numberFormat,
+          selectedMode: selectedMode,
+        ),
+  );
 }

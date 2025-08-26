@@ -74,19 +74,15 @@ class MachineAnalysisAppBar extends StatelessWidget
                     ),
                   ),
                   onPressed: () {
-                    showDialog(
+                    final selectedString = selectedDivs.join(',');
+                    showMachineTableDialog(
+                      selectedMode: selectedMode,
+                      div: selectedString,
+                      month: month,
+                      monthBack: monthBack,
+                      topLimit: selectedTopN,
+                      numberFormat: numberFormat,
                       context: context,
-                      builder: (context) {
-                        final selectedString = selectedDivs.join(',');
-                        return MachineTableDialog(
-                          selectedMode: selectedMode,
-                          div: selectedString,
-                          month: month,
-                          monthBack: monthBack,
-                          topLimit: selectedTopN,
-                          numberFormat: numberFormat,
-                        );
-                      },
                     );
                   },
                 ),
