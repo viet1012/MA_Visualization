@@ -23,6 +23,7 @@ class MachineAnalysisAppBar extends StatelessWidget
   final String month;
   final String monthBack;
   final NumberFormat numberFormat;
+  final String? lastClickedMachine;
 
   const MachineAnalysisAppBar({
     super.key,
@@ -38,6 +39,7 @@ class MachineAnalysisAppBar extends StatelessWidget
     required this.month,
     required this.monthBack,
     required this.numberFormat,
+    required this.lastClickedMachine,
   });
 
   @override
@@ -83,6 +85,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                       topLimit: selectedTopN,
                       numberFormat: numberFormat,
                       context: context,
+                      lastClickedMachine: lastClickedMachine,
                     );
                   },
                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import '../API/ApiService.dart';
+import '../Model/MachineAnalysis.dart';
 import '../Model/MachineAnalysisAve.dart';
 import 'ColumnFilterDialog.dart';
 import 'DepartmentUtils.dart';
@@ -11,12 +12,13 @@ class MachineTableDialogContent extends StatefulWidget {
   final List<Map<String, dynamic>> data;
   final NumberFormat numberFormat;
   final AnalysisMode selectedMode;
-
+  final String? macName;
   const MachineTableDialogContent({
     super.key,
     required this.data,
     required this.numberFormat,
     required this.selectedMode,
+    required this.macName,
   });
 
   @override
@@ -407,10 +409,24 @@ class _MachineTableDialogContentState extends State<MachineTableDialogContent> {
                                             final divValue =
                                                 dataRow['Div']?.toString() ??
                                                 '';
-                                            final rowColor =
+                                            final macName =
+                                                dataRow['MacName']
+                                                    ?.toString() ??
+                                                '';
+
+                                            Color rowColor =
                                                 DepartmentUtils.getDepartmentColor(
                                                   divValue,
                                                 ).withOpacity(0.2);
+
+                                            // Nếu trùng lastClickedMachine -> highlight
+                                            if (widget.macName != null &&
+                                                macName == widget.macName) {
+                                              rowColor = Colors.greenAccent
+                                                  .withOpacity(
+                                                    0.5,
+                                                  ); // màu highlight
+                                            }
 
                                             return DataRow(
                                               color: MaterialStateProperty.all(
@@ -478,6 +494,7 @@ Future<void> showMachineTableDialog({
   required int topLimit,
   required NumberFormat numberFormat,
   required AnalysisMode selectedMode,
+  required String? lastClickedMachine,
 }) async {
   // Show loading spinner
   showDialog(
@@ -489,12 +506,17 @@ Future<void> showMachineTableDialog({
   List<Map<String, dynamic>> dataList = [];
   try {
     if (selectedMode == AnalysisMode.average) {
-      final result = await ApiService().fetchMachineDataAnalysisAvgFullResponse(
+      final result = await ApiService().fetchMachineDataAnalysisAvg(
         month: month,
         monthBack: monthBack,
         topLimit: topLimit,
         div: div,
+        macName: lastClickedMachine,
       );
+
+      // Sắp xếp rank trước khi chuyển thành Map
+      MachineAnalysis.sortByRank(result);
+
       dataList = result.map((e) => e.toJson()).toList();
     } else {
       final result = await ApiService().fetchMachineDataAnalysis(
@@ -523,6 +545,7 @@ Future<void> showMachineTableDialog({
           data: dataList,
           numberFormat: numberFormat,
           selectedMode: selectedMode,
+          macName: lastClickedMachine,
         ),
   );
 }

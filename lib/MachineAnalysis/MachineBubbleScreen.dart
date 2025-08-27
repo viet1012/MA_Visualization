@@ -245,6 +245,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         monthBack: _selectedMonth,
         numberFormat: numberFormat,
         month: widget.month,
+        lastClickedMachine: _lastClickedMachine,
       ),
       body: FutureBuilder<List<MachineAnalysis>>(
         future: _futureData,
