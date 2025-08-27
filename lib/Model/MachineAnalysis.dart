@@ -1,7 +1,7 @@
 class MachineAnalysis {
   final String div;
   final String macName;
-  final int rank;
+  final String rank;
   final double stopCase;
   final double stopHour;
   final double repairFee;
@@ -19,7 +19,7 @@ class MachineAnalysis {
     return MachineAnalysis(
       div: json['div'] ?? '',
       macName: json['macName'] ?? '',
-      rank: json['rank'] ?? 0,
+      rank: json['rank'] ?? '',
       stopCase: (json['stopCase'] ?? 0).toDouble(),
       stopHour: (json['stopHour'] ?? 0).toDouble(),
       repairFee: (json['repairFee'] ?? 0).toDouble(),

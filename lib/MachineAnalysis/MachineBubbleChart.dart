@@ -187,6 +187,13 @@ class _BubbleChartState extends State<BubbleChart>
     double intervalX = calculateAxisInterval(minX, maxX);
     double intervalY = calculateAxisInterval(minY, maxY);
 
+    Color saturateColor(Color color) {
+      HSLColor hsl = HSLColor.fromColor(color);
+      return hsl
+          .withSaturation((hsl.saturation + 0.6).clamp(0.0, 1.0))
+          .toColor();
+    }
+
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [
       BubbleSeries<MachineAnalysis, num>(
         onPointTap:
@@ -278,11 +285,11 @@ class _BubbleChartState extends State<BubbleChart>
 
           // ✅ nếu cùng machineName → sáng
           if (d.macName == widget.selectedMachine) {
-            return baseColor;
+            return saturateColor(baseColor);
           }
 
           // ✅ còn lại mờ đi
-          return baseColor.withOpacity(.1);
+          return baseColor.withOpacity(.05);
         },
         minimumRadius: 15,
         maximumRadius: 50,
@@ -296,6 +303,7 @@ class _BubbleChartState extends State<BubbleChart>
         enableTooltip: selectedMachine == null,
         dataLabelSettings: DataLabelSettings(
           isVisible: selectedMachine == null,
+          overflowMode: OverflowMode.shift, // đẩy label tránh trùng
           labelAlignment: ChartDataLabelAlignment.middle,
           builder: (
             dynamic d,
@@ -311,6 +319,7 @@ class _BubbleChartState extends State<BubbleChart>
               minRepairFee,
               maxRepairFee,
             );
+
             double maxLabelWidth = radius * 3.14;
 
             // gán màu label dựa theo selectedMachine
@@ -320,7 +329,7 @@ class _BubbleChartState extends State<BubbleChart>
               selectedColor:
                   Colors.white, // 👉 bạn muốn highlight bằng màu khác
               unselectedColor: Colors.white, // 👉 màu khi không chọn
-              unselectedOpacity: 0.2, // 👉 tuỳ chỉnh opacity
+              unselectedOpacity: 0.1, // 👉 tuỳ chỉnh opacity
             );
 
             Color repairFeeColor = getTextColor(
@@ -329,7 +338,7 @@ class _BubbleChartState extends State<BubbleChart>
               selectedColor:
                   Colors.yellow, // 👉 bạn muốn highlight bằng màu khác
               unselectedColor: Colors.yellow, // 👉 màu khi không chọn
-              unselectedOpacity: 0.2, // 👉 tuỳ chỉnh opacity
+              unselectedOpacity: 0.1, // 👉 tuỳ chỉnh opacity
             );
 
             return Container(
