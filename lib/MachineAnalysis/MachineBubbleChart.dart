@@ -49,6 +49,7 @@ class _BubbleChartState extends State<BubbleChart>
   final GlobalKey _chartKey = GlobalKey();
 
   List<MachineAnalysis> allMachines = []; // ✅ giữ data ở state
+
   @override
   void initState() {
     super.initState();
@@ -102,6 +103,15 @@ class _BubbleChartState extends State<BubbleChart>
       }
       groupedData[item.div]!.add(item);
     }
+
+    groupedData.forEach((div, machines) {
+      print("Division: $div");
+      for (var m in machines) {
+        print(
+          "Scale: ${m.scale}, Rank: ${m.rank}, Machine: ${m.macName}, Fee: ${m.repairFee}",
+        );
+      }
+    });
 
     double minRepairFee = widget.data.map((e) => e.repairFee).reduce(min);
     double maxRepairFee = widget.data.map((e) => e.repairFee).reduce(max);
@@ -197,7 +207,7 @@ class _BubbleChartState extends State<BubbleChart>
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [
       BubbleSeries<MachineAnalysis, num>(
         onPointTap:
-            (widget.selectedMode == AnalysisMode.total)
+            (widget.selectedMode == AnalysisMode.Total)
                 ? (ChartPointDetails details) {} // ❌ Không làm gì khi tab Total
                 : (ChartPointDetails details) {
                   final int pointIndex = details.pointIndex!;
@@ -208,10 +218,6 @@ class _BubbleChartState extends State<BubbleChart>
                           as RenderBox?;
                   if (renderBox != null) {
                     setState(() {
-                      print(
-                        "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
-                      );
-                      // if (selectedMachine?.macName == machine.macName)
                       if (machine.macName == widget.selectedMachine) {
                         // 👉 Bấm lần 2 => reset
                         selectedIndex = null;
@@ -222,13 +228,13 @@ class _BubbleChartState extends State<BubbleChart>
                           widget.onBubbleTap!(""); // gửi rỗng
                         }
                       } else {
-                        print(
-                          "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
-                        );
                         // 👉 Bấm bubble mới => chọn
                         selectedIndex = pointIndex;
                         selectedMachine = machine;
                         _animationController.forward(from: 0.0);
+                        print(
+                          "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
+                        );
 
                         if (widget.onBubbleTap != null) {
                           widget.onBubbleTap!(
@@ -267,42 +273,41 @@ class _BubbleChartState extends State<BubbleChart>
         yValueMapper: (MachineAnalysis d, _) => d.stopHour,
         sizeValueMapper: (MachineAnalysis d, _) => d.repairFee,
 
-        // pointColorMapper: (MachineAnalysis d, _) {
-        //   Color baseColor = DepartmentUtils.getDepartmentColor(d.div);
-        //   return selectedMachine == null || selectedMachine == d
-        //       ? baseColor
-        //       : baseColor.withOpacity(_fadeAnimation.value);
-        // },
         pointColorMapper: (d, _) {
           Color baseColor = DepartmentUtils.getDepartmentColor(d.div);
-          // print(
-          //   "widget.selectedMachine ${widget.selectedMachine} d.macName: ${d.macName}",
-          // );
-          // ❌ chưa chọn gì → tất cả sáng
-          if (widget.selectedMachine == null || selectedMachine == d) {
+
+          // Nếu là AVE → giữ nguyên
+          if (d.scale == "AVE") {
             return baseColor;
           }
 
-          // ✅ nếu cùng machineName → sáng
-          if (d.macName == widget.selectedMachine) {
-            return saturateColor(baseColor);
+          // Nếu là MovAve → áp dụng độ mờ theo thứ hạng
+          if (d.scale.startsWith("MovAve")) {
+            // Lấy số sau MovAve (vd: "MovAve3" -> 3)
+            final rank = int.tryParse(d.scale.replaceAll("MovAve", "")) ?? 1;
+
+            // Map rank (1→đậm, 5→mờ)
+            // rank 1 → opacity 1.0
+            // rank 5 → opacity 0.2
+            double opacity = 1.0 - (rank - 1) * 0.2;
+            opacity = opacity.clamp(0.2, 1.0);
+
+            return baseColor.withOpacity(opacity);
           }
 
-          // ✅ còn lại mờ đi
-          return baseColor.withOpacity(.05);
+          // Trường hợp khác → giữ nguyên
+          return baseColor;
         },
+
         minimumRadius: 15,
         maximumRadius: 50,
         borderWidth: 1,
-        borderColor:
-            selectedMachine == null && selectedIndex == null
-                ? Colors.grey.shade200
-                : Colors.black12,
+        borderColor: Colors.grey.shade200,
         name: 'All Machines',
         opacity: 1.0,
-        enableTooltip: selectedMachine == null,
+        enableTooltip: true,
         dataLabelSettings: DataLabelSettings(
-          isVisible: selectedMachine == null,
+          isVisible: true,
           overflowMode: OverflowMode.shift, // đẩy label tránh trùng
           labelAlignment: ChartDataLabelAlignment.middle,
           builder: (
@@ -320,7 +325,7 @@ class _BubbleChartState extends State<BubbleChart>
               maxRepairFee,
             );
 
-            double maxLabelWidth = radius * 3.14;
+            double maxLabelWidth = radius * 3.14 * 2;
 
             // gán màu label dựa theo selectedMachine
             Color macNameColor = getTextColor(
@@ -342,55 +347,92 @@ class _BubbleChartState extends State<BubbleChart>
             );
 
             return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               constraints: BoxConstraints(maxWidth: maxLabelWidth),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    '#${machine.rank}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: macNameColor,
-                      shadows: [
-                        Shadow(
-                          color: Colors.white.withOpacity(0.6),
-                          blurRadius: 4,
-                          offset: Offset(0, 0),
+                  if (machine.macName == widget.selectedMachine)
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        machine.scale,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.yellow,
+                          fontWeight: FontWeight.w500,
+                          shadows: [
+                            Shadow(
+                              color: Colors.white.withOpacity(0.6),
+                              blurRadius: 4,
+                              offset: Offset(0, 0),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
+                    ),
+                  if (machine.macName == widget.selectedMachine)
+                    const SizedBox(height: 2),
+
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      machine.rank,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: macNameColor,
+                        fontWeight: FontWeight.w500,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.4),
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  Text(
-                    machine.macName,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: macNameColor,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.white,
-                          blurRadius: 4,
-                          offset: Offset(0, 0),
-                        ),
-                      ],
+                  const SizedBox(height: 2),
+
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      machine.macName,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: macNameColor,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 3,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  Text(
-                    '${widget.numberFormat.format(machine.repairFee)}\$',
-                    maxLines: 1,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: repairFeeColor,
-                      shadows: [
-                        Shadow(
-                          color: Colors.yellowAccent,
-                          blurRadius: 6,
-                          offset: Offset(0, 0),
-                        ),
-                      ],
+                  const SizedBox(height: 2),
+
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '${widget.numberFormat.format(machine.repairFee)}\$',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: repairFeeColor,
+                        shadows: [
+                          Shadow(
+                            color: Colors.yellowAccent.withOpacity(0.6),
+                            blurRadius: 4,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

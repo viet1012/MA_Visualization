@@ -1,4 +1,5 @@
 class MachineAnalysis {
+  final String scale;
   final String div;
   final String macName;
   final String rank;
@@ -7,6 +8,7 @@ class MachineAnalysis {
   final double repairFee;
 
   MachineAnalysis({
+    required this.scale,
     required this.div,
     required this.macName,
     required this.rank,
@@ -17,6 +19,7 @@ class MachineAnalysis {
 
   factory MachineAnalysis.fromJson(Map<String, dynamic> json) {
     return MachineAnalysis(
+      scale: json['scale'] ?? '',
       div: json['div'] ?? '',
       macName: json['macName'] ?? '',
       rank: json['rank'] ?? '',

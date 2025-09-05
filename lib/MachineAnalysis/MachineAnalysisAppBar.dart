@@ -112,8 +112,8 @@ class MachineAnalysisAppBar extends StatelessWidget
                     AnimatedChoiceChip(
                       label: 'Total',
                       icon: Icon(Icons.bar_chart, color: Colors.black),
-                      isSelected: selectedMode == AnalysisMode.total,
-                      onTap: () => onModeChanged(AnalysisMode.total),
+                      isSelected: selectedMode == AnalysisMode.Total,
+                      onTap: () => onModeChanged(AnalysisMode.Total),
                       selectedColor: Colors.blue,
                       selectedGradient: const LinearGradient(
                         colors: [Color(0xFF00F260), Color(0xFF0575E6)],
@@ -123,13 +123,13 @@ class MachineAnalysisAppBar extends StatelessWidget
                     ),
                     const SizedBox(width: 12),
                     AnimatedChoiceChip(
-                      label: 'Average',
+                      label: selectedMode.name.toString(),
                       icon: Icon(
                         Icons.align_vertical_center,
                         color: Colors.black,
                       ),
-                      isSelected: selectedMode == AnalysisMode.average,
-                      onTap: () => onModeChanged(AnalysisMode.average),
+                      isSelected: selectedMode == AnalysisMode.Average,
+                      onTap: () => onModeChanged(AnalysisMode.Average),
                       selectedColor: Colors.green,
                       selectedGradient: const LinearGradient(
                         colors: [Colors.lightGreen, Colors.green],

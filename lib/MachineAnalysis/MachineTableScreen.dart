@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import '../API/ApiService.dart';
 import '../Model/MachineAnalysis.dart';
-import '../Model/MachineAnalysisAve.dart';
 import 'ColumnFilterDialog.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
@@ -505,7 +504,7 @@ Future<void> showMachineTableDialog({
 
   List<Map<String, dynamic>> dataList = [];
   try {
-    if (selectedMode == AnalysisMode.average) {
+    if (selectedMode == AnalysisMode.Average) {
       final result = await ApiService().fetchMachineDataAnalysisAvg(
         month: month,
         monthBack: monthBack,
