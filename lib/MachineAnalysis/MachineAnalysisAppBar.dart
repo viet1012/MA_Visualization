@@ -135,6 +135,21 @@ class MachineAnalysisAppBar extends StatelessWidget
                         colors: [Colors.lightGreen, Colors.green],
                       ),
                     ),
+                    const SizedBox(width: 12),
+
+                    AnimatedChoiceChip(
+                      label: "Null",
+                      icon: Icon(
+                        Icons.align_vertical_center,
+                        color: Colors.black,
+                      ),
+                      isSelected: selectedMode == AnalysisMode.MonthAve,
+                      onTap: () => onModeChanged(AnalysisMode.MonthAve),
+                      selectedColor: Colors.pinkAccent,
+                      selectedGradient: const LinearGradient(
+                        colors: [Colors.pinkAccent, Colors.green],
+                      ),
+                    ),
                   ],
                 ),
               ],

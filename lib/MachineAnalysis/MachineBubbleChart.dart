@@ -275,6 +275,7 @@ class _BubbleChartState extends State<BubbleChart>
 
         pointColorMapper: (d, _) {
           Color baseColor = DepartmentUtils.getDepartmentColor(d.div);
+          Color aveColor = DepartmentUtils.getDepartmentBorderColor(d.div);
 
           // Nếu là AVE → giữ nguyên
           if (d.scale == "AVE") {
@@ -292,7 +293,7 @@ class _BubbleChartState extends State<BubbleChart>
             double opacity = 1.0 - (rank - 1) * 0.2;
             opacity = opacity.clamp(0.2, 1.0);
 
-            return baseColor.withOpacity(opacity);
+            return aveColor.withOpacity(opacity);
           }
 
           // Trường hợp khác → giữ nguyên
@@ -353,6 +354,28 @@ class _BubbleChartState extends State<BubbleChart>
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Hiển thị số thứ tự nếu là MovAve
+                  if (machine.scale.startsWith("MovAve"))
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        // Lấy số sau "MovAve"
+                        int.tryParse(
+                              machine.scale.replaceAll("MovAve", ""),
+                            )?.toString() ??
+                            "",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.orangeAccent, // màu hiển thị số thứ tự
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  if (machine.scale.startsWith("MovAve"))
+                    const SizedBox(height: 2),
+
+                  // Nếu máy được chọn → hiển thị scale
                   if (machine.macName == widget.selectedMachine)
                     FittedBox(
                       fit: BoxFit.scaleDown,
@@ -375,6 +398,7 @@ class _BubbleChartState extends State<BubbleChart>
                   if (machine.macName == widget.selectedMachine)
                     const SizedBox(height: 2),
 
+                  // Rank
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
@@ -395,6 +419,7 @@ class _BubbleChartState extends State<BubbleChart>
                   ),
                   const SizedBox(height: 2),
 
+                  // Machine name
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
@@ -417,6 +442,7 @@ class _BubbleChartState extends State<BubbleChart>
                   ),
                   const SizedBox(height: 2),
 
+                  // Repair fee
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(

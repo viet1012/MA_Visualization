@@ -9,7 +9,7 @@ import 'BubbleChartCard.dart';
 import 'DepartmentStatsWidget.dart';
 import 'MachineAnalysisAppBar.dart';
 
-enum AnalysisMode { Total, Average, MovAve }
+enum AnalysisMode { Total, Average, MovAve, MonthAve }
 
 class BubbleChartScreen extends StatefulWidget {
   final String month;

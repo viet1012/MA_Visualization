@@ -9,7 +9,7 @@ class DepartmentUtils {
   };
 
   static const Map<String, Color> _borderColors = {
-    'PRESS': Color(0xFF90CAF9),
+    'PRESS': Color(0xFF3C9FBC),
     'MOLD': Color(0xFFFFB74D),
     'GUIDE': Color(0xFFA5D6A7),
     'KVH': Color(0xFF01579B),
