@@ -47,12 +47,33 @@ class MachineAnalysisAppBar extends StatelessWidget
     return AppBar(
       title: Row(
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.analytics_outlined, size: 24),
               BlinkingText(text: "Machine Analysis"),
+              SizedBox(width: 10),
+              ShaderMask(
+                shaderCallback:
+                    (bounds) => LinearGradient(
+                      colors: [Colors.redAccent, Colors.orange, Colors.yellow],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds),
+                child: Text(
+                  selectedMode.name == "MovAve"
+                      ? "Moving Average"
+                      : selectedMode.name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                    color: Colors.white, // ⚠️ bắt buộc để ShaderMask apply
+                  ),
+                ),
+              ),
             ],
           ),
+
           const Spacer(),
           Row(
             children: [
@@ -123,7 +144,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                     ),
                     const SizedBox(width: 12),
                     AnimatedChoiceChip(
-                      label: selectedMode.name.toString(),
+                      label: "Average\nMachine",
                       icon: Icon(
                         Icons.align_vertical_center,
                         color: Colors.black,
@@ -138,7 +159,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                     const SizedBox(width: 12),
 
                     AnimatedChoiceChip(
-                      label: "Null",
+                      label: "Average\nMonth",
                       icon: Icon(
                         Icons.align_vertical_center,
                         color: Colors.black,

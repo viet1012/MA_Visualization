@@ -12,6 +12,8 @@ class BubbleChartCard extends StatelessWidget {
   final ZoomPanBehavior zoomPanBehavior;
   final NumberFormat numberFormat;
   final void Function(String machineName)? onBubbleTap; // ✅ callback
+  final void Function(AnalysisMode mode)? onModeChange;
+
   final String? selectedMachine;
   final AnalysisMode selectedMode; // 🔹 nhận từ parent
 
@@ -22,6 +24,7 @@ class BubbleChartCard extends StatelessWidget {
     required this.zoomPanBehavior,
     required this.numberFormat,
     this.onBubbleTap,
+    this.onModeChange,
     this.selectedMachine,
     required this.selectedMode,
   });
@@ -41,6 +44,7 @@ class BubbleChartCard extends StatelessWidget {
               zoomPanBehavior: zoomPanBehavior,
               numberFormat: numberFormat,
               onBubbleTap: onBubbleTap, // ✅ truyền thẳng lên
+              onModeChange: onModeChange,
               selectedMachine: selectedMachine,
               selectedMode: selectedMode,
             ),

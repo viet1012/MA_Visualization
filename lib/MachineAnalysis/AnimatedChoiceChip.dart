@@ -117,7 +117,7 @@ class _AnimatedChoiceChipState extends State<AnimatedChoiceChip>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final borderRadius = widget.borderRadius ?? BorderRadius.circular(16);
+    final borderRadius = widget.borderRadius ?? BorderRadius.circular(24);
     final padding =
         widget.padding ??
         const EdgeInsets.symmetric(horizontal: 20, vertical: 12);
@@ -250,7 +250,9 @@ class _AnimatedChoiceChipState extends State<AnimatedChoiceChip>
                         child: Text(
                           widget.label,
                           overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                          textAlign: TextAlign.center, // 👈 canh giữa
+                          maxLines: null, // 👈 cho xuống dòng
+                          // maxLines: 1,
                         ),
                       ),
                     ],

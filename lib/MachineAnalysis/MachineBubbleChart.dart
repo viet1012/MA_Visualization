@@ -7,6 +7,7 @@ import '../API/ApiService.dart';
 import '../Model/MachineAnalysis.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
+import 'MachineTileWidget.dart';
 
 class BubbleChart extends StatefulWidget {
   final List<MachineAnalysis> data;
@@ -14,8 +15,10 @@ class BubbleChart extends StatefulWidget {
   final ZoomPanBehavior zoomPanBehavior;
   final NumberFormat numberFormat;
   final void Function(String machineName)? onBubbleTap; // ✅ callback
+  final void Function(AnalysisMode mode)? onModeChange;
+
   final String? selectedMachine;
-  final AnalysisMode selectedMode; // 🔹 nhận từ parent
+  final AnalysisMode? selectedMode; // 🔹 nhận từ parent
 
   const BubbleChart({
     required this.data,
@@ -23,8 +26,9 @@ class BubbleChart extends StatefulWidget {
     required this.zoomPanBehavior,
     required this.numberFormat,
     this.onBubbleTap,
+    this.onModeChange,
     this.selectedMachine,
-    required this.selectedMode,
+    this.selectedMode,
     super.key,
   });
 
@@ -236,6 +240,8 @@ class _BubbleChartState extends State<BubbleChart>
                           "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
                         );
 
+                        widget.onModeChange?.call(AnalysisMode.MovAve);
+
                         if (widget.onBubbleTap != null) {
                           widget.onBubbleTap!(
                             machine.macName,
@@ -246,27 +252,6 @@ class _BubbleChartState extends State<BubbleChart>
                   }
                 },
 
-        // onPointTap: (ChartPointDetails details) {
-        //   final index = details.pointIndex!;
-        //   final machine = widget.data[index];
-        //
-        //   setState(() {
-        //     if (selectedMachine == machine) {
-        //       // Nếu bấm lại vào cùng bubble → bỏ chọn
-        //       selectedMachine = null;
-        //       _animationController.reverse();
-        //     } else {
-        //       // Chọn bubble mới
-        //       selectedMachine = machine;
-        //       _animationController.forward(from: 0.0);
-        //     }
-        //   });
-        //
-        //   // Gọi callback về BubbleChartScreen
-        //   if (widget.onBubbleTap != null) {
-        //     widget.onBubbleTap!(machine.macName);
-        //   }
-        // },
         animationDuration: 500,
         dataSource: allMachines,
         xValueMapper: (MachineAnalysis d, _) => d.stopCase,
@@ -346,123 +331,15 @@ class _BubbleChartState extends State<BubbleChart>
               unselectedColor: Colors.yellow, // 👉 màu khi không chọn
               unselectedOpacity: 0.1, // 👉 tuỳ chỉnh opacity
             );
-
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              constraints: BoxConstraints(maxWidth: maxLabelWidth),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Hiển thị số thứ tự nếu là MovAve
-                  if (machine.scale.startsWith("MovAve"))
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        // Lấy số sau "MovAve"
-                        int.tryParse(
-                              machine.scale.replaceAll("MovAve", ""),
-                            )?.toString() ??
-                            "",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.orangeAccent, // màu hiển thị số thứ tự
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  if (machine.scale.startsWith("MovAve"))
-                    const SizedBox(height: 2),
-
-                  // Nếu máy được chọn → hiển thị scale
-                  if (machine.macName == widget.selectedMachine)
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        machine.scale,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.yellow,
-                          fontWeight: FontWeight.w500,
-                          shadows: [
-                            Shadow(
-                              color: Colors.white.withOpacity(0.6),
-                              blurRadius: 4,
-                              offset: Offset(0, 0),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  if (machine.macName == widget.selectedMachine)
-                    const SizedBox(height: 2),
-
-                  // Rank
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      machine.rank,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: macNameColor,
-                        fontWeight: FontWeight.w500,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.4),
-                            blurRadius: 2,
-                            offset: Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-
-                  // Machine name
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      machine.macName,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: macNameColor,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 3,
-                            offset: Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-
-                  // Repair fee
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      '${widget.numberFormat.format(machine.repairFee)}\$',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: repairFeeColor,
-                        shadows: [
-                          Shadow(
-                            color: Colors.yellowAccent.withOpacity(0.6),
-                            blurRadius: 4,
-                            offset: Offset(0, 0),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            Color baseColor = DepartmentUtils.getDepartmentColor(d.div);
+            return MachineTileWidget(
+              machine: machine,
+              selectedMachine: widget.selectedMachine,
+              baseColor: baseColor,
+              macNameColor: macNameColor,
+              repairFeeColor: repairFeeColor,
+              maxLabelWidth: maxLabelWidth,
+              numberFormat: widget.numberFormat,
             );
           },
         ),

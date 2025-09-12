@@ -45,9 +45,9 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
       enable: true,
       header: '',
       canShowMarker: true,
-      shouldAlwaysShow: true, // ✅ Tooltip sẽ luôn hiển thị khi được kích hoạt
+      shouldAlwaysShow: false, // ✅ Tooltip sẽ luôn hiển thị khi được kích hoạt
       shared: false, // ✅ Tooltip riêng biệt cho từng điểm
-      duration: 0, // ✅ Không tự ẩn sau thời gian (0 = vô hạn)
+      duration: 5000, // ✅ Không tự ẩn sau thời gian (0 = vô hạn)
       color: Colors.black87,
       elevation: 8,
       shadowColor: Colors.grey.withOpacity(0.6),
@@ -60,7 +60,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
       borderWidth: 1.5,
       animationDuration:
           300, // ✅ Giảm thời gian animation để phản hồi nhanh hơn
-      // ✅ Thêm activationMode để tooltip chỉ hiện khi click/tap
       activationMode: ActivationMode.singleTap, // hoặc ActivationMode.longPress
       builder: (
         dynamic data,
@@ -206,7 +205,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
 
                 // nếu rank là số => đổi format
                 if (int.tryParse(m.rank.toString()) != null) {
-                  newRank = "MovAve: $_selectedMonth";
+                  newRank = "Ave: ${_selectedMonth}M";
                 } else {
                   // giữ nguyên nếu rank là chuỗi
                   newRank = m.rank.toString();
@@ -318,7 +317,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                   monthBack: _selectedMonth,
                   topLimit: _selectedTopN,
                 ),
-
                 BubbleChartCard(
                   data: snapshot.data!,
                   tooltipBehavior: _tooltipBehavior,
@@ -326,7 +324,6 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                   numberFormat: numberFormat,
                   onBubbleTap: (String machineName) {
                     print('Clicked machine: $machineName');
-
                     setState(() {
                       if (machineName.isEmpty) {
                         // 👉 Nếu con gửi chuỗi rỗng => reset
@@ -338,7 +335,11 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                       _loadData();
                     });
                   },
-
+                  onModeChange: (mode) {
+                    setState(() {
+                      _selectedMode = mode;
+                    });
+                  },
                   selectedMachine:
                       _lastClickedMachine, // 🔹 truyền xuống BubbleChart,
                   selectedMode: _selectedMode, // ✅ truyền xuống
