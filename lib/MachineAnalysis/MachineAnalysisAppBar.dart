@@ -131,7 +131,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                 Row(
                   children: [
                     AnimatedChoiceChip(
-                      label: 'Total',
+                      label: 'Total\nMachines',
                       icon: Icon(Icons.bar_chart, color: Colors.black),
                       isSelected: selectedMode == AnalysisMode.Total,
                       onTap: () => onModeChanged(AnalysisMode.Total),
@@ -161,7 +161,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                     AnimatedChoiceChip(
                       label: "Average\nMonth",
                       icon: Icon(
-                        Icons.align_vertical_center,
+                        Icons.align_vertical_bottom_outlined,
                         color: Colors.black,
                       ),
                       isSelected: selectedMode == AnalysisMode.MonthAve,

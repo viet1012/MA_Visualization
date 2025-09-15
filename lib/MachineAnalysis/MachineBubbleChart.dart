@@ -231,6 +231,7 @@ class _BubbleChartState extends State<BubbleChart>
                         if (widget.onBubbleTap != null) {
                           widget.onBubbleTap!(""); // gửi rỗng
                         }
+                        print("Average Details");
                       } else {
                         // 👉 Bấm bubble mới => chọn
                         selectedIndex = pointIndex;

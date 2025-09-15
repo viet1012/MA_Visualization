@@ -421,10 +421,9 @@ class _MachineTableDialogContentState extends State<MachineTableDialogContent> {
                                             // Nếu trùng lastClickedMachine -> highlight
                                             if (widget.macName != null &&
                                                 macName == widget.macName) {
-                                              rowColor = Colors.greenAccent
-                                                  .withOpacity(
-                                                    0.5,
-                                                  ); // màu highlight
+                                              rowColor = rowColor.withOpacity(
+                                                0.5,
+                                              ); // màu highlight
                                             }
 
                                             return DataRow(
@@ -504,7 +503,8 @@ Future<void> showMachineTableDialog({
 
   List<Map<String, dynamic>> dataList = [];
   try {
-    if (selectedMode == AnalysisMode.Average) {
+    if (selectedMode == AnalysisMode.Average ||
+        selectedMode == AnalysisMode.MovAve) {
       final result = await ApiService().fetchMachineDataAnalysisAvg(
         month: month,
         monthBack: monthBack,
@@ -513,10 +513,44 @@ Future<void> showMachineTableDialog({
         macName: lastClickedMachine,
       );
 
-      // Sắp xếp rank trước khi chuyển thành Map
-      MachineAnalysis.sortByRank(result);
+      // 🔹 Lọc lại chỉ những machine có macName trùng với lastClickedMachine
+      final filtered =
+          result.where((e) => e.macName == lastClickedMachine).toList();
 
-      dataList = result.map((e) => e.toJson()).toList();
+      // In ra số lượng
+      print("Số lượng machine filtered: ${filtered.length}");
+
+      // In chi tiết từng phần tử
+      for (var item in filtered) {
+        print(
+          "macName: ${item.macName}, "
+          "rank: ${item.rank}",
+        );
+      }
+
+      // 🔹 Sắp xếp rank
+      MachineAnalysis.sortByRank(filtered);
+
+      // 🔹 Custom sort: Press → Mold → theo rank
+      filtered.sort((a, b) {
+        int getDivPriority(String div) {
+          if (div.contains("PRESS")) return 1;
+          if (div.contains("MOLD")) return 2;
+          return 3;
+        }
+
+        final priA = getDivPriority(a.div ?? "");
+        final priB = getDivPriority(b.div ?? "");
+
+        return priA.compareTo(priB);
+      });
+
+      // In ra chi tiết
+      for (var item in filtered) {
+        print("macName: ${item.macName}, div: ${item.div}, rank: ${item.rank}");
+      }
+
+      dataList = filtered.map((e) => e.toJson()).toList();
     } else {
       final result = await ApiService().fetchMachineDataAnalysis(
         month: month,
