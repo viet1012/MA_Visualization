@@ -1,4 +1,4 @@
-class DetailsMSMovingAveResponse {
+class DetailsMSMovingAveModel {
   final String div;
   final String groupName;
   final String machineCode;
@@ -13,7 +13,7 @@ class DetailsMSMovingAveResponse {
   final double? stopHour;
   final String issueStatus;
 
-  DetailsMSMovingAveResponse({
+  DetailsMSMovingAveModel({
     required this.div,
     required this.groupName,
     required this.machineCode,
@@ -29,8 +29,8 @@ class DetailsMSMovingAveResponse {
     required this.issueStatus,
   });
 
-  factory DetailsMSMovingAveResponse.fromJson(Map<String, dynamic> json) {
-    return DetailsMSMovingAveResponse(
+  factory DetailsMSMovingAveModel.fromJson(Map<String, dynamic> json) {
+    return DetailsMSMovingAveModel(
       div: json['div'] ?? '',
       groupName: json['groupName'] ?? '',
       machineCode: json['machineCode'] ?? '',

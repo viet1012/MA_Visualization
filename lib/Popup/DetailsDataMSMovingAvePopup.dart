@@ -2,26 +2,30 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
-import 'package:ma_visualization/Model/DetailsDataPMModel.dart';
+import 'package:ma_visualization/Model/DetailsMSMovingAveModel.dart';
 import 'package:universal_html/html.dart' as html;
 
-class DetailsDataPMPopup extends StatefulWidget {
+class DetailsDataRFMovingAvePopup extends StatefulWidget {
   final String title;
-  final List<DetailsDataPMModel> data;
+  final List<DetailsMSMovingAveModel> data;
 
-  DetailsDataPMPopup({Key? key, required this.title, required this.data})
-    : super(key: key);
+  DetailsDataRFMovingAvePopup({
+    Key? key,
+    required this.title,
+    required this.data,
+  }) : super(key: key);
 
   @override
-  State<DetailsDataPMPopup> createState() => _DetailsDataPMPopupState();
+  State<DetailsDataRFMovingAvePopup> createState() =>
+      _DetailsDataPMPopupState();
 }
 
-class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
+class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
   final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _filterController = TextEditingController();
   bool _hasInput = false;
-  late List<DetailsDataPMModel> filteredData;
+  late List<DetailsMSMovingAveModel> filteredData;
   late List<Map<String, dynamic>> rawJsonList; // bạn lưu từ response
 
   @override
@@ -45,9 +49,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
   }
 
   bool _checkHasInput() {
-    return selectedDept != null ||
-        selectedCline != null ||
-        selectedIssueStatus != null;
+    return selectedDept != null;
   }
 
   void _applyFilter() {
@@ -57,24 +59,11 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
       filteredData =
           widget.data.where((item) {
             // Kiểm tra các điều kiện tìm kiếm trong chuỗi
-            final matchesSearch =
-                item.dept.toLowerCase().contains(query) ||
-                item.cLine.toLowerCase().contains(query) ||
-                item.actionCode!.toLowerCase().contains(query) ||
-                item.issueStatus!.toLowerCase().contains(query) ||
-                item.empName!.toLowerCase().contains(query) ||
-                item.machineCode!.toLowerCase().contains(query) ||
-                item.empNo!.toLowerCase().contains(query) ||
-                item.startTime!.toLowerCase().contains(query) ||
-                item.finishTime!.toLowerCase().contains(query) ||
-                item.estime!.toLowerCase().contains(query);
+            final matchesSearch = item.div.toLowerCase().contains(query);
 
             // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
             final matchesFilters =
-                (selectedDept == null || item.dept == selectedDept) &&
-                (selectedCline == null || item.cLine == selectedCline) &&
-                (selectedIssueStatus == null ||
-                    item.issueStatus == selectedIssueStatus);
+                (selectedDept == null || item.div == selectedDept);
 
             return matchesSearch &&
                 matchesFilters; // Kết hợp cả hai điều kiện: tìm kiếm và lọc
@@ -88,15 +77,15 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
       _filterController.clear();
 
       selectedDept = null;
-      selectedCline = null;
-      selectedIssueStatus = null;
 
       filteredData = widget.data;
       _hasInput = false; // ✅ reset trạng thái
     });
   }
 
-  List<String> _getUniqueValues(String Function(DetailsDataPMModel) selector) {
+  List<String> _getUniqueValues(
+    String Function(DetailsMSMovingAveModel) selector,
+  ) {
     return widget.data.map(selector).toSet().toList()..sort();
   }
 
@@ -232,8 +221,6 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
   }
 
   String? selectedDept;
-  String? selectedCline;
-  String? selectedIssueStatus;
 
   List<String> _getUniqueValuesFromList(
     List<dynamic> list,
@@ -255,10 +242,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
 
     final tempFilteredData =
         widget.data.where((item) {
-          return (selectedDept == null || item.dept == selectedDept) &&
-              (selectedCline == null || item.cLine == selectedCline) &&
-              (selectedIssueStatus == null ||
-                  item.issueStatus == selectedIssueStatus);
+          return (selectedDept == null || item.div == selectedDept);
         }).toList();
 
     // Lấy danh sách giá trị duy nhất theo key trong kết quả đã lọc
@@ -281,26 +265,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
           });
         };
         break;
-      case 'cline':
-        selectedValue = selectedCline;
-        onChanged = (value) {
-          setState(() {
-            selectedCline = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
-      case 'issuestatus':
-        selectedValue = selectedIssueStatus;
-        onChanged = (value) {
-          setState(() {
-            selectedIssueStatus = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+
       default:
         // Không filter được -> render Text bình thường
         return _buildTableCell(title, isHeader: true, columnKey: key);
@@ -378,17 +343,19 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
                 color: theme.dividerColor.withOpacity(0.8),
               ),
               columnWidths: {
-                0: FixedColumnWidth(143),
-                1: FixedColumnWidth(170),
-                2: FixedColumnWidth(160),
-                3: FixedColumnWidth(200),
-                4: FixedColumnWidth(200),
-                5: FixedColumnWidth(140),
-                6: FixedColumnWidth(180),
-                7: FixedColumnWidth(160),
-                8: FixedColumnWidth(155),
-                9: FixedColumnWidth(155),
-                10: FixedColumnWidth(155),
+                0: FixedColumnWidth(80),
+                1: FixedColumnWidth(120),
+                2: FixedColumnWidth(100),
+                3: FixedColumnWidth(100),
+                4: FixedColumnWidth(150),
+                5: FixedColumnWidth(200),
+                6: FixedColumnWidth(100),
+                7: FixedColumnWidth(100),
+                8: FixedColumnWidth(100),
+                9: FixedColumnWidth(100),
+                10: FixedColumnWidth(100),
+                11: FixedColumnWidth(100),
+                12: FixedColumnWidth(100),
               },
               children: [
                 TableRow(
@@ -416,17 +383,19 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
                         color: theme.dividerColor.withOpacity(0.8),
                       ),
                       columnWidths: {
-                        0: FixedColumnWidth(143),
-                        1: FixedColumnWidth(170),
-                        2: FixedColumnWidth(160),
-                        3: FixedColumnWidth(200),
-                        4: FixedColumnWidth(200),
-                        5: FixedColumnWidth(140),
-                        6: FixedColumnWidth(180),
-                        7: FixedColumnWidth(160),
-                        8: FixedColumnWidth(155),
-                        9: FixedColumnWidth(155),
-                        10: FixedColumnWidth(155),
+                        0: FixedColumnWidth(80),
+                        1: FixedColumnWidth(120),
+                        2: FixedColumnWidth(100),
+                        3: FixedColumnWidth(100),
+                        4: FixedColumnWidth(150),
+                        5: FixedColumnWidth(200),
+                        6: FixedColumnWidth(100),
+                        7: FixedColumnWidth(100),
+                        8: FixedColumnWidth(100),
+                        9: FixedColumnWidth(100),
+                        10: FixedColumnWidth(100),
+                        11: FixedColumnWidth(100),
+                        12: FixedColumnWidth(100),
                       },
                       children:
                           filteredData.map((item) {
@@ -534,20 +503,20 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
     html.Url.revokeObjectUrl(url);
   }
 
-  Uint8List createExcel(List<DetailsDataPMModel> data) {
+  Uint8List createExcel(List<DetailsMSMovingAveModel> data) {
     var excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
     // Thêm tiêu đề đúng thứ tự
     sheet.appendRow([
-      'DEPT',
-      'CLINE',
-      'EMPNO',
-      'EMPNAME',
+      'DIV',
+      'GROUPNAME',
       'MACHINECODE',
-      'ACTIONCODE',
+      'MACHINETYPE',
+      'REF_NO',
+      'Reason',
+      'CONFIRM_DATE',
       'SENDTIME',
-      'ESTIME',
       'STARTTIME',
       'FINISHTIME',
       'ISSUESTATUS',
@@ -556,16 +525,18 @@ class _DetailsDataPMPopupState extends State<DetailsDataPMPopup> {
     // Dữ liệu theo đúng thứ tự như tiêu đề
     for (var item in data) {
       sheet.appendRow([
-        item.dept,
-        item.cLine,
-        item.empNo,
-        item.empName,
+        item.div,
+        item.groupName,
         item.machineCode,
-        item.actionCode,
+        item.machineType,
+        item.refNo,
+        item.reason,
+        item.confirmDate,
         item.sendTime,
-        item.estime,
         item.startTime,
         item.finishTime,
+        item.tempRun,
+        item.stopHour,
         item.issueStatus,
       ]);
     }

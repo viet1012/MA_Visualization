@@ -1,10 +1,13 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:ma_visualization/Model/DetailsDataMachineStoppingModel.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 
 import '../API/ApiService.dart';
+import '../Model/DetailsMSMovingAveModel.dart';
 import '../Model/MachineAnalysis.dart';
+import '../Popup/DetailsDataMSMovingAvePopup.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
 import 'MachineTileWidget.dart';
@@ -223,13 +226,13 @@ class _BubbleChartState extends State<BubbleChart>
 
           if (machine.macName == widget.selectedMachine) {
             // 👉 Bấm lần 2 => reset
-            setState(() {
-              selectedIndex = null;
-              selectedMachine = null;
-              _animationController.reverse();
-            });
-
-            widget.onBubbleTap?.call(""); // gửi rỗng
+            // setState(() {
+            //   selectedIndex = null;
+            //   selectedMachine = null;
+            //   _animationController.reverse();
+            // });
+            //
+            // widget.onBubbleTap?.call(""); // gửi rỗng
 
             // ✅ Gọi API ngoài setState
             final range = RankConverter.convertRankToMonthRange(
@@ -241,14 +244,34 @@ class _BubbleChartState extends State<BubbleChart>
               print("❌ Rank không hợp lệ: ${machine.rank}");
               return;
             }
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(child: CircularProgressIndicator()),
+            );
 
             try {
-              final data = await ApiService().fetchDetailsMSMovingAve(
-                monthFrom: range["monthFrom"]!,
-                monthTo: range["monthTo"]!,
-                div: machine.div,
-                macName: machine.macName,
-              );
+              List<DetailsMSMovingAveModel> data = await ApiService()
+                  .fetchDetailsMSMovingAve(
+                    monthFrom: range["monthFrom"]!,
+                    monthTo: range["monthTo"]!,
+                    div: machine.div,
+                    macName: machine.macName,
+                  );
+
+              Navigator.of(context).pop();
+
+              if (data.isNotEmpty) {
+                // Hiển thị popup dữ liệu
+                showDialog(
+                  context: context,
+                  builder:
+                      (_) => DetailsDataRFMovingAvePopup(
+                        title: "VIET",
+                        data: data,
+                      ),
+                );
+              }
               print(
                 "✅ API trả về ${data.length} record cho ${machine.macName}",
               );
