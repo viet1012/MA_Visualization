@@ -8,6 +8,7 @@ import '../Model/MachineAnalysis.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
 import 'MachineTileWidget.dart';
+import 'RankConverter.dart';
 
 class BubbleChart extends StatefulWidget {
   final List<MachineAnalysis> data;
@@ -210,48 +211,66 @@ class _BubbleChartState extends State<BubbleChart>
 
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [
       BubbleSeries<MachineAnalysis, num>(
-        onPointTap:
-            (widget.selectedMode == AnalysisMode.Total)
-                ? (ChartPointDetails details) {} // ❌ Không làm gì khi tab Total
-                : (ChartPointDetails details) {
-                  final int pointIndex = details.pointIndex!;
-                  final machine = allMachines[pointIndex];
+        onPointTap: (ChartPointDetails details) async {
+          if (widget.selectedMode == AnalysisMode.Total) return;
 
-                  final renderBox =
-                      _chartKey.currentContext?.findRenderObject()
-                          as RenderBox?;
-                  if (renderBox != null) {
-                    setState(() {
-                      if (machine.macName == widget.selectedMachine) {
-                        // 👉 Bấm lần 2 => reset
-                        selectedIndex = null;
-                        selectedMachine = null;
-                        _animationController.reverse();
+          final int pointIndex = details.pointIndex!;
+          final machine = allMachines[pointIndex];
+          final renderBox =
+              _chartKey.currentContext?.findRenderObject() as RenderBox?;
 
-                        if (widget.onBubbleTap != null) {
-                          widget.onBubbleTap!(""); // gửi rỗng
-                        }
-                        print("Average Details");
-                      } else {
-                        // 👉 Bấm bubble mới => chọn
-                        selectedIndex = pointIndex;
-                        selectedMachine = machine;
-                        _animationController.forward(from: 0.0);
-                        print(
-                          "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
-                        );
+          if (renderBox == null) return;
 
-                        widget.onModeChange?.call(AnalysisMode.MovAve);
+          if (machine.macName == widget.selectedMachine) {
+            // 👉 Bấm lần 2 => reset
+            setState(() {
+              selectedIndex = null;
+              selectedMachine = null;
+              _animationController.reverse();
+            });
 
-                        if (widget.onBubbleTap != null) {
-                          widget.onBubbleTap!(
-                            machine.macName,
-                          ); // gửi tên machine
-                        }
-                      }
-                    });
-                  }
-                },
+            widget.onBubbleTap?.call(""); // gửi rỗng
+
+            // ✅ Gọi API ngoài setState
+            final range = RankConverter.convertRankToMonthRange(
+              machine.rank,
+              DateTime.now().year,
+            );
+
+            if (range == null) {
+              print("❌ Rank không hợp lệ: ${machine.rank}");
+              return;
+            }
+
+            try {
+              final data = await ApiService().fetchDetailsMSMovingAve(
+                monthFrom: range["monthFrom"]!,
+                monthTo: range["monthTo"]!,
+                div: machine.div,
+                macName: machine.macName,
+              );
+              print(
+                "✅ API trả về ${data.length} record cho ${machine.macName}",
+              );
+            } catch (e) {
+              print("❌ Lỗi gọi API: $e");
+            }
+          } else {
+            // 👉 Bấm bubble mới => chọn
+            setState(() {
+              selectedIndex = pointIndex;
+              selectedMachine = machine;
+              _animationController.forward(from: 0.0);
+            });
+
+            print(
+              "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
+            );
+
+            widget.onModeChange?.call(AnalysisMode.MovAve);
+            widget.onBubbleTap?.call(machine.macName); // gửi tên machine
+          }
+        },
 
         animationDuration: 500,
         dataSource: allMachines,
