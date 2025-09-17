@@ -6,8 +6,10 @@ import 'package:intl/intl.dart';
 
 import '../API/ApiService.dart';
 import '../Model/DetailsMSMovingAveModel.dart';
+import '../Model/DetailsRFMovingAveModel.dart';
 import '../Model/MachineAnalysis.dart';
 import '../Popup/DetailsDataMSMovingAvePopup.dart';
+import '../Popup/DetailsDataRFMovingAvePopup.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
 import 'MachineTileWidget.dart';
@@ -251,8 +253,15 @@ class _BubbleChartState extends State<BubbleChart>
             );
 
             try {
-              List<DetailsMSMovingAveModel> data = await ApiService()
+              List<DetailsMSMovingAveModel> dataMS = await ApiService()
                   .fetchDetailsMSMovingAve(
+                    monthFrom: range["monthFrom"]!,
+                    monthTo: range["monthTo"]!,
+                    div: machine.div,
+                    macName: machine.macName,
+                  );
+              List<DetailsRFMovingAveModel> dataRF = await ApiService()
+                  .fetchDetailsRFMovingAve(
                     monthFrom: range["monthFrom"]!,
                     monthTo: range["monthTo"]!,
                     div: machine.div,
@@ -261,20 +270,28 @@ class _BubbleChartState extends State<BubbleChart>
 
               Navigator.of(context).pop();
 
-              if (data.isNotEmpty) {
+              if (dataMS.isNotEmpty || dataRF.isNotEmpty) {
                 // Hiển thị popup dữ liệu
                 showDialog(
                   context: context,
                   builder:
-                      (_) => DetailsDataRFMovingAvePopup(
-                        title: "VIET",
-                        data: data,
+                      (_) => Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          DetailsDataMSMovingAveModel(
+                            title:
+                                '${machine.macName}\nMachine Stopping[${machine.rank}]',
+                            data: dataMS,
+                          ),
+                          DetailsDataRFMovingAvePopup(
+                            title:
+                                '${machine.macName}\nRepair Fee[${machine.rank}]',
+                            data: dataRF,
+                          ),
+                        ],
                       ),
                 );
               }
-              print(
-                "✅ API trả về ${data.length} record cho ${machine.macName}",
-              );
             } catch (e) {
               print("❌ Lỗi gọi API: $e");
             }

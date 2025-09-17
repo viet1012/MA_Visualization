@@ -2,30 +2,30 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
-import 'package:ma_visualization/Model/DetailsMSMovingAveModel.dart';
+import 'package:ma_visualization/Model/DetailsRFMovingAveModel.dart';
 import 'package:universal_html/html.dart' as html;
 
-class DetailsDataMSMovingAveModel extends StatefulWidget {
+class DetailsDataRFMovingAvePopup extends StatefulWidget {
   final String title;
-  final List<DetailsMSMovingAveModel> data;
+  final List<DetailsRFMovingAveModel> data;
 
-  DetailsDataMSMovingAveModel({
+  DetailsDataRFMovingAvePopup({
     Key? key,
     required this.title,
     required this.data,
   }) : super(key: key);
 
   @override
-  State<DetailsDataMSMovingAveModel> createState() =>
+  State<DetailsDataRFMovingAvePopup> createState() =>
       _DetailsDataPMPopupState();
 }
 
-class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
+class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
   final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _filterController = TextEditingController();
   bool _hasInput = false;
-  late List<DetailsMSMovingAveModel> filteredData;
+  late List<DetailsRFMovingAveModel> filteredData;
   late List<Map<String, dynamic>> rawJsonList; // bạn lưu từ response
 
   @override
@@ -84,7 +84,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
   }
 
   List<String> _getUniqueValues(
-    String Function(DetailsMSMovingAveModel) selector,
+    String Function(DetailsRFMovingAveModel) selector,
   ) {
     return widget.data.map(selector).toSet().toList()..sort();
   }
@@ -102,7 +102,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
         padding: const EdgeInsets.all(4.0),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * .48,
+            maxWidth: MediaQuery.of(context).size.width * .49,
             maxHeight: MediaQuery.of(context).size.height,
           ),
           child: Padding(
@@ -347,8 +347,8 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
               ),
               columnWidths: {
                 0: FixedColumnWidth(80),
-                1: FixedColumnWidth(135),
-                2: FixedColumnWidth(150),
+                1: FixedColumnWidth(120),
+                2: FixedColumnWidth(120),
                 3: FixedColumnWidth(150),
                 4: FixedColumnWidth(130),
                 5: FixedColumnWidth(150),
@@ -358,7 +358,10 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
                 9: FixedColumnWidth(120),
                 10: FixedColumnWidth(110),
                 11: FixedColumnWidth(120),
-                12: FixedColumnWidth(140),
+                12: FixedColumnWidth(90),
+                13: FixedColumnWidth(100),
+                14: FixedColumnWidth(120),
+                15: FixedColumnWidth(100),
               },
               children: [
                 TableRow(
@@ -384,8 +387,8 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
                       ),
                       columnWidths: {
                         0: FixedColumnWidth(80),
-                        1: FixedColumnWidth(135),
-                        2: FixedColumnWidth(150),
+                        1: FixedColumnWidth(120),
+                        2: FixedColumnWidth(120),
                         3: FixedColumnWidth(150),
                         4: FixedColumnWidth(130),
                         5: FixedColumnWidth(150),
@@ -395,7 +398,10 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
                         9: FixedColumnWidth(120),
                         10: FixedColumnWidth(110),
                         11: FixedColumnWidth(120),
-                        12: FixedColumnWidth(140),
+                        12: FixedColumnWidth(90),
+                        13: FixedColumnWidth(100),
+                        14: FixedColumnWidth(120),
+                        15: FixedColumnWidth(100),
                       },
                       children:
                           filteredData.map((item) {
@@ -503,43 +509,49 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
     html.Url.revokeObjectUrl(url);
   }
 
-  Uint8List createExcel(List<DetailsMSMovingAveModel> data) {
+  Uint8List createExcel(List<DetailsRFMovingAveModel> data) {
     var excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
     // Thêm tiêu đề đúng thứ tự
     sheet.appendRow([
       'DIV',
-      'GROUPNAME',
-      'MACHINECODE',
-      'MACHINETYPE',
-      'REF_NO',
-      'Reason',
-      'CONFIRM_DATE',
-      'SENDTIME',
-      'STARTTIME',
-      'FINISHTIME',
-      'TEMPRUN',
-      'STOPHOUR',
-      'ISSUESTATUS',
+      'MacGrp',
+      'MacID',
+      'MacName',
+      'Cate',
+      'MATNR',
+      'MAKTX',
+      'UseDate',
+      'KOSTL',
+      'KONTO',
+      'XBLNR2',
+      'BKTXT',
+      'QTY',
+      'UNIT',
+      'ACT',
+      'Note',
     ]);
 
     // Dữ liệu theo đúng thứ tự như tiêu đề
     for (var item in data) {
       sheet.appendRow([
         item.div,
-        item.groupName,
-        item.machineCode,
-        item.machineType,
-        item.refNo,
-        item.reason,
-        item.confirmDate,
-        item.sendTime,
-        item.startTime,
-        item.finishTime,
-        item.tempRun,
-        item.stopHour,
-        item.issueStatus,
+        item.macGrp,
+        item.macId,
+        item.macName,
+        item.cate,
+        item.matnr,
+        item.maktx,
+        item.useDate,
+        item.kostl,
+        item.konto,
+        item.xblnr2,
+        item.bktxt,
+        item.qty,
+        item.unit,
+        item.act,
+        item.note,
       ]);
     }
 

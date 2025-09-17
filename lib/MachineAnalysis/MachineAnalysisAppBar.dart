@@ -144,17 +144,27 @@ class MachineAnalysisAppBar extends StatelessWidget
                     ),
                     const SizedBox(width: 12),
                     AnimatedChoiceChip(
-                      label: "Average\nMachine",
+                      label:
+                          selectedMode == AnalysisMode.MovAve
+                              ? "Moving\nAverage"
+                              : "Average\nMachine",
                       icon: Icon(
                         Icons.align_vertical_center,
                         color: Colors.black,
                       ),
-                      isSelected: selectedMode == AnalysisMode.Average,
+                      isSelected:
+                          selectedMode == AnalysisMode.Average ||
+                          selectedMode == AnalysisMode.MovAve,
                       onTap: () => onModeChanged(AnalysisMode.Average),
                       selectedColor: Colors.green,
-                      selectedGradient: const LinearGradient(
-                        colors: [Colors.lightGreen, Colors.green],
-                      ),
+                      selectedGradient:
+                          selectedMode == AnalysisMode.MovAve
+                              ? const LinearGradient(
+                                colors: [Colors.pinkAccent, Colors.blue],
+                              )
+                              : const LinearGradient(
+                                colors: [Colors.pinkAccent, Colors.green],
+                              ),
                     ),
                     const SizedBox(width: 12),
 
@@ -168,7 +178,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                       onTap: () => onModeChanged(AnalysisMode.MonthAve),
                       selectedColor: Colors.pinkAccent,
                       selectedGradient: const LinearGradient(
-                        colors: [Colors.pinkAccent, Colors.green],
+                        colors: [Colors.yellow, Colors.pinkAccent],
                       ),
                     ),
                   ],

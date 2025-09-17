@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class DetailsMSMovingAveModel {
   final String div;
   final String groupName;
@@ -29,7 +31,19 @@ class DetailsMSMovingAveModel {
     required this.issueStatus,
   });
 
+  /// 👉 format confirmDate thành yyyy-MM-dd
+  String get confirmDateFormatted {
+    if (confirmDate == null) return '';
+    return DateFormat('yyyy-MM-dd').format(confirmDate!);
+  }
+
   factory DetailsMSMovingAveModel.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedDate;
+    if (json['confirmDate'] != null) {
+      // Nếu chuỗi ngày không đúng format thì vẫn tránh crash
+      parsedDate = DateTime.tryParse(json['confirmDate'].toString());
+    }
+
     return DetailsMSMovingAveModel(
       div: json['div'] ?? '',
       groupName: json['groupName'] ?? '',
@@ -37,10 +51,7 @@ class DetailsMSMovingAveModel {
       machineType: json['machineType'] ?? '',
       refNo: json['refNo'] ?? '',
       reason: json['reason'] ?? '',
-      confirmDate:
-          json['confirmDate'] != null
-              ? DateTime.tryParse(json['confirmDate'].toString())
-              : null,
+      confirmDate: parsedDate,
       sendTime: json['sendTime'] ?? '',
       startTime: json['startTime'] ?? '',
       finishTime: json['finishTime'] ?? '',
@@ -62,7 +73,11 @@ class DetailsMSMovingAveModel {
       'machineType': machineType,
       'refNo': refNo,
       'reason': reason,
-      'confirmDate': confirmDate?.toIso8601String(),
+      // Xuất confirmDate theo format yyyy-MM-dd
+      'confirmDate':
+          confirmDate != null
+              ? DateFormat('yyyy-MM-dd').format(confirmDate!)
+              : null,
       'sendTime': sendTime,
       'startTime': startTime,
       'finishTime': finishTime,
