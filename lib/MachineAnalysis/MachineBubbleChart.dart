@@ -269,7 +269,9 @@ class _BubbleChartState extends State<BubbleChart>
                   );
 
               Navigator.of(context).pop();
-
+              Color colorTitle = DepartmentUtils.getDepartmentColor(
+                machine.div,
+              );
               if (dataMS.isNotEmpty || dataRF.isNotEmpty) {
                 // Hiển thị popup dữ liệu
                 showDialog(
@@ -280,11 +282,13 @@ class _BubbleChartState extends State<BubbleChart>
                         children: [
                           DetailsDataMSMovingAvePopup(
                             title: machine.macName,
+                            colorTitle: colorTitle,
                             subTitle: 'Machine Stopping [${machine.rank}]',
                             data: dataMS,
                           ),
                           DetailsDataRFMovingAvePopup(
                             title: machine.macName,
+                            colorTitle: colorTitle,
                             subTitle: 'Repair Fee [${machine.rank}]',
                             data: dataRF,
                           ),

@@ -7,12 +7,14 @@ import 'package:universal_html/html.dart' as html;
 
 class DetailsDataRFMovingAvePopup extends StatefulWidget {
   final String title;
+  final Color colorTitle;
   final String subTitle;
   final List<DetailsRFMovingAveModel> data;
 
   const DetailsDataRFMovingAvePopup({
     super.key,
     required this.title,
+    required this.colorTitle,
     required this.subTitle,
     required this.data,
   });
@@ -150,7 +152,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
                       Text(
                         widget.title,
                         style: theme.textTheme.headlineSmall?.copyWith(
-                          color: Colors.blueAccent,
+                          color: widget.colorTitle,
                           fontWeight: FontWeight.w600,
                         ),
                         textAlign: TextAlign.center,
