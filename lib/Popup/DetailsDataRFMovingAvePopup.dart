@@ -59,11 +59,19 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
       filteredData =
           widget.data.where((item) {
             // Kiểm tra các điều kiện tìm kiếm trong chuỗi
-            final matchesSearch = item.div.toLowerCase().contains(query);
+            final matchesSearch =
+                item.div.toLowerCase().contains(query) ||
+                item.macGrp.toLowerCase().contains(query) ||
+                item.macId.toLowerCase().contains(query) ||
+                item.cate.toLowerCase().contains(query) ||
+                item.matnr.toLowerCase().contains(query) ||
+                item.maktx.toLowerCase().contains(query) ||
+                item.macId.toLowerCase().contains(query);
 
             // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
             final matchesFilters =
-                (selectedDept == null || item.div == selectedDept);
+                (selectedDept == null || item.div == selectedDept) &&
+                (selectedCate == null || item.cate == selectedCate);
 
             return matchesSearch &&
                 matchesFilters; // Kết hợp cả hai điều kiện: tìm kiếm và lọc
@@ -77,6 +85,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
       _filterController.clear();
 
       selectedDept = null;
+      selectedCate = null;
 
       filteredData = widget.data;
       _hasInput = false; // ✅ reset trạng thái
@@ -207,7 +216,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
           child: TextField(
             controller: _filterController,
             decoration: InputDecoration(
-              hintText: 'Search by Dept, GroupName, MachineCode, ...',
+              hintText: 'Search by Dept, MacGrp, MacName, ...',
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -224,6 +233,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
   }
 
   String? selectedDept;
+  String? selectedCate;
 
   List<String> _getUniqueValuesFromList(
     List<dynamic> list,
@@ -269,6 +279,16 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
         };
         break;
 
+      case 'cate':
+        selectedValue = selectedCate;
+        onChanged = (value) {
+          setState(() {
+            selectedCate = value == '__reset__' ? null : value;
+            _applyFilter();
+            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
+          });
+        };
+        break;
       default:
         // Không filter được -> render Text bình thường
         return _buildTableCell(title, isHeader: true, columnKey: key);

@@ -49,7 +49,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
   }
 
   bool _checkHasInput() {
-    return selectedDept != null;
+    return selectedDept != null || selectedGroupName != null;
   }
 
   void _applyFilter() {
@@ -59,11 +59,18 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
       filteredData =
           widget.data.where((item) {
             // Kiểm tra các điều kiện tìm kiếm trong chuỗi
-            final matchesSearch = item.div.toLowerCase().contains(query);
+            final matchesSearch =
+                item.div.toLowerCase().contains(query) ||
+                item.groupName.toLowerCase().contains(query) ||
+                item.machineCode.toLowerCase().contains(query) ||
+                item.machineType.toLowerCase().contains(query) ||
+                item.refNo.toLowerCase().contains(query);
 
             // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
             final matchesFilters =
-                (selectedDept == null || item.div == selectedDept);
+                (selectedDept == null || item.div == selectedDept) &&
+                (selectedGroupName == null ||
+                    item.groupName == selectedGroupName);
 
             return matchesSearch &&
                 matchesFilters; // Kết hợp cả hai điều kiện: tìm kiếm và lọc
@@ -77,6 +84,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
       _filterController.clear();
 
       selectedDept = null;
+      selectedGroupName = null;
 
       filteredData = widget.data;
       _hasInput = false; // ✅ reset trạng thái
@@ -224,6 +232,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
   }
 
   String? selectedDept;
+  String? selectedGroupName;
 
   List<String> _getUniqueValuesFromList(
     List<dynamic> list,
@@ -243,12 +252,13 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
   Widget _buildDynamicDropdownHeader(String key) {
     final title = key.toUpperCase();
 
+    // lọc tạm thời theo dept đã chọn (nếu có)
     final tempFilteredData =
         widget.data.where((item) {
           return (selectedDept == null || item.div == selectedDept);
         }).toList();
 
-    // Lấy danh sách giá trị duy nhất theo key trong kết quả đã lọc
+    // lấy danh sách giá trị duy nhất từ data theo key
     List<String> values = _getUniqueValuesFromList(
       tempFilteredData,
       (item) => item.toJson()[key]?.toString() ?? '',
@@ -264,13 +274,24 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
           setState(() {
             selectedDept = value == '__reset__' ? null : value;
             _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
+            _hasInput = _checkHasInput();
+          });
+        };
+        break;
+
+      case 'groupName':
+        selectedValue = selectedGroupName;
+        onChanged = (value) {
+          setState(() {
+            selectedGroupName = value == '__reset__' ? null : value;
+            _applyFilter();
+            _hasInput = _checkHasInput();
           });
         };
         break;
 
       default:
-        // Không filter được -> render Text bình thường
+        // không có filter cho cột này thì chỉ render Text bình thường
         return _buildTableCell(title, isHeader: true, columnKey: key);
     }
 
@@ -347,7 +368,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
               ),
               columnWidths: {
                 0: FixedColumnWidth(80),
-                1: FixedColumnWidth(135),
+                1: FixedColumnWidth(160),
                 2: FixedColumnWidth(150),
                 3: FixedColumnWidth(150),
                 4: FixedColumnWidth(130),
@@ -384,7 +405,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
                       ),
                       columnWidths: {
                         0: FixedColumnWidth(80),
-                        1: FixedColumnWidth(135),
+                        1: FixedColumnWidth(160),
                         2: FixedColumnWidth(150),
                         3: FixedColumnWidth(150),
                         4: FixedColumnWidth(130),
