@@ -278,14 +278,14 @@ class _BubbleChartState extends State<BubbleChart>
                       (_) => Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          DetailsDataMSMovingAveModel(
-                            title:
-                                '${machine.macName}\nMachine Stopping[${machine.rank}]',
+                          DetailsDataMSMovingAvePopup(
+                            title: machine.macName,
+                            subTitle: 'Machine Stopping [${machine.rank}]',
                             data: dataMS,
                           ),
                           DetailsDataRFMovingAvePopup(
-                            title:
-                                '${machine.macName}\nRepair Fee[${machine.rank}]',
+                            title: machine.macName,
+                            subTitle: 'Repair Fee [${machine.rank}]',
                             data: dataRF,
                           ),
                         ],

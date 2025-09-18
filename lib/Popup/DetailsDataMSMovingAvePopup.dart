@@ -5,22 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:ma_visualization/Model/DetailsMSMovingAveModel.dart';
 import 'package:universal_html/html.dart' as html;
 
-class DetailsDataMSMovingAveModel extends StatefulWidget {
+class DetailsDataMSMovingAvePopup extends StatefulWidget {
   final String title;
+  final String subTitle;
   final List<DetailsMSMovingAveModel> data;
 
-  DetailsDataMSMovingAveModel({
-    Key? key,
+  const DetailsDataMSMovingAvePopup({
+    super.key,
     required this.title,
+    required this.subTitle,
     required this.data,
-  }) : super(key: key);
+  });
 
   @override
-  State<DetailsDataMSMovingAveModel> createState() =>
-      _DetailsDataPMPopupState();
+  State<DetailsDataMSMovingAvePopup> createState() =>
+      _DetailsDataMSMovingAvePopupState();
 }
 
-class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
+class _DetailsDataMSMovingAvePopupState
+    extends State<DetailsDataMSMovingAvePopup> {
   final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _filterController = TextEditingController();
@@ -140,14 +143,30 @@ class _DetailsDataPMPopupState extends State<DetailsDataMSMovingAveModel> {
             Expanded(
               child: Row(
                 children: [
-                  Text(
-                    widget.title,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      color: Colors.blueAccent,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: Colors.blueAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4), // khoảng cách nhỏ giữa 2 text
+                      Text(
+                        widget.subTitle, // hoặc widget.subtitle nếu có
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.yellowAccent[700],
+                          fontSize: 18,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
+
                   SizedBox(width: 8),
                   Text(
                     '[Details Data]',

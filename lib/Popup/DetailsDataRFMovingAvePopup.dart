@@ -7,13 +7,15 @@ import 'package:universal_html/html.dart' as html;
 
 class DetailsDataRFMovingAvePopup extends StatefulWidget {
   final String title;
+  final String subTitle;
   final List<DetailsRFMovingAveModel> data;
 
-  DetailsDataRFMovingAvePopup({
-    Key? key,
+  const DetailsDataRFMovingAvePopup({
+    super.key,
     required this.title,
+    required this.subTitle,
     required this.data,
-  }) : super(key: key);
+  });
 
   @override
   State<DetailsDataRFMovingAvePopup> createState() =>
@@ -141,14 +143,30 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
             Expanded(
               child: Row(
                 children: [
-                  Text(
-                    widget.title,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      color: Colors.blueAccent,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: Colors.blueAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4), // khoảng cách nhỏ giữa 2 text
+                      Text(
+                        widget.subTitle, // hoặc widget.subtitle nếu có
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.yellowAccent[700],
+                          fontSize: 18,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
+
                   SizedBox(width: 8),
                   Text(
                     '[Details Data]',
