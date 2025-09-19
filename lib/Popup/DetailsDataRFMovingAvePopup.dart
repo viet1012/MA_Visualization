@@ -115,8 +115,8 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
         padding: const EdgeInsets.all(4.0),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * .49,
-            maxHeight: MediaQuery.of(context).size.height,
+            maxWidth: MediaQuery.of(context).size.width,
+            maxHeight: MediaQuery.of(context).size.height * .5,
           ),
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -396,11 +396,11 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
                 7: FixedColumnWidth(120),
                 8: FixedColumnWidth(120),
                 9: FixedColumnWidth(120),
-                10: FixedColumnWidth(110),
-                11: FixedColumnWidth(120),
+                10: FixedColumnWidth(130),
+                11: FixedColumnWidth(140),
                 12: FixedColumnWidth(90),
                 13: FixedColumnWidth(100),
-                14: FixedColumnWidth(120),
+                14: FixedColumnWidth(100),
                 15: FixedColumnWidth(100),
               },
               children: [
@@ -436,11 +436,11 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
                         7: FixedColumnWidth(120),
                         8: FixedColumnWidth(120),
                         9: FixedColumnWidth(120),
-                        10: FixedColumnWidth(110),
-                        11: FixedColumnWidth(120),
+                        10: FixedColumnWidth(130),
+                        11: FixedColumnWidth(140),
                         12: FixedColumnWidth(90),
                         13: FixedColumnWidth(100),
-                        14: FixedColumnWidth(120),
+                        14: FixedColumnWidth(100),
                         15: FixedColumnWidth(100),
                       },
                       children:

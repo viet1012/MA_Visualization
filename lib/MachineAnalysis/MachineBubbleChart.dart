@@ -272,27 +272,32 @@ class _BubbleChartState extends State<BubbleChart>
               Color colorTitle = DepartmentUtils.getDepartmentColor(
                 machine.div,
               );
+
               if (dataMS.isNotEmpty || dataRF.isNotEmpty) {
                 // Hiển thị popup dữ liệu
                 showDialog(
                   context: context,
                   builder:
-                      (_) => Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          DetailsDataMSMovingAvePopup(
-                            title: machine.macName,
-                            colorTitle: colorTitle,
-                            subTitle: 'Machine Stopping [${machine.rank}]',
-                            data: dataMS,
+                      (_) => SizedBox(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              DetailsDataMSMovingAvePopup(
+                                title: machine.macName,
+                                colorTitle: colorTitle,
+                                subTitle: 'Machine Stopping [${machine.rank}]',
+                                data: dataMS,
+                              ),
+                              DetailsDataRFMovingAvePopup(
+                                title: machine.macName,
+                                colorTitle: colorTitle,
+                                subTitle: 'Repair Fee [${machine.rank}]',
+                                data: dataRF,
+                              ),
+                            ],
                           ),
-                          DetailsDataRFMovingAvePopup(
-                            title: machine.macName,
-                            colorTitle: colorTitle,
-                            subTitle: 'Repair Fee [${machine.rank}]',
-                            data: dataRF,
-                          ),
-                        ],
+                        ),
                       ),
                 );
               }

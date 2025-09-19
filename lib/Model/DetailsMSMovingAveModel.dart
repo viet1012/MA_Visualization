@@ -8,9 +8,9 @@ class DetailsMSMovingAveModel {
   final String refNo;
   final String reason;
   final DateTime? confirmDate;
-  final String sendTime;
-  final String startTime;
-  final String finishTime;
+  final String? sendTime;
+  final String? startTime;
+  final String? finishTime;
   final double? tempRun;
   final double? stopHour;
   final String issueStatus;
@@ -52,9 +52,9 @@ class DetailsMSMovingAveModel {
       refNo: json['refNo'] ?? '',
       reason: json['reason'] ?? '',
       confirmDate: parsedDate,
-      sendTime: json['sendTime'] ?? '',
-      startTime: json['startTime'] ?? '',
-      finishTime: json['finishTime'] ?? '',
+      sendTime: _formatDateTime(json['sendTime'].toString()),
+      startTime: _formatDateTime(json['startTime'].toString()),
+      finishTime: _formatDateTime(json['finishTime'].toString()),
       tempRun:
           json['tempRun'] != null ? (json['tempRun'] as num).toDouble() : null,
       stopHour:
@@ -85,5 +85,22 @@ class DetailsMSMovingAveModel {
       'stopHour': stopHour,
       'issueStatus': issueStatus,
     };
+  }
+
+  String? get formattedSendTime => _formatDateTime(sendTime);
+  String? get formattedStartTime => _formatDateTime(startTime);
+  String? get formattedFinishTime => _formatDateTime(finishTime);
+
+  static String? _formatDateTime(dynamic raw) {
+    if (raw == null) return null;
+    try {
+      final dateTime = DateTime.parse(raw.toString());
+      return '${dateTime.month.toString().padLeft(2, '0')}-'
+          '${dateTime.day.toString().padLeft(2, '0')} '
+          '${dateTime.hour.toString().padLeft(2, '0')}:'
+          '${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return raw.toString();
+    }
   }
 }
