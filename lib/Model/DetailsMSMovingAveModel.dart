@@ -52,9 +52,9 @@ class DetailsMSMovingAveModel {
       refNo: json['refNo'] ?? '',
       reason: json['reason'] ?? '',
       confirmDate: parsedDate,
-      sendTime: _formatDateTime(json['sendTime'].toString()),
-      startTime: _formatDateTime(json['startTime'].toString()),
-      finishTime: _formatDateTime(json['finishTime'].toString()),
+      sendTime: _formatDateTime(json['sendTime'].toString()) ?? '',
+      startTime: _formatDateTime(json['startTime'].toString()) ?? '',
+      finishTime: _formatDateTime(json['finishTime'].toString()) ?? '',
       tempRun:
           json['tempRun'] != null ? (json['tempRun'] as num).toDouble() : null,
       stopHour:
@@ -92,7 +92,9 @@ class DetailsMSMovingAveModel {
   String? get formattedFinishTime => _formatDateTime(finishTime);
 
   static String? _formatDateTime(dynamic raw) {
-    if (raw == null) return null;
+    if (raw == null || raw.toString().trim().isEmpty) {
+      return '';
+    }
     try {
       final dateTime = DateTime.parse(raw.toString());
       return '${dateTime.month.toString().padLeft(2, '0')}-'
@@ -100,7 +102,7 @@ class DetailsMSMovingAveModel {
           '${dateTime.hour.toString().padLeft(2, '0')}:'
           '${dateTime.minute.toString().padLeft(2, '0')}';
     } catch (e) {
-      return raw.toString();
+      return '';
     }
   }
 }

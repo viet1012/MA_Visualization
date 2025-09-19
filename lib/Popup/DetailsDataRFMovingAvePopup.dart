@@ -121,7 +121,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
             maxHeight: MediaQuery.of(context).size.height * .5,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -455,6 +455,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
                                     return _buildTableCell(
                                       value?.toString() ?? '',
                                       isNumber: value is num,
+                                      columnKey: key,
                                     );
                                   }).toList(),
                             );
@@ -480,14 +481,16 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
     final isActual =
         columnKey != null && columnKey.toLowerCase().contains('act');
     final displayText = (isActual && isHeader) ? '${text} ' : text;
+    final isActColumn = columnKey?.trim() == 'act';
 
     return isHeader && text == 'ACT'
         ? AnimatedTableCell(
           text: 'ACT',
-          displayText: 'ACT',
+          displayText: displayText,
           isHeader: true,
           isNumber: true,
           highlight: false,
+          colorBackground: widget.colorTitle,
           animatedKeys: ['ACT'],
         )
         : Container(
@@ -500,8 +503,11 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
               displayText,
               textAlign: isNumber ? TextAlign.right : TextAlign.left,
               style: TextStyle(
-                fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
-                color: highlight ? Colors.blue.shade700 : null,
+                fontWeight:
+                    isHeader || isActColumn
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                color: isActColumn ? widget.colorTitle : null,
                 fontSize: isHeader ? 18 : 16,
               ),
             ),

@@ -88,10 +88,13 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 (selectedMaktx == null || item.maktx == selectedMaktx) &&
                 (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
                 (selectedUnit == null || item.unit == selectedUnit) &&
-                (selectedUsedDate == null || item.useDate == selectedUsedDate) &&
+                (selectedUsedDate == null ||
+                    item.useDate == selectedUsedDate) &&
                 (selectedBktxt == null || item.bktxt == selectedBktxt) &&
-                (selectedKostl == null || item.kostl.toString() == selectedKostl) &&
-                (selectedKonto == null || item.konto.toString() == selectedKonto);
+                (selectedKostl == null ||
+                    item.kostl.toString() == selectedKostl) &&
+                (selectedKonto == null ||
+                    item.konto.toString() == selectedKonto);
 
             return matchesSearch &&
                 matchesFilters; // Kết hợp cả hai điều kiện: tìm kiếm và lọc
@@ -294,8 +297,10 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   String? selectedKostl;
   String? selectedKonto;
 
-
-  List<String> _getUniqueValuesFromList(List<dynamic> list, String Function(dynamic) extractor) {
+  List<String> _getUniqueValuesFromList(
+    List<dynamic> list,
+    String Function(dynamic) extractor,
+  ) {
     final set = <String>{};
     for (var item in list) {
       final value = extractor(item);
@@ -309,33 +314,29 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
   Widget _buildDynamicDropdownHeader(String key) {
     final title = key.toUpperCase();
-    // List<String> values = _getUniqueValues(
-    //   (item) => item.toJson()[key]?.toString() ?? '',
-    // );
 
     // Áp dụng tạm thời tìm kiếm văn bản để lọc danh sách cho dropdown
-    final tempFilteredData = widget.data.where((item) {
-      return
-          (selectedDept == null || item.dept == selectedDept) &&
-          (selectedMacId == null || item.macId == selectedMacId) &&
-          (selectedMacName == null || item.macName == selectedMacName) &&
-          (selectedMatnr == null || item.matnr == selectedMatnr) &&
-          (selectedMaktx == null || item.maktx == selectedMaktx) &&
-          (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
-          (selectedUnit == null || item.unit == selectedUnit) &&
-          (selectedUsedDate == null || item.useDate == selectedUsedDate) &&
-          (selectedBktxt == null || item.bktxt == selectedBktxt) &&
-          (selectedKostl == null || item.kostl.toString() == selectedKostl) &&
-          (selectedKonto == null || item.konto.toString() == selectedKonto);
-
-    }).toList();
+    final tempFilteredData =
+        widget.data.where((item) {
+          return (selectedDept == null || item.dept == selectedDept) &&
+              (selectedMacId == null || item.macId == selectedMacId) &&
+              (selectedMacName == null || item.macName == selectedMacName) &&
+              (selectedMatnr == null || item.matnr == selectedMatnr) &&
+              (selectedMaktx == null || item.maktx == selectedMaktx) &&
+              (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
+              (selectedUnit == null || item.unit == selectedUnit) &&
+              (selectedUsedDate == null || item.useDate == selectedUsedDate) &&
+              (selectedBktxt == null || item.bktxt == selectedBktxt) &&
+              (selectedKostl == null ||
+                  item.kostl.toString() == selectedKostl) &&
+              (selectedKonto == null || item.konto.toString() == selectedKonto);
+        }).toList();
 
     // Lấy danh sách giá trị duy nhất theo key trong kết quả đã lọc
     List<String> values = _getUniqueValuesFromList(
       tempFilteredData,
-          (item) => item.toJson()[key]?.toString() ?? '',
+      (item) => item.toJson()[key]?.toString() ?? '',
     );
-
 
     String? selectedValue;
     void Function(String?)? onChanged;
@@ -460,7 +461,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     required List<String> values,
     required Function(String?) onChanged,
   }) {
-
     if (!values.contains(selectedValue)) {
       selectedValue = null;
     }
@@ -493,10 +493,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                   value: v,
                   child: Text(
                     v,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ),
               ),
@@ -604,7 +601,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                         12: FixedColumnWidth(90),
                         13: FixedColumnWidth(80),
                         14: FixedColumnWidth(100),
-
                       },
                       children:
                           filteredData.map((item) {
@@ -662,7 +658,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     var displayText = (isActColumn && isHeader) ? '$text \$' : text;
 
     return Container(
-      height:  isHeader ? 40 : 90,
+      height: isHeader ? 40 : 90,
       padding: isHeader ? EdgeInsets.only(top: 9) : null,
       alignment:
           isHeader
@@ -694,39 +690,9 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 fontSize: isHeader ? 18 : 16,
                 color: isActColumn ? Colors.white : null,
               ),
-            )
+            ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTableCell1(
-    String text, {
-    bool isHeader = false,
-    bool highlight = false,
-    bool isNumber = false,
-    String? columnKey, // thêm tham số để biết cột nào
-  }) {
-    final isActual =
-        columnKey != null && columnKey.toLowerCase().contains('act');
-    var displayText = (isActual && isHeader) ? '$text \$' : text;
-
-    return Container(
-      padding: isHeader ? EdgeInsets.only(top: 8) : null,
-      // color: Colors.green,
-      alignment: isHeader ? Alignment.center : null,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          displayText,
-          textAlign: isNumber ? TextAlign.right : TextAlign.left,
-          style: TextStyle(
-            fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
-            color: highlight ? Colors.blue.shade700 : null,
-            fontSize: isHeader ? 18 : 16,
-          ),
-        ),
       ),
     );
   }

@@ -121,7 +121,7 @@ class _DetailsDataMSMovingAvePopupState
             maxHeight: MediaQuery.of(context).size.height * .5,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -376,6 +376,8 @@ class _DetailsDataMSMovingAvePopupState
     final columnKeys =
         rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
 
+    print("Column Keys: $columnKeys");
+
     return Scrollbar(
       controller: _scrollController,
       thumbVisibility: true,
@@ -441,20 +443,32 @@ class _DetailsDataMSMovingAvePopupState
                         11: FixedColumnWidth(120),
                         12: FixedColumnWidth(140),
                       },
-                      children:
-                          filteredData.map((item) {
-                            final jsonRow = item.toJson(); // convert về Map
-                            return TableRow(
-                              children:
-                                  columnKeys.map((key) {
-                                    final value = jsonRow[key];
-                                    return _buildTableCell(
-                                      value?.toString() ?? '',
-                                      isNumber: value is num,
-                                    );
-                                  }).toList(),
-                            );
-                          }).toList(),
+                      children: () {
+                        String? prevStopHour;
+                        return filteredData.map((item) {
+                          final jsonRow = item.toJson();
+                          final row = TableRow(
+                            children:
+                                columnKeys.map((key) {
+                                  final value = jsonRow[key];
+                                  final cell = _buildTableCell(
+                                    value?.toString() ?? '',
+                                    columnKey: key,
+                                    isNumber: value is num,
+                                    // prevValue:
+                                    //     key.toUpperCase() == 'STOPHOUR'
+                                    //         ? prevStopHour
+                                    //         : null,
+                                  );
+                                  if (key.toUpperCase() == 'STOPHOUR') {
+                                    prevStopHour = value?.toString();
+                                  }
+                                  return cell;
+                                }).toList(),
+                          );
+                          return row;
+                        }).toList();
+                      }(),
                     ),
                   ),
                 ),
@@ -466,6 +480,61 @@ class _DetailsDataMSMovingAvePopupState
     );
   }
 
+  Widget _buildTableCell1(
+    String text, {
+    bool isHeader = false,
+    bool highlight = false,
+    bool isNumber = false,
+    String? columnKey,
+    String? prevValue, // 👈 thêm tham số
+  }) {
+    final isActual =
+        columnKey != null && columnKey.toLowerCase().contains('act');
+    String displayText = (isActual && isHeader) ? '${text} ' : text;
+
+    // Nếu là STOPHOUR và có prevValue thì tính chênh lệch
+    if (columnKey != null &&
+        columnKey.toUpperCase() == 'STOPHOUR' &&
+        prevValue != null) {
+      final current = double.tryParse(text) ?? 0;
+      final prev = double.tryParse(prevValue) ?? 0;
+      final diff = current - prev;
+
+      if (diff > 0) {
+        displayText += ' (+${diff.toStringAsFixed(1)})';
+      } else if (diff < 0) {
+        displayText += ' (${diff.toStringAsFixed(1)})';
+      }
+    }
+
+    return columnKey != null && columnKey.toUpperCase() == 'STOPHOUR'
+        ? AnimatedTableCell(
+          text: text,
+          displayText: displayText,
+          isHeader: isHeader,
+          isNumber: isNumber,
+          highlight: highlight,
+          colorBackground: widget.colorTitle,
+          animatedKeys: ['STOPHOUR'],
+        )
+        : Container(
+          padding: isHeader ? const EdgeInsets.only(top: 8) : null,
+          alignment: isHeader ? Alignment.center : null,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SelectableText(
+              displayText,
+              textAlign: isNumber ? TextAlign.right : TextAlign.left,
+              style: TextStyle(
+                fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
+                color: highlight ? Colors.blue.shade700 : null,
+                fontSize: isHeader ? 18 : 16,
+              ),
+            ),
+          ),
+        );
+  }
+
   Widget _buildTableCell(
     String text, {
     bool isHeader = false,
@@ -473,9 +542,11 @@ class _DetailsDataMSMovingAvePopupState
     bool isNumber = false,
     String? columnKey, // thêm tham số để biết cột nào
   }) {
-    final isActual =
-        columnKey != null && columnKey.toLowerCase().contains('act');
-    final displayText = (isActual && isHeader) ? '${text} ' : text;
+    final isStopHourColumn =
+        columnKey != null && columnKey.toLowerCase().contains('stopHour');
+    final displayText = (isStopHourColumn && isHeader) ? '${text} ' : text;
+
+    final isActColumn = columnKey?.trim() == 'stopHour';
 
     return text == 'STOPHOUR'
         ? AnimatedTableCell(
@@ -485,6 +556,7 @@ class _DetailsDataMSMovingAvePopupState
           isNumber: true,
           highlight: false,
           animatedKeys: ['STOPHOUR'],
+          colorBackground: widget.colorTitle,
         )
         : Container(
           padding: isHeader ? EdgeInsets.only(top: 8) : null,
@@ -496,8 +568,11 @@ class _DetailsDataMSMovingAvePopupState
               displayText,
               textAlign: isNumber ? TextAlign.right : TextAlign.left,
               style: TextStyle(
-                fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
-                color: highlight ? Colors.blue.shade700 : null,
+                fontWeight:
+                    isHeader || isActColumn
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                color: isActColumn ? widget.colorTitle : null,
                 fontSize: isHeader ? 18 : 16,
               ),
             ),

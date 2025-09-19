@@ -6,6 +6,7 @@ class AnimatedTableCell extends StatefulWidget {
   final bool isHeader;
   final bool isNumber;
   final bool highlight;
+  final Color colorBackground;
   final List<String> animatedKeys; // danh sách key sẽ có hiệu ứng
 
   const AnimatedTableCell({
@@ -15,6 +16,7 @@ class AnimatedTableCell extends StatefulWidget {
     required this.isHeader,
     required this.isNumber,
     required this.highlight,
+    required this.colorBackground,
     this.animatedKeys = const [], // mặc định không highlight cột nào
   });
 
@@ -36,8 +38,8 @@ class _AnimatedTableCellState extends State<AnimatedTableCell>
     )..repeat(reverse: true);
 
     _colorAnimation = ColorTween(
-      begin: Colors.green.shade200,
-      end: Colors.green.shade700,
+      begin: widget.colorBackground,
+      end: widget.colorBackground.withOpacity(.2),
     ).animate(_controller);
   }
 
