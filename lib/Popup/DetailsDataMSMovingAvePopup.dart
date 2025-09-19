@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:ma_visualization/Model/DetailsMSMovingAveModel.dart';
 import 'package:universal_html/html.dart' as html;
 
+import '../MachineAnalysis/AnimatedTableCell.dart';
+
 class DetailsDataMSMovingAvePopup extends StatefulWidget {
   final String title;
   final Color colorTitle;
@@ -475,23 +477,32 @@ class _DetailsDataMSMovingAvePopupState
         columnKey != null && columnKey.toLowerCase().contains('act');
     final displayText = (isActual && isHeader) ? '${text} ' : text;
 
-    return Container(
-      padding: isHeader ? EdgeInsets.only(top: 8) : null,
-      // color: Colors.green,
-      alignment: isHeader ? Alignment.center : null,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SelectableText(
-          displayText,
-          textAlign: isNumber ? TextAlign.right : TextAlign.left,
-          style: TextStyle(
-            fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
-            color: highlight ? Colors.blue.shade700 : null,
-            fontSize: isHeader ? 18 : 16,
+    return text == 'STOPHOUR'
+        ? AnimatedTableCell(
+          text: 'STOPHOUR',
+          displayText: displayText,
+          isHeader: true,
+          isNumber: true,
+          highlight: false,
+          animatedKeys: ['STOPHOUR'],
+        )
+        : Container(
+          padding: isHeader ? EdgeInsets.only(top: 8) : null,
+          // color: isHeader && text == 'STOPHOUR' ? Colors.green : null,
+          alignment: isHeader ? Alignment.center : null,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SelectableText(
+              displayText,
+              textAlign: isNumber ? TextAlign.right : TextAlign.left,
+              style: TextStyle(
+                fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
+                color: highlight ? Colors.blue.shade700 : null,
+                fontSize: isHeader ? 18 : 16,
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildFooter(BuildContext context) {

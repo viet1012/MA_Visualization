@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:ma_visualization/Model/DetailsRFMovingAveModel.dart';
 import 'package:universal_html/html.dart' as html;
 
+import '../MachineAnalysis/AnimatedTableCell.dart';
+
 class DetailsDataRFMovingAvePopup extends StatefulWidget {
   final String title;
   final Color colorTitle;
@@ -145,7 +147,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
             Expanded(
               child: Row(
                 children: [
-                  Column(
+                  Row(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -157,7 +159,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 4), // khoảng cách nhỏ giữa 2 text
+                      const SizedBox(width: 10), // khoảng cách nhỏ giữa 2 text
                       Text(
                         widget.subTitle, // hoặc widget.subtitle nếu có
                         style: theme.textTheme.bodyMedium?.copyWith(
@@ -479,23 +481,32 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
         columnKey != null && columnKey.toLowerCase().contains('act');
     final displayText = (isActual && isHeader) ? '${text} ' : text;
 
-    return Container(
-      padding: isHeader ? EdgeInsets.only(top: 8) : null,
-      // color: Colors.green,
-      alignment: isHeader ? Alignment.center : null,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SelectableText(
-          displayText,
-          textAlign: isNumber ? TextAlign.right : TextAlign.left,
-          style: TextStyle(
-            fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
-            color: highlight ? Colors.blue.shade700 : null,
-            fontSize: isHeader ? 18 : 16,
+    return isHeader && text == 'ACT'
+        ? AnimatedTableCell(
+          text: 'ACT',
+          displayText: 'ACT',
+          isHeader: true,
+          isNumber: true,
+          highlight: false,
+          animatedKeys: ['ACT'],
+        )
+        : Container(
+          padding: isHeader ? EdgeInsets.only(top: 8) : null,
+          // color: Colors.green,
+          alignment: isHeader ? Alignment.center : null,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SelectableText(
+              displayText,
+              textAlign: isNumber ? TextAlign.right : TextAlign.left,
+              style: TextStyle(
+                fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
+                color: highlight ? Colors.blue.shade700 : null,
+                fontSize: isHeader ? 18 : 16,
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildFooter(BuildContext context) {
