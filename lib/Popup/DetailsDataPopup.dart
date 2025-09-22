@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
 import 'package:universal_html/html.dart' as html;
 
+import '../API/ApiService.dart';
 import '../Common/DateDisplayWidget.dart';
 import '../MachineAnalysis/MultiMonthSelector.dart';
 
@@ -39,6 +40,48 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     });
     _filterController.addListener(_applyFilter);
     rawJsonList = widget.data.map((e) => e.toJson()).toList();
+  }
+
+  // Future<void> _loadData(String month, String div) async {
+  //   // Show loading dialog
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (_) => const Center(child: CircularProgressIndicator()),
+  //   );
+  //   final data = await ApiService().fetchDetailsDataRF(month, div);
+  //   Navigator.of(context).pop();
+  //
+  //   setState(() {
+  //     filteredData = data;
+  //     rawJsonList = data.map((e) => e.toJson()).toList();
+  //   });
+  // }
+  Map<String, List<DetailsDataModel>> _cache = {};
+
+  Future<void> _loadData(String month, String div) async {
+    if (_cache.containsKey("$month-$div")) {
+      setState(() {
+        filteredData = _cache["$month-$div"]!;
+        rawJsonList = filteredData.map((e) => e.toJson()).toList();
+      });
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final data = await ApiService().fetchDetailsDataRF(month, div);
+    Navigator.of(context).pop();
+
+    setState(() {
+      filteredData = data;
+      rawJsonList = data.map((e) => e.toJson()).toList();
+      _cache["$month-$div"] = data; // cache lại
+    });
   }
 
   @override
@@ -208,6 +251,11 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                             months
                                 .map((m) => DateFormat("yyyy-MM").format(m))
                                 .toList();
+                        if (formatted.isNotEmpty) {
+                          // ví dụ chỉ lấy tháng đầu tiên
+                          final selectedMonth = formatted.first;
+                          _loadData(selectedMonth, "Press");
+                        }
                         print("Các tháng đã chọn: $formatted");
                       },
                     ),

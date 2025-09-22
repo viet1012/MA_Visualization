@@ -50,7 +50,7 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
               title: const Text(
                 "Chọn nhiều tháng",
                 style: TextStyle(
-                  color: Colors.blue,
+                  color: Colors.blueAccent,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -68,7 +68,9 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                 ),
               ),
               dialogHeight: 400,
-              backgroundColor: Colors.red,
+              itemsTextStyle: const TextStyle(
+                color: Colors.white,
+              ), // ✅ đổi màu chữ item trong dial
               initialValue: _selectedMonths,
               cancelText: const Text("Hủy"),
               confirmText: const Text("Xong"),
