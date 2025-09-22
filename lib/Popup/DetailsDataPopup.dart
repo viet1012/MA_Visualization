@@ -2,8 +2,12 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
 import 'package:universal_html/html.dart' as html;
+
+import '../Common/DateDisplayWidget.dart';
+import '../MachineAnalysis/MultiMonthSelector.dart';
 
 class DetailsDataPopup extends StatefulWidget {
   final String title;
@@ -167,7 +171,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       0,
       (sum, item) => (sum + item.amount),
     );
-
+    DateTime selectedDate = DateTime.now();
     return Column(
       children: [
         Row(
@@ -192,6 +196,21 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                       fontWeight: FontWeight.w600,
                     ),
                     textAlign: TextAlign.center,
+                  ),
+                  DateDisplayWidget(
+                    selectedDate: DateTime.now(),
+                    monthYearDropDown: MultiMonthSelector(
+                      initialSelectedMonths: [
+                        DateTime(DateTime.now().year, DateTime.now().month),
+                      ], // mặc định chọn tháng hiện tại
+                      onSelectionChanged: (months) {
+                        final formatted =
+                            months
+                                .map((m) => DateFormat("yyyy-MM").format(m))
+                                .toList();
+                        print("Các tháng đã chọn: $formatted");
+                      },
+                    ),
                   ),
                 ],
               ),

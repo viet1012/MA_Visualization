@@ -45,19 +45,6 @@ class DateDisplayWidget extends StatelessWidget {
               monthYearDropDown,
             ],
           ),
-          // SizedBox(width: 16),
-          // Row(
-          //   mainAxisSize: MainAxisSize.min,
-          //   children: [
-          //     Icon(Icons.date_range, size: 16, color: Colors.orange),
-          //     const SizedBox(width: 4),
-          //     Text('MTD: ', style: TextStyle(fontSize: 18)),
-          //     Text(
-          //       dayFormat.format(startOfMonth),
-          //       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          //     ),
-          //   ],
-          // ),
         ],
       ),
     );

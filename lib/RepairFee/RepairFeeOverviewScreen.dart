@@ -80,9 +80,6 @@ class _RepairFeeOverviewScreenState extends State<RepairFeeOverviewScreen> {
 
   void _fetchData(RepairFeeProvider provider) {
     final dateProvider = context.read<DateProvider>();
-    // final month =
-    //     "${dateProvider.selectedDate.year}-${dateProvider.selectedDate.month.toString().padLeft(2, '0')}";
-
     final adjustedDate = adjustedDateForDataFetch(dateProvider.selectedDate);
     final month =
         "${adjustedDate.year}-${adjustedDate.month.toString().padLeft(2, '0')}";
