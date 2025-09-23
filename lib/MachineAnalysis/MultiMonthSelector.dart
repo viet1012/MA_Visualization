@@ -3,7 +3,7 @@ import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:intl/intl.dart';
 
 class MultiMonthSelector extends StatefulWidget {
-  final List<DateTime> initialSelectedMonths; // đổi sang DateTime
+  final List<DateTime> initialSelectedMonths;
   final Function(List<DateTime>) onSelectionChanged;
 
   const MultiMonthSelector({
@@ -17,10 +17,14 @@ class MultiMonthSelector extends StatefulWidget {
 }
 
 class _MultiMonthSelectorState extends State<MultiMonthSelector> {
-  // Tạo list tháng cho năm 2025
-  final List<DateTime> months = List.generate(12, (i) => DateTime(2025, i + 1));
-
   late List<DateTime> _selectedMonths;
+
+  // Tạo danh sách 12 tháng của năm hiện tại
+  final int currentYear = DateTime.now().year;
+  late final List<DateTime> months = List.generate(
+    12,
+    (i) => DateTime(currentYear, i + 1),
+  );
 
   @override
   void initState() {
@@ -48,7 +52,7 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                       .map((m) => MultiSelectItem<DateTime>(m, _formatMonth(m)))
                       .toList(),
               title: const Text(
-                "Chọn nhiều tháng",
+                "Select months",
                 style: TextStyle(
                   color: Colors.blueAccent,
                   fontWeight: FontWeight.bold,
@@ -60,7 +64,7 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                 color: Colors.blue,
               ),
               buttonText: const Text(
-                "Chọn tháng",
+                "Select month",
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.blue,
@@ -68,12 +72,11 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                 ),
               ),
               dialogHeight: 400,
-              itemsTextStyle: const TextStyle(
-                color: Colors.white,
-              ), // ✅ đổi màu chữ item trong dial
+              itemsTextStyle: const TextStyle(color: Colors.white),
+              selectedItemsTextStyle: const TextStyle(color: Colors.blueAccent),
               initialValue: _selectedMonths,
-              cancelText: const Text("Hủy"),
-              confirmText: const Text("Xong"),
+              cancelText: const Text("Close"),
+              confirmText: const Text("Apply"),
               onConfirm: (values) {
                 setState(() {
                   _selectedMonths = values;
@@ -81,37 +84,6 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                 widget.onSelectionChanged(values);
               },
             ),
-            // if (_selectedMonths.isNotEmpty) ...[
-            //   const Text(
-            //     "Đã chọn:",
-            //     style: TextStyle(fontWeight: FontWeight.w600),
-            //   ),
-            //   const SizedBox(height: 6),
-            //   Wrap(
-            //     spacing: 8,
-            //     runSpacing: 8,
-            //     children:
-            //         _selectedMonths
-            //             .map(
-            //               (m) => Chip(
-            //                 label: Text(_formatMonth(m)),
-            //                 labelStyle: const TextStyle(
-            //                   fontWeight: FontWeight.w500,
-            //                   color: Colors.white,
-            //                 ),
-            //                 backgroundColor: Colors.blue.shade400,
-            //                 deleteIcon: const Icon(Icons.close, size: 16),
-            //                 onDeleted: () {
-            //                   setState(() {
-            //                     _selectedMonths.remove(m);
-            //                   });
-            //                   widget.onSelectionChanged(_selectedMonths);
-            //                 },
-            //               ),
-            //             )
-            //             .toList(),
-            //   ),
-            // ],
           ],
         ),
       ),

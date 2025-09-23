@@ -238,7 +238,8 @@ class _RepairFeeDailyOverviewChartState
                   context: context,
                   builder:
                       (_) => DetailsDataPopup(
-                        title: widget.nameChart,
+                        nameChart: widget.nameChart,
+                        title: item.dept,
                         data: detailsData,
                       ),
                 );

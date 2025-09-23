@@ -11,11 +11,16 @@ import '../Common/DateDisplayWidget.dart';
 import '../MachineAnalysis/MultiMonthSelector.dart';
 
 class DetailsDataPopup extends StatefulWidget {
+  final String nameChart;
   final String title;
   final List<DetailsDataModel> data;
 
-  DetailsDataPopup({Key? key, required this.title, required this.data})
-    : super(key: key);
+  DetailsDataPopup({
+    Key? key,
+    required this.nameChart,
+    required this.title,
+    required this.data,
+  }) : super(key: key);
 
   @override
   State<DetailsDataPopup> createState() => _DetailsDataPopupState();
@@ -59,10 +64,13 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   // }
   Map<String, List<DetailsDataModel>> _cache = {};
 
-  Future<void> _loadData(String month, String div) async {
-    if (_cache.containsKey("$month-$div")) {
+  Future<void> _loadData(List<String> months, String div) async {
+    final monthParam = months.join(","); // "2025-04,2025-05"
+
+    // check cache theo combo tháng + div
+    if (_cache.containsKey("$monthParam-$div")) {
       setState(() {
-        filteredData = _cache["$month-$div"]!;
+        filteredData = _cache["$monthParam-$div"]!;
         rawJsonList = filteredData.map((e) => e.toJson()).toList();
       });
       return;
@@ -74,13 +82,14 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    final data = await ApiService().fetchDetailsDataRF(month, div);
+    final data = await ApiService().fetchDetailsDataRF(monthParam, div);
+
     Navigator.of(context).pop();
 
     setState(() {
       filteredData = data;
       rawJsonList = data.map((e) => e.toJson()).toList();
-      _cache["$month-$div"] = data; // cache lại
+      _cache["$monthParam-$div"] = data; // cache lại
     });
   }
 
@@ -224,7 +233,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
               child: Row(
                 children: [
                   Text(
-                    widget.title,
+                    widget.nameChart,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       color: Colors.blueAccent,
                       fontWeight: FontWeight.w600,
@@ -252,11 +261,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                                 .map((m) => DateFormat("yyyy-MM").format(m))
                                 .toList();
                         if (formatted.isNotEmpty) {
-                          // ví dụ chỉ lấy tháng đầu tiên
-                          final selectedMonth = formatted.first;
-                          _loadData(selectedMonth, "Press");
+                          _loadData(formatted, widget.title);
                         }
-                        print("Các tháng đã chọn: $formatted");
                       },
                     ),
                   ),

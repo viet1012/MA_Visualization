@@ -313,7 +313,8 @@ class _RepairFeeOverviewChartState extends State<RepairFeeOverviewChart> {
                 context: context,
                 builder:
                     (_) => DetailsDataPopup(
-                      title: widget.nameChart,
+                      nameChart: widget.nameChart,
+                      title: item.title,
                       data: detailsData,
                     ),
               );
