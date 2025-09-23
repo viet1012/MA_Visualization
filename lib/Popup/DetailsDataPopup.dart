@@ -572,7 +572,112 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     );
   }
 
-  Widget _buildDataTable(BuildContext context, ThemeData theme) {
+  _buildDataTable(BuildContext context, ThemeData theme) {
+    final columnKeys =
+        rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
+
+    final Map<String, double> columnMax = {};
+
+    // Tính max cho từng cột số
+    for (var key in columnKeys) {
+      columnMax[key] = 0.0;
+    }
+
+    for (var item in filteredData) {
+      final row = item.toJson();
+      for (var key in columnKeys) {
+        final v = row[key];
+        if (v is num) {
+          final d = v.toDouble();
+          if (d > (columnMax[key] ?? 0)) {
+            columnMax[key] = d;
+          }
+        }
+      }
+    }
+
+    return SizedBox(
+      height: 700,
+      child: Scrollbar(
+        controller: _scrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            children: [
+              // Header
+              Table(
+                border: TableBorder.all(
+                  color: theme.dividerColor.withOpacity(0.8),
+                ),
+                columnWidths: {
+                  for (int i = 0; i < columnKeys.length; i++)
+                    i: const FixedColumnWidth(120),
+                },
+                children: [
+                  TableRow(
+                    children:
+                        columnKeys
+                            .map((key) => _buildDynamicDropdownHeader(key))
+                            .toList(),
+                  ),
+                ],
+              ),
+
+              // Nội dung cuộn theo chiều dọc
+              SizedBox(
+                height: 550, // trừ phần header
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: SizedBox(
+                    width: columnKeys.length * 120,
+                    // đảm bảo có giới hạn ngang
+                    child: ListView.builder(
+                      itemCount: filteredData.length,
+                      itemBuilder: (context, rowIndex) {
+                        final jsonRow = filteredData[rowIndex].toJson();
+
+                        return Row(
+                          children:
+                              columnKeys.map((key) {
+                                final value = jsonRow[key];
+                                final isNumber = value is num;
+                                final txt = value?.toString() ?? '';
+
+                                return Container(
+                                  width: 120,
+                                  decoration: BoxDecoration(
+                                    border: BoxBorder.all(
+                                      color: theme.dividerColor.withOpacity(
+                                        0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  child: _buildTableCell(
+                                    txt,
+                                    isHeader: false,
+                                    isNumber: isNumber,
+                                    columnKey: key,
+                                    numValue:
+                                        isNumber ? value.toDouble() : null,
+                                    columnMaxValue: columnMax[key],
+                                  ),
+                                );
+                              }).toList(),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDataTable1(BuildContext context, ThemeData theme) {
     final columnKeys =
         rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
 
