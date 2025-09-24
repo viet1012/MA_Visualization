@@ -31,12 +31,17 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
   final TextEditingController _filterController = TextEditingController();
   bool _hasInput = false;
-  late List<DetailsDataModel> filteredData;
   late List<Map<String, dynamic>> rawJsonList; // bạn lưu từ response
+
+  List<DetailsDataModel> allData = []; // dữ liệu gốc từ API/cache
+  List<DetailsDataModel> filteredData = []; // dữ liệu sau khi lọc
 
   @override
   void initState() {
     super.initState();
+    if (allData.isEmpty) {
+      allData = widget.data;
+    }
     filteredData = widget.data;
     _filterController.addListener(() {
       setState(() {
@@ -47,21 +52,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     rawJsonList = widget.data.map((e) => e.toJson()).toList();
   }
 
-  // Future<void> _loadData(String month, String div) async {
-  //   // Show loading dialog
-  //   showDialog(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (_) => const Center(child: CircularProgressIndicator()),
-  //   );
-  //   final data = await ApiService().fetchDetailsDataRF(month, div);
-  //   Navigator.of(context).pop();
-  //
-  //   setState(() {
-  //     filteredData = data;
-  //     rawJsonList = data.map((e) => e.toJson()).toList();
-  //   });
-  // }
   Map<String, List<DetailsDataModel>> _cache = {};
 
   Future<void> _loadData(List<String> months, String div) async {
@@ -88,9 +78,11 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
     setState(() {
       filteredData = data;
+      allData = data;
       rawJsonList = data.map((e) => e.toJson()).toList();
       _cache["$monthParam-$div"] = data; // cache lại
     });
+    print("filtered Data: ${filteredData.length}");
   }
 
   @override
@@ -114,28 +106,37 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   }
 
   void _applyFilter() {
-    final query = _filterController.text.toLowerCase();
+    final query = _filterController.text.trim().toLowerCase();
+    print("filtered Data queryquery: ${filteredData.length}");
+
+    // Nếu có nhiều từ khóa (cách nhau bởi dấu cách)
+    final keywords = query.split(' ').where((k) => k.isNotEmpty).toList();
 
     setState(() {
       filteredData =
-          widget.data.where((item) {
-            // Kiểm tra các điều kiện tìm kiếm trong chuỗi
-            final matchesSearch =
-                item.dept.toLowerCase().contains(query) ||
-                item.macId.toLowerCase().contains(query) ||
-                item.macName.toLowerCase().contains(query) ||
-                item.cate.toLowerCase().contains(query) ||
-                item.maktx.toLowerCase().contains(query) ||
-                item.xblnr2.toLowerCase().contains(query) ||
-                item.bktxt.toLowerCase().contains(query) ||
-                item.matnr.toLowerCase().contains(query) ||
-                item.useDate.toLowerCase().contains(query) ||
-                item.kostl.toString().toLowerCase().contains(query) ||
-                item.unit.toLowerCase().contains(query) ||
-                item.qty.toString().contains(query) ||
-                item.amount.toString().contains(query);
+          allData.where((item) {
+            // Gom tất cả field thành một chuỗi lớn (đỡ viết dài lặp lại)
+            final searchable = [
+              item.dept,
+              item.macId,
+              item.macName,
+              item.cate,
+              item.maktx,
+              item.xblnr2,
+              item.bktxt,
+              item.matnr,
+              item.useDate,
+              item.kostl.toString(),
+              item.konto.toString(),
+              item.unit,
+              item.qty.toString(),
+              item.amount.toString(),
+            ].whereType<String>().map((e) => e.toLowerCase()).join(' ');
 
-            // Kiểm tra các bộ lọc theo điều kiện của từng dropdown
+            // True nếu tất cả keywords đều xuất hiện trong searchable text
+            final matchesSearch = keywords.every((k) => searchable.contains(k));
+
+            // Kiểm tra dropdown filters
             final matchesFilters =
                 (selectedDept == null || item.dept == selectedDept) &&
                 (selectedMacId == null || item.macId == selectedMacId) &&
@@ -152,9 +153,9 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 (selectedKonto == null ||
                     item.konto.toString() == selectedKonto);
 
-            return matchesSearch &&
-                matchesFilters; // Kết hợp cả hai điều kiện: tìm kiếm và lọc
+            return matchesSearch && matchesFilters;
           }).toList();
+
       print("Filtered Data Length: ${filteredData.length}");
     });
   }
@@ -602,12 +603,13 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       }
     }
 
-    return SizedBox(
-      height: 700,
+    return SingleChildScrollView(
+      // height: 700,
       child: Scrollbar(
         controller: _scrollController,
         thumbVisibility: true,
         child: SingleChildScrollView(
+          controller: _scrollController,
           scrollDirection: Axis.horizontal,
           child: Column(
             children: [
@@ -618,7 +620,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 ),
                 columnWidths: {
                   for (int i = 0; i < columnKeys.length; i++)
-                    i: const FixedColumnWidth(120),
+                    i: const FixedColumnWidth(125),
                 },
                 children: [
                   TableRow(
@@ -632,11 +634,12 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
               // Nội dung cuộn theo chiều dọc
               SizedBox(
-                height: 550, // trừ phần header
+                height: 700, // trừ phần header
                 child: Scrollbar(
+                  controller: _scrollController,
                   thumbVisibility: true,
                   child: SizedBox(
-                    width: columnKeys.length * 120,
+                    width: columnKeys.length * 125,
                     // đảm bảo có giới hạn ngang
                     child: ListView.builder(
                       itemCount: filteredData.length,
@@ -651,7 +654,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                                 final txt = value?.toString() ?? '';
 
                                 return Container(
-                                  width: 120,
+                                  width: 125,
                                   decoration: BoxDecoration(
                                     border: BoxBorder.all(
                                       color: theme.dividerColor.withOpacity(
