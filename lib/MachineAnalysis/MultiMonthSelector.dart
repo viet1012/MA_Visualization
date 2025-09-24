@@ -75,8 +75,20 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
               itemsTextStyle: const TextStyle(color: Colors.white),
               selectedItemsTextStyle: const TextStyle(color: Colors.blueAccent),
               initialValue: _selectedMonths,
-              cancelText: const Text("Close"),
-              confirmText: const Text("Apply"),
+              cancelText: const Text(
+                "CANCEL",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              confirmText: const Text(
+                "OK",
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               onConfirm: (values) {
                 setState(() {
                   _selectedMonths = values;

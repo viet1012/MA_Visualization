@@ -4,6 +4,10 @@ import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
+import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart'
+    show MultiSelectDialogField;
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:universal_html/html.dart' as html;
 
 import '../API/ApiService.dart';
@@ -387,10 +391,36 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     return sorted;
   }
 
+  Widget _buildDropdownHeader({
+    required String title,
+    required List<String> selectedValues,
+    required List<String> values,
+    required Function(List<String>) onConfirm,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: MultiSelectDialogField<String>(
+        buttonText: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        searchable: true, // Cho phép search trong dropdown
+        items: values.map((v) => MultiSelectItem(v, v)).toList(),
+        initialValue: selectedValues,
+        itemsTextStyle: const TextStyle(color: Colors.white),
+        selectedItemsTextStyle: const TextStyle(color: Colors.blueAccent),
+        chipDisplay: MultiSelectChipDisplay.none(),
+        onConfirm: (results) {
+          onConfirm(results);
+        },
+      ),
+    );
+  }
+
   Widget _buildDynamicDropdownHeader(String key) {
     final title = key.toUpperCase();
 
-    // Áp dụng tạm thời tìm kiếm văn bản để lọc danh sách cho dropdown
+    // Lọc data tạm theo điều kiện filter hiện tại
     final tempFilteredData =
         allData.where((item) {
           return (selectedDept == null || item.dept == selectedDept) &&
@@ -407,130 +437,173 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
               (selectedKonto == null || item.konto.toString() == selectedKonto);
         }).toList();
 
-    // Lấy danh sách giá trị duy nhất theo key trong kết quả đã lọc
+    // Lấy danh sách unique value theo key
     List<String> values = _getUniqueValuesFromList(
       tempFilteredData,
       (item) => item.toJson()[key]?.toString() ?? '',
     );
 
-    String? selectedValue;
-    void Function(String?)? onChanged;
+    // Để MultiSelect chọn được nhiều → dùng List<String>
+    List<String> selectedValues = [];
 
     switch (key) {
       case 'dept':
-        selectedValue = selectedDept;
-        onChanged = (value) {
-          setState(() {
-            selectedDept = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedDept != null) selectedValues.add(selectedDept!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedDept = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'macId':
-        selectedValue = selectedMacId;
-        onChanged = (value) {
-          setState(() {
-            selectedMacId = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedMacId != null) selectedValues.add(selectedMacId!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedMacId = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'matnr':
-        selectedValue = selectedMatnr;
-        onChanged = (value) {
-          setState(() {
-            selectedMatnr = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedMatnr != null) selectedValues.add(selectedMatnr!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedMatnr = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'maktx':
-        selectedValue = selectedMaktx;
-        onChanged = (value) {
-          setState(() {
-            selectedMaktx = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedMaktx != null) selectedValues.add(selectedMaktx!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedMaktx = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'xblnr2':
-        selectedValue = selectedXblnr2;
-        onChanged = (value) {
-          setState(() {
-            selectedXblnr2 = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedXblnr2 != null) selectedValues.add(selectedXblnr2!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedXblnr2 = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'unit':
-        selectedValue = selectedUnit;
-        onChanged = (value) {
-          setState(() {
-            selectedUnit = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedUnit != null) selectedValues.add(selectedUnit!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedUnit = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'useDate':
-        selectedValue = selectedUsedDate;
-        onChanged = (value) {
-          setState(() {
-            selectedUsedDate = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedUsedDate != null) selectedValues.add(selectedUsedDate!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedUsedDate = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'bktxt':
-        selectedValue = selectedBktxt;
-        onChanged = (value) {
-          setState(() {
-            selectedBktxt = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedBktxt != null) selectedValues.add(selectedBktxt!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedBktxt = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'kostl':
-        selectedValue = selectedKostl;
-        onChanged = (value) {
-          setState(() {
-            selectedKostl = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedKostl != null) selectedValues.add(selectedKostl!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedKostl = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       case 'konto':
-        selectedValue = selectedKonto;
-        onChanged = (value) {
-          setState(() {
-            selectedKonto = value == '__reset__' ? null : value;
-            _applyFilter();
-            _hasInput = _checkHasInput(); // kiểm tra tổng thể filter
-          });
-        };
-        break;
+        if (selectedKonto != null) selectedValues.add(selectedKonto!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedKonto = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
       default:
-        // Không filter được -> render Text bình thường
+        // Nếu không match key thì render Text header bình thường
         return _buildTableCell(title, isHeader: true, columnKey: key);
     }
-
-    return _buildDropdownHeader(
-      title: title,
-      selectedValue: selectedValue,
-      values: values,
-      onChanged: onChanged,
-    );
   }
 
-  Widget _buildDropdownHeader({
+  Widget _buildDropdownHeader1({
     required String title,
     required String? selectedValue,
     required List<String> values,
@@ -583,9 +656,9 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
   double _getColumnWidth(String key) {
     switch (key.toLowerCase()) {
       case "dept":
-        return 90; // rộng hơn
+        return 94; // rộng hơn
       case "macid":
-        return 100; // nhỏ hơn
+        return 105; // nhỏ hơn
       case "macname":
         return 140;
       case "cate":
@@ -595,7 +668,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       case "maktx":
         return 230;
       case "usedate":
-        return 120;
+        return 125;
       case "kostl":
         return 120;
       case "konto":
