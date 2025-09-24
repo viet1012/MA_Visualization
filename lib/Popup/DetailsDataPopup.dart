@@ -206,7 +206,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(theme),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 Expanded(child: _buildDataTable(context, theme)),
                 const SizedBox(height: 16),
                 _buildFooter(context),
@@ -224,7 +224,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       0,
       (sum, item) => (sum + item.amount),
     );
-    DateTime selectedDate = DateTime.now();
     return Column(
       children: [
         Row(
@@ -335,7 +334,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
         Divider(color: theme.dividerColor, thickness: 1),
         Padding(
           padding: const EdgeInsets.only(top: 12),
@@ -391,7 +389,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
     // Áp dụng tạm thời tìm kiếm văn bản để lọc danh sách cho dropdown
     final tempFilteredData =
-        widget.data.where((item) {
+        allData.where((item) {
           return (selectedDept == null || item.dept == selectedDept) &&
               (selectedMacId == null || item.macId == selectedMacId) &&
               (selectedMacName == null || item.macName == selectedMacName) &&
@@ -579,6 +577,40 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     );
   }
 
+  double _getColumnWidth(String key) {
+    switch (key.toLowerCase()) {
+      case "dept":
+        return 90; // rộng hơn
+      case "macid":
+        return 100; // nhỏ hơn
+      case "macname":
+        return 140;
+      case "cate":
+        return 90;
+      case "matnr":
+        return 110;
+      case "maktx":
+        return 230;
+      case "usedate":
+        return 120;
+      case "kostl":
+        return 120;
+      case "konto":
+        return 120;
+      case "xblnr2":
+        return 150;
+      case "bktxt":
+        return 150;
+      case "unit":
+        return 90;
+      case "qty":
+        return 90;
+
+      default:
+        return 125; // mặc định
+    }
+  }
+
   _buildDataTable(BuildContext context, ThemeData theme) {
     final columnKeys =
         rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
@@ -604,7 +636,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     }
 
     return SingleChildScrollView(
-      // height: 700,
       child: Scrollbar(
         controller: _scrollController,
         thumbVisibility: true,
@@ -620,27 +651,29 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 ),
                 columnWidths: {
                   for (int i = 0; i < columnKeys.length; i++)
-                    i: const FixedColumnWidth(125),
+                    i: FixedColumnWidth(_getColumnWidth(columnKeys[i])),
                 },
                 children: [
                   TableRow(
                     children:
-                        columnKeys
-                            .map((key) => _buildDynamicDropdownHeader(key))
-                            .toList(),
+                        columnKeys.map((key) {
+                          return _buildDynamicDropdownHeader(key);
+                        }).toList(),
                   ),
                 ],
               ),
 
               // Nội dung cuộn theo chiều dọc
               SizedBox(
-                height: 700, // trừ phần header
+                height: 700,
                 child: Scrollbar(
                   controller: _scrollController,
                   thumbVisibility: true,
                   child: SizedBox(
-                    width: columnKeys.length * 125,
-                    // đảm bảo có giới hạn ngang
+                    width: columnKeys.fold<double>(
+                      0,
+                      (sum, key) => sum + _getColumnWidth(key),
+                    ), // 👈 tổng width theo từng cột
                     child: ListView.builder(
                       itemCount: filteredData.length,
                       itemBuilder: (context, rowIndex) {
@@ -652,9 +685,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                                 final value = jsonRow[key];
                                 final isNumber = value is num;
                                 final txt = value?.toString() ?? '';
-
                                 return Container(
-                                  width: 125,
+                                  width: _getColumnWidth(key),
                                   decoration: BoxDecoration(
                                     border: BoxBorder.all(
                                       color: theme.dividerColor.withOpacity(
@@ -681,135 +713,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDataTable1(BuildContext context, ThemeData theme) {
-    final columnKeys =
-        rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
-
-    final Map<String, double> columnMax = {};
-
-    // 1. Khởi tạo map
-    for (var key in columnKeys) {
-      columnMax[key] = 0.0;
-    }
-
-    // 2. Tính max
-    for (var item in filteredData) {
-      final row = item.toJson();
-      for (var key in columnKeys) {
-        final v = row[key];
-        if (v is num) {
-          final d = v.toDouble();
-          if (d > (columnMax[key] ?? 0)) {
-            columnMax[key] = d;
-          }
-        }
-      }
-    }
-
-    return Scrollbar(
-      controller: _scrollController,
-      thumbVisibility: true,
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        child: Column(
-          children: [
-            // Header Table
-            Table(
-              border: TableBorder.all(
-                color: theme.dividerColor.withOpacity(0.8),
-              ),
-              columnWidths: {
-                0: FixedColumnWidth(90),
-                1: FixedColumnWidth(100),
-                2: FixedColumnWidth(160),
-                3: FixedColumnWidth(110),
-                4: FixedColumnWidth(110),
-                5: FixedColumnWidth(250),
-                6: FixedColumnWidth(120),
-                7: FixedColumnWidth(130),
-                8: FixedColumnWidth(130),
-                9: FixedColumnWidth(140),
-                10: FixedColumnWidth(150),
-                11: FixedColumnWidth(90),
-                12: FixedColumnWidth(90),
-                13: FixedColumnWidth(80),
-                14: FixedColumnWidth(100),
-              },
-              children: [
-                TableRow(
-                  children:
-                      columnKeys
-                          .map((key) => _buildDynamicDropdownHeader(key))
-                          .toList(),
-                ),
-              ],
-            ),
-
-            // Table content
-            Expanded(
-              child: Scrollbar(
-                controller: _scrollController,
-                thumbVisibility: true,
-                thickness: 10,
-                radius: const Radius.circular(5),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Table(
-                      border: TableBorder.all(
-                        color: theme.dividerColor.withOpacity(0.8),
-                      ),
-                      columnWidths: {
-                        0: FixedColumnWidth(90),
-                        1: FixedColumnWidth(100),
-                        2: FixedColumnWidth(160),
-                        3: FixedColumnWidth(110),
-                        4: FixedColumnWidth(110),
-                        5: FixedColumnWidth(250),
-                        6: FixedColumnWidth(120),
-                        7: FixedColumnWidth(130),
-                        8: FixedColumnWidth(130),
-                        9: FixedColumnWidth(140),
-                        10: FixedColumnWidth(150),
-                        11: FixedColumnWidth(90),
-                        12: FixedColumnWidth(90),
-                        13: FixedColumnWidth(80),
-                        14: FixedColumnWidth(100),
-                      },
-                      children:
-                          filteredData.map((item) {
-                            final jsonRow = item.toJson(); // convert về Map
-                            return TableRow(
-                              children:
-                                  columnKeys.map((key) {
-                                    final value = jsonRow[key];
-                                    final isNumber = value is num;
-                                    final txt = value?.toString() ?? '';
-                                    return _buildTableCell(
-                                      txt,
-                                      isHeader: false,
-                                      isNumber: isNumber,
-                                      columnKey: key,
-                                      numValue:
-                                          isNumber ? (value).toDouble() : null,
-                                      columnMaxValue: columnMax[key],
-                                    );
-                                  }).toList(),
-                            );
-                          }).toList(),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
