@@ -327,7 +327,10 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                   ),
                   onPressed: () {
                     final excelBytes = createExcel(filteredData);
-                    downloadExcel(excelBytes, 'details_data.xlsx');
+                    downloadExcel(
+                      excelBytes,
+                      '${widget.title}_${widget.nameChart}_details_data.xlsx',
+                    );
                   },
                 ),
               ],
