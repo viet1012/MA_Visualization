@@ -550,7 +550,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
         allData.where((item) {
           return (selectedDept == null || item.dept == selectedDept) &&
               (selectedMacId == null || item.macId == selectedMacId) &&
-              (selectedMacName == null || item.macName == selectedMacName) &&
+              (selectedMacName == null ||
+                  (selectedMacName?.contains(item.macName) ?? true)) &&
               (selectedMatnr == null || item.matnr == selectedMatnr) &&
               (selectedMaktx == null || item.maktx == selectedMaktx) &&
               (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
