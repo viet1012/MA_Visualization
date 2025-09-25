@@ -36,6 +36,16 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
     return DateFormat("MMM yyyy").format(date); // ví dụ: Sep 2025
   }
 
+  GlobalKey<FormFieldState> _multiSelectKey = GlobalKey<FormFieldState>();
+
+  // Trong onConfirm:
+  void _updateSelection(List<DateTime> newSelection) {
+    setState(() {
+      _selectedMonths = newSelection;
+    });
+    widget.onSelectionChanged(newSelection);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -51,33 +61,20 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                   months
                       .map((m) => MultiSelectItem<DateTime>(m, _formatMonth(m)))
                       .toList(),
-              title: const Text(
-                "Select months",
-                style: TextStyle(
-                  color: Colors.blueAccent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
+              // key: _multiSelectKey,
+              dialogHeight: 600,
+              buttonText: const Text("Select month"),
               buttonIcon: const Icon(
-                Icons.calendar_today_rounded,
-                color: Colors.blue,
+                Icons.keyboard_arrow_down_outlined, // đổi thành icon bạn muốn
+                color: Colors.blueAccent,
               ),
-              buttonText: const Text(
-                "Select month",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              dialogHeight: 400,
+              initialValue: _selectedMonths,
               itemsTextStyle: const TextStyle(color: Colors.white),
               selectedItemsTextStyle: const TextStyle(color: Colors.blueAccent),
-              initialValue: _selectedMonths,
               cancelText: const Text(
                 "CANCEL",
                 style: TextStyle(
+                  fontSize: 18,
                   color: Colors.red,
                   fontWeight: FontWeight.bold,
                 ),
@@ -85,7 +82,8 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
               confirmText: const Text(
                 "OK",
                 style: TextStyle(
-                  color: Colors.green,
+                  fontSize: 20,
+                  color: Colors.blueAccent,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -95,7 +93,44 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                 });
                 widget.onSelectionChanged(values);
               },
+              // Ẩn chip mặc định
+              chipDisplay: MultiSelectChipDisplay.none(),
             ),
+
+            // Custom chip riêng
+            if (_selectedMonths.isNotEmpty)
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  if (_selectedMonths.length == 1)
+                    Chip(
+                      label: Text(_formatMonth(_selectedMonths.first)),
+                      backgroundColor: Colors.grey[50],
+                      labelStyle: const TextStyle(color: Colors.blue),
+                      // onDeleted: () {
+                      //   setState(() {
+                      //     _selectedMonths.clear();
+                      //   });
+                      //   widget.onSelectionChanged(_selectedMonths);
+                      // },
+                    )
+                  else
+                    Chip(
+                      label: const Text("Multi months"),
+                      backgroundColor: Colors.blue[200],
+                      labelStyle: const TextStyle(color: Colors.black),
+                      // onDeleted: () {
+                      //   setState(() {
+                      //     _selectedMonths.clear();
+                      //   });
+                      //
+                      //   _updateSelection([]);
+                      //   widget.onSelectionChanged(_selectedMonths);
+                      // },
+                    ),
+                ],
+              ),
           ],
         ),
       ),

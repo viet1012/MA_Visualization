@@ -111,36 +111,135 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
   void _applyFilter() {
     final query = _filterController.text.trim().toLowerCase();
-    print("filtered Data queryquery: ${filteredData.length}");
+    print("raw query: $query");
 
-    // Nếu có nhiều từ khóa (cách nhau bởi dấu cách)
-    final keywords = query.split(' ').where((k) => k.isNotEmpty).toList();
+    bool matchesItem(dynamic item, String keyword) {
+      final searchable = [
+        item.dept,
+        item.macId,
+        item.macName,
+        item.cate,
+        item.maktx,
+        item.xblnr2,
+        item.bktxt,
+        item.matnr,
+        item.useDate,
+        item.kostl?.toString(),
+        item.konto?.toString(),
+        item.unit,
+        item.qty?.toString(),
+        item.amount?.toString(),
+      ].whereType<String>().map((e) => e.toLowerCase()).join(' ');
+
+      return searchable.contains(keyword);
+    }
+
+    final tokens =
+        query.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
 
     setState(() {
       filteredData =
           allData.where((item) {
-            // Gom tất cả field thành một chuỗi lớn (đỡ viết dài lặp lại)
-            final searchable = [
-              item.dept,
-              item.macId,
-              item.macName,
-              item.cate,
-              item.maktx,
-              item.xblnr2,
-              item.bktxt,
-              item.matnr,
-              item.useDate,
-              item.kostl.toString(),
-              item.konto.toString(),
-              item.unit,
-              item.qty.toString(),
-              item.amount.toString(),
-            ].whereType<String>().map((e) => e.toLowerCase()).join(' ');
+            bool? currentResult; // null = chưa có keyword nào
+            String? lastOp;
 
-            // True nếu tất cả keywords đều xuất hiện trong searchable text
-            final matchesSearch = keywords.every((k) => searchable.contains(k));
+            for (var token in tokens) {
+              if (token == "and" || token == "or") {
+                lastOp = token;
+              } else {
+                bool match = matchesItem(item, token);
 
-            // Kiểm tra dropdown filters
+                if (currentResult == null) {
+                  currentResult = match;
+                } else if (lastOp == "and") {
+                  currentResult = currentResult && match;
+                } else if (lastOp == "or") {
+                  currentResult = currentResult || match;
+                }
+              }
+            }
+
+            // Nếu không có keyword nào, mặc định match = true
+            currentResult ??= true;
+
+            final matchesFilters =
+                (selectedDept == null || item.dept == selectedDept) &&
+                (selectedMacId == null || item.macId == selectedMacId) &&
+                (selectedMacName == null ||
+                    (selectedMacName?.contains(item.macName) ?? true)) &&
+                (selectedMatnr == null || item.matnr == selectedMatnr) &&
+                (selectedMaktx == null || item.maktx == selectedMaktx) &&
+                (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
+                (selectedUnit == null || item.unit == selectedUnit) &&
+                (selectedUsedDate == null ||
+                    item.useDate == selectedUsedDate) &&
+                (selectedBktxt == null || item.bktxt == selectedBktxt) &&
+                (selectedKostl == null ||
+                    item.kostl.toString() == selectedKostl) &&
+                (selectedKonto == null ||
+                    item.konto.toString() == selectedKonto);
+
+            return currentResult && matchesFilters;
+          }).toList();
+
+      print("Filtered Data Length: ${filteredData.length}");
+    });
+  }
+
+  void _applyFilter1() {
+    final query = _filterController.text.trim().toLowerCase();
+    print("raw query: $query");
+
+    // Gom tất cả field thành chuỗi searchable
+    bool matchesItem(dynamic item, String keyword) {
+      final searchable = [
+        item.dept,
+        item.macId,
+        item.macName,
+        item.cate,
+        item.maktx,
+        item.xblnr2,
+        item.bktxt,
+        item.matnr,
+        item.useDate,
+        item.kostl?.toString(),
+        item.konto?.toString(),
+        item.unit,
+        item.qty?.toString(),
+        item.amount?.toString(),
+      ].whereType<String>().map((e) => e.toLowerCase()).join(' ');
+
+      return searchable.contains(keyword);
+    }
+
+    // Tokenize: giữ lại "and" và "or"
+    final tokens =
+        query.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
+
+    setState(() {
+      filteredData =
+          allData.where((item) {
+            bool currentResult = false;
+            String? lastOp; // "and" hoặc "or"
+
+            for (var token in tokens) {
+              if (token == "and" || token == "or") {
+                lastOp = token;
+              } else {
+                bool match = matchesItem(item, token);
+
+                if (lastOp == null) {
+                  // keyword đầu tiên
+                  currentResult = match;
+                } else if (lastOp == "and") {
+                  currentResult = currentResult && match;
+                } else if (lastOp == "or") {
+                  currentResult = currentResult || match;
+                }
+              }
+            }
+
+            // Thêm điều kiện filter dropdown
             final matchesFilters =
                 (selectedDept == null || item.dept == selectedDept) &&
                 (selectedMacId == null || item.macId == selectedMacId) &&
@@ -157,7 +256,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 (selectedKonto == null ||
                     item.konto.toString() == selectedKonto);
 
-            return matchesSearch && matchesFilters;
+            return currentResult && matchesFilters;
           }).toList();
 
       print("Filtered Data Length: ${filteredData.length}");
@@ -264,8 +363,14 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                             months
                                 .map((m) => DateFormat("yyyy-MM").format(m))
                                 .toList();
+
                         if (formatted.isNotEmpty) {
                           _loadData(formatted, widget.title);
+                        } else {
+                          setState(() {
+                            allData = widget.data;
+                            filteredData = widget.data;
+                          });
                         }
                       },
                     ),
@@ -365,7 +470,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
   String? selectedDept;
   String? selectedMacId;
-  String? selectedMacName;
+  List<String>? selectedMacName;
   String? selectedMatnr;
   String? selectedMaktx;
   String? selectedXblnr2;
@@ -409,6 +514,26 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
         initialValue: selectedValues,
         itemsTextStyle: const TextStyle(color: Colors.white),
         selectedItemsTextStyle: const TextStyle(color: Colors.blueAccent),
+        buttonIcon: const Icon(
+          Icons.keyboard_arrow_down_outlined, // đổi thành icon bạn muốn
+          color: Colors.blueAccent,
+        ),
+        cancelText: const Text(
+          "CANCEL",
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        confirmText: const Text(
+          "OK",
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.blueAccent,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         chipDisplay: MultiSelectChipDisplay.none(),
         onConfirm: (results) {
           onConfirm(results);
@@ -471,6 +596,21 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
           onConfirm: (results) {
             setState(() {
               selectedMacId = results.isEmpty ? null : results.first;
+              _applyFilter();
+              _hasInput = _checkHasInput();
+            });
+          },
+        );
+
+      case 'macName':
+        if (selectedMacName != null) selectedValues.addAll(selectedMacName!);
+        return _buildDropdownHeader(
+          title: title,
+          selectedValues: selectedValues,
+          values: values,
+          onConfirm: (results) {
+            setState(() {
+              selectedMacName = results.isEmpty ? null : results;
               _applyFilter();
               _hasInput = _checkHasInput();
             });
@@ -666,7 +806,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       case "matnr":
         return 110;
       case "maktx":
-        return 230;
+        return 220;
       case "usedate":
         return 125;
       case "kostl":
