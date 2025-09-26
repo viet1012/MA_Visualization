@@ -194,87 +194,6 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     });
   }
 
-  void _applyFilter1() {
-    final query = _filterController.text.trim().toLowerCase();
-    print("raw query: $query");
-
-    // Gom tất cả field thành chuỗi searchable
-    bool matchesItem(dynamic item, String keyword) {
-      final searchable = [
-        item.dept,
-        item.macId,
-        item.macName,
-        item.cate,
-        item.maktx,
-        item.xblnr2,
-        item.bktxt,
-        item.matnr,
-        item.useDate,
-        item.kostl?.toString(),
-        item.konto?.toString(),
-        item.unit,
-        item.qty?.toString(),
-        item.amount?.toString(),
-      ].whereType<String>().map((e) => e.toLowerCase()).join(' ');
-
-      return searchable.contains(keyword);
-    }
-
-    // Tokenize: giữ lại "and" và "or"
-    final tokens =
-        query.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
-
-    setState(() {
-      filteredData =
-          allData.where((item) {
-            bool currentResult = false;
-            String? lastOp; // "and" hoặc "or"
-
-            for (var token in tokens) {
-              if (token == "and" || token == "or") {
-                lastOp = token;
-              } else {
-                bool match = matchesItem(item, token);
-
-                if (lastOp == null) {
-                  // keyword đầu tiên
-                  currentResult = match;
-                } else if (lastOp == "and") {
-                  currentResult = currentResult && match;
-                } else if (lastOp == "or") {
-                  currentResult = currentResult || match;
-                }
-              }
-            }
-
-            // Thêm điều kiện filter dropdown
-            final matchesFilters =
-                (selectedDept == null || item.dept == selectedDept) &&
-                (selectedMacId == null || item.macId == selectedMacId) &&
-                (selectedMacName == null ||
-                    (selectedMacName?.contains(item.macName) ?? true)) &&
-                (selectedCate == null ||
-                    (selectedCate?.contains(item.cate) ?? true)) &&
-                (selectedMatnr == null || item.matnr == selectedMatnr) &&
-                (selectedMaktx == null || item.maktx == selectedMaktx) &&
-                (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
-                (selectedUnit == null ||
-                    (selectedUnit?.contains(item.unit) ?? true)) &&
-                (selectedUsedDate == null ||
-                    item.useDate == selectedUsedDate) &&
-                (selectedBktxt == null || item.bktxt == selectedBktxt) &&
-                (selectedKostl == null ||
-                    item.kostl.toString() == selectedKostl) &&
-                (selectedKonto == null ||
-                    item.konto.toString() == selectedKonto);
-
-            return currentResult && matchesFilters;
-          }).toList();
-
-      print("Filtered Data Length: ${filteredData.length}");
-    });
-  }
-
   void _resetFilter() {
     setState(() {
       _filterController.clear();
@@ -369,14 +288,17 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                       initialSelectedMonths: [
                         DateTime(DateTime.now().year, DateTime.now().month),
                       ], // mặc định chọn tháng hiện tại
-                      onSelectionChanged: (months) {
+                      onSelectionChanged: (months) async {
                         final formatted =
                             months
                                 .map((m) => DateFormat("yyyy-MM").format(m))
                                 .toList();
 
                         if (formatted.isNotEmpty) {
-                          _loadData(formatted, widget.title);
+                          await _loadData(
+                            formatted,
+                            widget.title,
+                          ); // chờ load xong
                           print("formatted.isNotEmpty: ${formatted.length}");
                           print("allData.isNotEmpty_____: ${allData.length}");
                         } else {

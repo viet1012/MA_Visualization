@@ -98,12 +98,6 @@ class _DetailsDataMSMovingAvePopupState
     });
   }
 
-  List<String> _getUniqueValues(
-    String Function(DetailsMSMovingAveModel) selector,
-  ) {
-    return widget.data.map(selector).toSet().toList()..sort();
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -478,61 +472,6 @@ class _DetailsDataMSMovingAvePopupState
         ),
       ),
     );
-  }
-
-  Widget _buildTableCell1(
-    String text, {
-    bool isHeader = false,
-    bool highlight = false,
-    bool isNumber = false,
-    String? columnKey,
-    String? prevValue, // 👈 thêm tham số
-  }) {
-    final isActual =
-        columnKey != null && columnKey.toLowerCase().contains('act');
-    String displayText = (isActual && isHeader) ? '${text} ' : text;
-
-    // Nếu là STOPHOUR và có prevValue thì tính chênh lệch
-    if (columnKey != null &&
-        columnKey.toUpperCase() == 'STOPHOUR' &&
-        prevValue != null) {
-      final current = double.tryParse(text) ?? 0;
-      final prev = double.tryParse(prevValue) ?? 0;
-      final diff = current - prev;
-
-      if (diff > 0) {
-        displayText += ' (+${diff.toStringAsFixed(1)})';
-      } else if (diff < 0) {
-        displayText += ' (${diff.toStringAsFixed(1)})';
-      }
-    }
-
-    return columnKey != null && columnKey.toUpperCase() == 'STOPHOUR'
-        ? AnimatedTableCell(
-          text: text,
-          displayText: displayText,
-          isHeader: isHeader,
-          isNumber: isNumber,
-          highlight: highlight,
-          colorBackground: widget.colorTitle,
-          animatedKeys: ['STOPHOUR'],
-        )
-        : Container(
-          padding: isHeader ? const EdgeInsets.only(top: 8) : null,
-          alignment: isHeader ? Alignment.center : null,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SelectableText(
-              displayText,
-              textAlign: isNumber ? TextAlign.right : TextAlign.left,
-              style: TextStyle(
-                fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
-                color: highlight ? Colors.blue.shade700 : null,
-                fontSize: isHeader ? 18 : 16,
-              ),
-            ),
-          ),
-        );
   }
 
   Widget _buildTableCell(
