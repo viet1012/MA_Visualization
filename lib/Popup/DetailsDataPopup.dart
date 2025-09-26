@@ -169,6 +169,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                     selectedMacId!.contains(item.macId)) &&
                 (selectedMacName == null ||
                     selectedMacName!.contains(item.macName)) &&
+                (selectedCate == null ||
+                    (selectedCate?.contains(item.cate) ?? true)) &&
                 (selectedMatnr == null ||
                     selectedMatnr!.contains(item.matnr)) &&
                 (selectedMaktx == null ||
