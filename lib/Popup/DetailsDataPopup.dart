@@ -100,6 +100,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     return selectedDept != null ||
         selectedMatnr != null ||
         selectedMacName != null ||
+        selectedCate != null ||
         selectedMaktx != null ||
         selectedXblnr2 != null ||
         selectedUnit != null ||
@@ -163,21 +164,26 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
             currentResult ??= true;
 
             final matchesFilters =
-                (selectedDept == null || item.dept == selectedDept) &&
-                (selectedMacId == null || item.macId == selectedMacId) &&
+                (selectedDept == null || selectedDept!.contains(item.dept)) &&
+                (selectedMacId == null ||
+                    selectedMacId!.contains(item.macId)) &&
                 (selectedMacName == null ||
-                    (selectedMacName?.contains(item.macName) ?? true)) &&
-                (selectedMatnr == null || item.matnr == selectedMatnr) &&
-                (selectedMaktx == null || item.maktx == selectedMaktx) &&
-                (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
-                (selectedUnit == null || item.unit == selectedUnit) &&
+                    selectedMacName!.contains(item.macName)) &&
+                (selectedMatnr == null ||
+                    selectedMatnr!.contains(item.matnr)) &&
+                (selectedMaktx == null ||
+                    selectedMaktx!.contains(item.maktx)) &&
+                (selectedXblnr2 == null ||
+                    selectedXblnr2!.contains(item.xblnr2)) &&
+                (selectedUnit == null || selectedUnit!.contains(item.unit)) &&
                 (selectedUsedDate == null ||
-                    item.useDate == selectedUsedDate) &&
-                (selectedBktxt == null || item.bktxt == selectedBktxt) &&
+                    selectedUsedDate!.contains(item.useDate)) &&
+                (selectedBktxt == null ||
+                    selectedBktxt!.contains(item.bktxt)) &&
                 (selectedKostl == null ||
-                    item.kostl.toString() == selectedKostl) &&
+                    selectedKostl!.contains(item.kostl.toString())) &&
                 (selectedKonto == null ||
-                    item.konto.toString() == selectedKonto);
+                    selectedKonto!.contains(item.konto.toString()));
 
             return currentResult && matchesFilters;
           }).toList();
@@ -243,11 +249,15 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
             final matchesFilters =
                 (selectedDept == null || item.dept == selectedDept) &&
                 (selectedMacId == null || item.macId == selectedMacId) &&
-                (selectedMacName == null || item.macName == selectedMacName) &&
+                (selectedMacName == null ||
+                    (selectedMacName?.contains(item.macName) ?? true)) &&
+                (selectedCate == null ||
+                    (selectedCate?.contains(item.cate) ?? true)) &&
                 (selectedMatnr == null || item.matnr == selectedMatnr) &&
                 (selectedMaktx == null || item.maktx == selectedMaktx) &&
                 (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
-                (selectedUnit == null || item.unit == selectedUnit) &&
+                (selectedUnit == null ||
+                    (selectedUnit?.contains(item.unit) ?? true)) &&
                 (selectedUsedDate == null ||
                     item.useDate == selectedUsedDate) &&
                 (selectedBktxt == null || item.bktxt == selectedBktxt) &&
@@ -269,6 +279,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       selectedXblnr2 = null;
       selectedMacId = null;
       selectedMacName = null;
+      selectedCate = null;
       selectedMaktx = null;
       selectedMatnr = null;
       selectedDept = null;
@@ -278,13 +289,10 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       selectedNote = null;
       selectedKostl = null;
       selectedKonto = null;
-      filteredData = widget.data;
+      // filteredData = widget.data;
+      filteredData = allData;
       _hasInput = false; // ✅ reset trạng thái
     });
-  }
-
-  List<String> _getUniqueValues(String Function(DetailsDataModel) selector) {
-    return widget.data.map(selector).toSet().toList()..sort();
   }
 
   @override
@@ -383,6 +391,16 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                 Row(
                   children: [
                     Text(
+                      "Items: ${filteredData.length}", // 👈 hiện số lượng item
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                    SizedBox(width: 24),
+
+                    Text(
                       "Total: ",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -468,18 +486,19 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     );
   }
 
-  String? selectedDept;
-  String? selectedMacId;
+  List<String>? selectedDept;
+  List<String>? selectedMacId;
   List<String>? selectedMacName;
-  String? selectedMatnr;
-  String? selectedMaktx;
-  String? selectedXblnr2;
-  String? selectedUnit;
-  String? selectedUsedDate;
-  String? selectedBktxt;
-  String? selectedNote;
-  String? selectedKostl;
-  String? selectedKonto;
+  List<String>? selectedCate;
+  List<String>? selectedMatnr;
+  List<String>? selectedMaktx;
+  List<String>? selectedXblnr2;
+  List<String>? selectedUnit;
+  List<String>? selectedUsedDate;
+  List<String>? selectedBktxt;
+  List<String>? selectedNote;
+  List<String>? selectedKostl;
+  List<String>? selectedKonto;
 
   List<String> _getUniqueValuesFromList(
     List<dynamic> list,
@@ -548,19 +567,22 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
     // Lọc data tạm theo điều kiện filter hiện tại
     final tempFilteredData =
         allData.where((item) {
-          return (selectedDept == null || item.dept == selectedDept) &&
-              (selectedMacId == null || item.macId == selectedMacId) &&
+          return (selectedDept == null || selectedDept!.contains(item.dept)) &&
+              (selectedMacId == null || selectedMacId!.contains(item.macId)) &&
               (selectedMacName == null ||
-                  (selectedMacName?.contains(item.macName) ?? true)) &&
-              (selectedMatnr == null || item.matnr == selectedMatnr) &&
-              (selectedMaktx == null || item.maktx == selectedMaktx) &&
-              (selectedXblnr2 == null || item.xblnr2 == selectedXblnr2) &&
-              (selectedUnit == null || item.unit == selectedUnit) &&
-              (selectedUsedDate == null || item.useDate == selectedUsedDate) &&
-              (selectedBktxt == null || item.bktxt == selectedBktxt) &&
+                  selectedMacName!.contains(item.macName)) &&
+              (selectedMatnr == null || selectedMatnr!.contains(item.matnr)) &&
+              (selectedMaktx == null || selectedMaktx!.contains(item.maktx)) &&
+              (selectedXblnr2 == null ||
+                  selectedXblnr2!.contains(item.xblnr2)) &&
+              (selectedUnit == null || selectedUnit!.contains(item.unit)) &&
+              (selectedUsedDate == null ||
+                  selectedUsedDate!.contains(item.useDate)) &&
+              (selectedBktxt == null || selectedBktxt!.contains(item.bktxt)) &&
               (selectedKostl == null ||
-                  item.kostl.toString() == selectedKostl) &&
-              (selectedKonto == null || item.konto.toString() == selectedKonto);
+                  selectedKostl!.contains(item.kostl.toString())) &&
+              (selectedKonto == null ||
+                  selectedKonto!.contains(item.konto.toString()));
         }).toList();
 
     // Lấy danh sách unique value theo key
@@ -569,229 +591,84 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       (item) => item.toJson()[key]?.toString() ?? '',
     );
 
-    // Để MultiSelect chọn được nhiều → dùng List<String>
-    List<String> selectedValues = [];
+    // Cấu hình từng key
+    final Map<String, dynamic> config = {
+      "dept": {
+        "getter": () => selectedDept ?? [],
+        "setter": (results) => selectedDept = results.isEmpty ? null : results,
+      },
+      "macId": {
+        "getter": () => selectedMacId ?? [],
+        "setter": (results) => selectedMacId = results.isEmpty ? null : results,
+      },
+      "macName": {
+        "getter": () => selectedMacName ?? [],
+        "setter":
+            (results) => selectedMacName = results.isEmpty ? null : results,
+      },
+      "cate": {
+        "getter": () => selectedCate ?? [],
+        "setter": (results) => selectedCate = results.isEmpty ? null : results,
+      },
+      "matnr": {
+        "getter": () => selectedMatnr ?? [],
+        "setter": (results) => selectedMatnr = results.isEmpty ? null : results,
+      },
+      "maktx": {
+        "getter": () => selectedMaktx ?? [],
+        "setter": (results) => selectedMaktx = results.isEmpty ? null : results,
+      },
+      "xblnr2": {
+        "getter": () => selectedXblnr2 ?? [],
+        "setter":
+            (results) => selectedXblnr2 = results.isEmpty ? null : results,
+      },
+      "unit": {
+        "getter": () => selectedUnit ?? [],
+        "setter": (results) => selectedUnit = results.isEmpty ? null : results,
+      },
+      "useDate": {
+        "getter": () => selectedUsedDate ?? [],
+        "setter":
+            (results) => selectedUsedDate = results.isEmpty ? null : results,
+      },
+      "bktxt": {
+        "getter": () => selectedBktxt ?? [],
+        "setter": (results) => selectedBktxt = results.isEmpty ? null : results,
+      },
+      "note": {
+        "getter": () => selectedNote ?? [],
+        "setter": (results) => selectedNote = results.isEmpty ? null : results,
+      },
+      "kostl": {
+        "getter": () => selectedKostl ?? [],
+        "setter": (results) => selectedKostl = results.isEmpty ? null : results,
+      },
+      "konto": {
+        "getter": () => selectedKonto ?? [],
+        "setter": (results) => selectedKonto = results.isEmpty ? null : results,
+      },
+    };
 
-    switch (key) {
-      case 'dept':
-        if (selectedDept != null) selectedValues.add(selectedDept!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedDept = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
+    if (config.containsKey(key)) {
+      List<String> selectedValues = List<String>.from(config[key]["getter"]());
 
-      case 'macId':
-        if (selectedMacId != null) selectedValues.add(selectedMacId!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedMacId = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'macName':
-        if (selectedMacName != null) selectedValues.addAll(selectedMacName!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedMacName = results.isEmpty ? null : results;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'matnr':
-        if (selectedMatnr != null) selectedValues.add(selectedMatnr!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedMatnr = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'maktx':
-        if (selectedMaktx != null) selectedValues.add(selectedMaktx!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedMaktx = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'xblnr2':
-        if (selectedXblnr2 != null) selectedValues.add(selectedXblnr2!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedXblnr2 = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'unit':
-        if (selectedUnit != null) selectedValues.add(selectedUnit!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedUnit = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'useDate':
-        if (selectedUsedDate != null) selectedValues.add(selectedUsedDate!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedUsedDate = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'bktxt':
-        if (selectedBktxt != null) selectedValues.add(selectedBktxt!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedBktxt = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'kostl':
-        if (selectedKostl != null) selectedValues.add(selectedKostl!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedKostl = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      case 'konto':
-        if (selectedKonto != null) selectedValues.add(selectedKonto!);
-        return _buildDropdownHeader(
-          title: title,
-          selectedValues: selectedValues,
-          values: values,
-          onConfirm: (results) {
-            setState(() {
-              selectedKonto = results.isEmpty ? null : results.first;
-              _applyFilter();
-              _hasInput = _checkHasInput();
-            });
-          },
-        );
-
-      default:
-        // Nếu không match key thì render Text header bình thường
-        return _buildTableCell(title, isHeader: true, columnKey: key);
-    }
-  }
-
-  Widget _buildDropdownHeader1({
-    required String title,
-    required String? selectedValue,
-    required List<String> values,
-    required Function(String?) onChanged,
-  }) {
-    if (!values.contains(selectedValue)) {
-      selectedValue = null;
+      return _buildDropdownHeader(
+        title: title,
+        selectedValues: selectedValues,
+        values: values,
+        onConfirm: (results) {
+          setState(() {
+            config[key]["setter"](results);
+            _applyFilter();
+            _hasInput = _checkHasInput();
+          });
+        },
+      );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Column(
-        children: [
-          DropdownButton<String>(
-            value: selectedValue ?? '__reset__',
-            isExpanded: true,
-            items: [
-              DropdownMenuItem<String>(
-                value: '__reset__',
-                child: Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Center(
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              ...values.map(
-                (v) => DropdownMenuItem<String>(
-                  value: v,
-                  child: Text(
-                    v,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                ),
-              ),
-            ],
-            onChanged: onChanged,
-          ),
-        ],
-      ),
-    );
+    // Nếu không match key thì render Text header bình thường
+    return _buildTableCell(title, isHeader: true, columnKey: key);
   }
 
   double _getColumnWidth(String key) {
@@ -803,7 +680,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       case "macname":
         return 140;
       case "cate":
-        return 90;
+        return 100;
       case "matnr":
         return 110;
       case "maktx":
@@ -815,7 +692,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
       case "konto":
         return 120;
       case "xblnr2":
-        return 150;
+        return 140;
       case "bktxt":
         return 150;
       case "unit":
