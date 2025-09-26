@@ -106,8 +106,8 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                   if (_selectedMonths.length == 1)
                     Chip(
                       label: Text(_formatMonth(_selectedMonths.first)),
-                      backgroundColor: Colors.grey[50],
-                      labelStyle: const TextStyle(color: Colors.blue),
+                      backgroundColor: Colors.black45,
+                      labelStyle: const TextStyle(color: Colors.lightBlue),
                       // onDeleted: () {
                       //   setState(() {
                       //     _selectedMonths.clear();
@@ -118,7 +118,7 @@ class _MultiMonthSelectorState extends State<MultiMonthSelector> {
                   else
                     Chip(
                       label: const Text("Multi months"),
-                      backgroundColor: Colors.blue[200],
+                      backgroundColor: Colors.blue.shade500,
                       labelStyle: const TextStyle(color: Colors.black),
                       // onDeleted: () {
                       //   setState(() {

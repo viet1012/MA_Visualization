@@ -360,6 +360,7 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
                     ),
                     textAlign: TextAlign.center,
                   ),
+                  SizedBox(width: 8),
                   DateDisplayWidget(
                     selectedDate: DateTime.now(),
                     monthYearDropDown: MultiMonthSelector(
@@ -374,6 +375,8 @@ class _DetailsDataPopupState extends State<DetailsDataPopup> {
 
                         if (formatted.isNotEmpty) {
                           _loadData(formatted, widget.title);
+                          print("formatted.isNotEmpty: ${formatted.length}");
+                          print("allData.isNotEmpty_____: ${allData.length}");
                         } else {
                           setState(() {
                             allData = widget.data;
