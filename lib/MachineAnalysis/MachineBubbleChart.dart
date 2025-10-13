@@ -214,44 +214,34 @@ class _BubbleChartState extends State<BubbleChart>
           .toColor();
     }
 
+    Map<String, String> getMonthRange(String mmYYYY, int backMonths) {
+      final month = int.parse(mmYYYY.substring(0, 2));
+      final year = int.parse(mmYYYY.substring(2, 6));
+
+      final baseDate = DateTime(year, month, 1);
+
+      // Lùi lại X tháng
+      final from = DateTime(baseDate.year, baseDate.month - backMonths, 1);
+      final to = baseDate;
+
+      String format(DateTime dt) =>
+          dt.year.toString() + dt.month.toString().padLeft(2, '0');
+
+      return {"monthFrom": format(from), "monthTo": format(to)};
+    }
+
     List<BubbleSeries<MachineAnalysis, num>> seriesList = [
       BubbleSeries<MachineAnalysis, num>(
         onPointTap: (ChartPointDetails details) async {
-          if (widget.selectedMode == AnalysisMode.Total) return;
-
-          final int pointIndex = details.pointIndex!;
-          final machine = allMachines[pointIndex];
-          final renderBox =
-              _chartKey.currentContext?.findRenderObject() as RenderBox?;
-
-          if (renderBox == null) return;
-
-          if (machine.macName == widget.selectedMachine) {
-            // 👉 Bấm lần 2 => reset
-            // setState(() {
-            //   selectedIndex = null;
-            //   selectedMachine = null;
-            //   _animationController.reverse();
-            // });
-            //
-            // widget.onBubbleTap?.call(""); // gửi rỗng
-
-            // ✅ Gọi API ngoài setState
-            final range = RankConverter.convertRankToMonthRange(
-              machine.rank,
-              DateTime.now().year,
-            );
-
-            if (range == null) {
-              print("❌ Rank không hợp lệ: ${machine.rank}");
-              return;
-            }
+          if (widget.selectedMode == AnalysisMode.Total) {
+            final int pointIndex = details.pointIndex!;
+            final machine = allMachines[pointIndex];
+            final range = getMonthRange('092025', 6);
             showDialog(
               context: context,
               barrierDismissible: false,
               builder: (_) => const Center(child: CircularProgressIndicator()),
             );
-
             try {
               List<DetailsMSMovingAveModel> dataMS = await ApiService()
                   .fetchDetailsMSMovingAve(
@@ -304,20 +294,110 @@ class _BubbleChartState extends State<BubbleChart>
             } catch (e) {
               print("❌ Lỗi gọi API: $e");
             }
+            print("Range: ${range}");
           } else {
-            // 👉 Bấm bubble mới => chọn
-            setState(() {
-              selectedIndex = pointIndex;
-              selectedMachine = machine;
-              _animationController.forward(from: 0.0);
-            });
+            final int pointIndex = details.pointIndex!;
+            final machine = allMachines[pointIndex];
+            final renderBox =
+                _chartKey.currentContext?.findRenderObject() as RenderBox?;
 
-            print(
-              "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
-            );
+            if (renderBox == null) return;
 
-            widget.onModeChange?.call(AnalysisMode.MovAve);
-            widget.onBubbleTap?.call(machine.macName); // gửi tên machine
+            if (machine.macName == widget.selectedMachine) {
+              // 👉 Bấm lần 2 => reset
+              // setState(() {
+              //   selectedIndex = null;
+              //   selectedMachine = null;
+              //   _animationController.reverse();
+              // });
+              //
+              // widget.onBubbleTap?.call(""); // gửi rỗng
+
+              // ✅ Gọi API ngoài setState
+              final range = RankConverter.convertRankToMonthRange(
+                machine.rank,
+                DateTime.now().year,
+              );
+
+              if (range == null) {
+                print("❌ Rank không hợp lệ: ${machine.rank}");
+                return;
+              }
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder:
+                    (_) => const Center(child: CircularProgressIndicator()),
+              );
+
+              try {
+                List<DetailsMSMovingAveModel> dataMS = await ApiService()
+                    .fetchDetailsMSMovingAve(
+                      monthFrom: range["monthFrom"]!,
+                      monthTo: range["monthTo"]!,
+                      div: machine.div,
+                      macName: machine.macName,
+                    );
+                List<DetailsRFMovingAveModel> dataRF = await ApiService()
+                    .fetchDetailsRFMovingAve(
+                      monthFrom: range["monthFrom"]!,
+                      monthTo: range["monthTo"]!,
+                      div: machine.div,
+                      macName: machine.macName,
+                    );
+
+                Navigator.of(context).pop();
+                Color colorTitle = DepartmentUtils.getDepartmentColor(
+                  machine.div,
+                );
+
+                if (dataMS.isNotEmpty || dataRF.isNotEmpty) {
+                  // Hiển thị popup dữ liệu
+                  showDialog(
+                    context: context,
+                    builder:
+                        (_) => SizedBox(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                DetailsDataMSMovingAvePopup(
+                                  title: machine.macName,
+                                  colorTitle: colorTitle,
+                                  subTitle:
+                                      'Machine Stopping [${machine.rank}]',
+                                  data: dataMS,
+                                ),
+                                DetailsDataRFMovingAvePopup(
+                                  title: machine.macName,
+                                  colorTitle: colorTitle,
+                                  subTitle: 'Repair Fee [${machine.rank}]',
+                                  data: dataRF,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                  );
+                }
+              } catch (e) {
+                print("❌ Lỗi gọi API: $e");
+              }
+            } else {
+              // 👉 Bấm bubble mới => chọn
+              setState(() {
+                selectedIndex = pointIndex;
+                selectedMachine = machine;
+                _animationController.forward(from: 0.0);
+              });
+
+              print(
+                "selectedMachine?.macName ${selectedMachine?.macName}  machine.macName ${machine.macName}",
+              );
+
+              widget.onModeChange?.call(AnalysisMode.MovAve);
+              widget.onBubbleTap?.call(machine.macName); // gửi tên machine
+            }
           }
         },
 

@@ -147,7 +147,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
             Expanded(
               child: Row(
                 children: [
-                  Row(
+                  Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -370,102 +370,142 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
     );
   }
 
-  Widget _buildDataTable(BuildContext context, ThemeData theme) {
+  double _getColumnWidth(String key) {
+    switch (key.toLowerCase()) {
+      case "div":
+        return 80; // rộng hơn
+      case "macgrp":
+        return 110; // nhỏ hơn
+      case "macid":
+        return 100;
+      case "macname":
+        return 180;
+      case "cate":
+        return 130;
+      case "matnr":
+        return 120;
+      case "maktx":
+        return 260;
+      case "usedate":
+        return 120;
+      case "kostl":
+        return 120;
+      case "konto":
+        return 110;
+      case "xblnr2":
+        return 130;
+      case "bktxt":
+        return 140;
+      case "qty":
+        return 80;
+
+      default:
+        return 100; // mặc định
+    }
+  }
+
+  _buildDataTable(BuildContext context, ThemeData theme) {
     final columnKeys =
         rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
 
-    return Scrollbar(
-      controller: _scrollController,
-      thumbVisibility: true,
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        child: Column(
-          children: [
-            // Header Table
-            Table(
-              border: TableBorder.all(
-                color: theme.dividerColor.withOpacity(0.8),
-              ),
-              columnWidths: {
-                0: FixedColumnWidth(80),
-                1: FixedColumnWidth(120),
-                2: FixedColumnWidth(110),
-                3: FixedColumnWidth(180),
-                4: FixedColumnWidth(130),
-                5: FixedColumnWidth(120),
-                6: FixedColumnWidth(160),
-                7: FixedColumnWidth(120),
-                8: FixedColumnWidth(120),
-                9: FixedColumnWidth(120),
-                10: FixedColumnWidth(130),
-                11: FixedColumnWidth(140),
-                12: FixedColumnWidth(90),
-                13: FixedColumnWidth(100),
-                14: FixedColumnWidth(100),
-                15: FixedColumnWidth(100),
-              },
-              children: [
-                TableRow(
-                  children:
-                      columnKeys
-                          .map((key) => _buildDynamicDropdownHeader(key))
-                          .toList(),
-                ),
-              ],
-            ),
+    final Map<String, double> columnMax = {};
 
-            // Table content
-            Expanded(
-              child: SizedBox(
-                height: 500,
+    // Tính max cho từng cột số
+    for (var key in columnKeys) {
+      columnMax[key] = 0.0;
+    }
+
+    for (var item in filteredData) {
+      final row = item.toJson();
+      for (var key in columnKeys) {
+        final v = row[key];
+        if (v is num) {
+          final d = v.toDouble();
+          if (d > (columnMax[key] ?? 0)) {
+            columnMax[key] = d;
+          }
+        }
+      }
+    }
+
+    return SingleChildScrollView(
+      child: Scrollbar(
+        controller: _scrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            children: [
+              // Header
+              Table(
+                border: TableBorder.all(
+                  color: theme.dividerColor.withOpacity(0.8),
+                ),
+                columnWidths: {
+                  for (int i = 0; i < columnKeys.length; i++)
+                    i: FixedColumnWidth(_getColumnWidth(columnKeys[i])),
+                },
+                children: [
+                  TableRow(
+                    children:
+                        columnKeys.map((key) {
+                          return _buildDynamicDropdownHeader(key);
+                        }).toList(),
+                  ),
+                ],
+              ),
+
+              // Nội dung cuộn theo chiều dọc
+              SizedBox(
+                height: 700,
                 child: Scrollbar(
+                  controller: _scrollController,
                   thumbVisibility: true,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Table(
-                      border: TableBorder.all(
-                        color: theme.dividerColor.withOpacity(0.8),
-                      ),
-                      columnWidths: {
-                        0: FixedColumnWidth(80),
-                        1: FixedColumnWidth(120),
-                        2: FixedColumnWidth(110),
-                        3: FixedColumnWidth(180),
-                        4: FixedColumnWidth(130),
-                        5: FixedColumnWidth(120),
-                        6: FixedColumnWidth(160),
-                        7: FixedColumnWidth(120),
-                        8: FixedColumnWidth(120),
-                        9: FixedColumnWidth(120),
-                        10: FixedColumnWidth(130),
-                        11: FixedColumnWidth(140),
-                        12: FixedColumnWidth(90),
-                        13: FixedColumnWidth(100),
-                        14: FixedColumnWidth(100),
-                        15: FixedColumnWidth(100),
+                  child: SizedBox(
+                    width: columnKeys.fold<double>(
+                      0,
+                      (sum, key) => sum + _getColumnWidth(key),
+                    ), // 👈 tổng width theo từng cột
+                    child: ListView.builder(
+                      itemCount: filteredData.length,
+                      itemBuilder: (context, rowIndex) {
+                        final jsonRow = filteredData[rowIndex].toJson();
+
+                        return Row(
+                          children:
+                              columnKeys.map((key) {
+                                final value = jsonRow[key];
+                                final isNumber = value is num;
+                                final txt = value?.toString() ?? '';
+                                return Container(
+                                  width: _getColumnWidth(key),
+                                  decoration: BoxDecoration(
+                                    border: BoxBorder.all(
+                                      color: theme.dividerColor.withOpacity(
+                                        0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  child: _buildTableCell(
+                                    txt,
+                                    isHeader: false,
+                                    isNumber: isNumber,
+                                    columnKey: key,
+                                    // numValue:
+                                    //     isNumber ? value.toDouble() : null,
+                                    // columnMaxValue: columnMax[key],
+                                  ),
+                                );
+                              }).toList(),
+                        );
                       },
-                      children:
-                          filteredData.map((item) {
-                            final jsonRow = item.toJson(); // convert về Map
-                            return TableRow(
-                              children:
-                                  columnKeys.map((key) {
-                                    final value = jsonRow[key];
-                                    return _buildTableCell(
-                                      value?.toString() ?? '',
-                                      isNumber: value is num,
-                                      columnKey: key,
-                                    );
-                                  }).toList(),
-                            );
-                          }).toList(),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -494,6 +534,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
           animatedKeys: ['ACT'],
         )
         : Container(
+          height: isHeader ? 60 : 80,
           padding: isHeader ? EdgeInsets.only(top: 8) : null,
           // color: Colors.green,
           alignment: isHeader ? Alignment.center : null,

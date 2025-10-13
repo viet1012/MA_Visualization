@@ -366,7 +366,41 @@ class _DetailsDataMSMovingAvePopupState
     );
   }
 
-  Widget _buildDataTable(BuildContext context, ThemeData theme) {
+  double _getColumnWidth(String key) {
+    switch (key.toLowerCase()) {
+      case "div":
+        return 80; // rộng hơn
+      case "groupname":
+        return 160; // nhỏ hơn
+      case "machinecode":
+        return 150;
+      case "machinetype":
+        return 180;
+      case "refno":
+        return 170;
+      case "reason":
+        return 170;
+      case "confirmdate":
+        return 145;
+      case "sendtime":
+        return 140;
+      case "starttime":
+        return 140;
+      case "finishtime":
+        return 140;
+      case "temprun":
+        return 110;
+      case "stophour":
+        return 120;
+      case "issuestatus":
+        return 170;
+
+      default:
+        return 125; // mặc định
+    }
+  }
+
+  Widget _buildDataTable1(BuildContext context, ThemeData theme) {
     final columnKeys =
         rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
 
@@ -474,6 +508,113 @@ class _DetailsDataMSMovingAvePopupState
     );
   }
 
+  _buildDataTable(BuildContext context, ThemeData theme) {
+    final columnKeys =
+        rawJsonList.isNotEmpty ? rawJsonList.first.keys.toList() : [];
+
+    final Map<String, double> columnMax = {};
+
+    // Tính max cho từng cột số
+    for (var key in columnKeys) {
+      columnMax[key] = 0.0;
+    }
+
+    for (var item in filteredData) {
+      final row = item.toJson();
+      for (var key in columnKeys) {
+        final v = row[key];
+        if (v is num) {
+          final d = v.toDouble();
+          if (d > (columnMax[key] ?? 0)) {
+            columnMax[key] = d;
+          }
+        }
+      }
+    }
+
+    return SingleChildScrollView(
+      child: Scrollbar(
+        controller: _scrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            children: [
+              // Header
+              Table(
+                border: TableBorder.all(
+                  color: theme.dividerColor.withOpacity(0.8),
+                ),
+                columnWidths: {
+                  for (int i = 0; i < columnKeys.length; i++)
+                    i: FixedColumnWidth(_getColumnWidth(columnKeys[i])),
+                },
+                children: [
+                  TableRow(
+                    children:
+                        columnKeys.map((key) {
+                          return _buildDynamicDropdownHeader(key);
+                        }).toList(),
+                  ),
+                ],
+              ),
+
+              // Nội dung cuộn theo chiều dọc
+              SizedBox(
+                height: 700,
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  child: SizedBox(
+                    width: columnKeys.fold<double>(
+                      0,
+                      (sum, key) => sum + _getColumnWidth(key),
+                    ), // 👈 tổng width theo từng cột
+                    child: ListView.builder(
+                      itemCount: filteredData.length,
+                      itemBuilder: (context, rowIndex) {
+                        final jsonRow = filteredData[rowIndex].toJson();
+
+                        return Row(
+                          children:
+                              columnKeys.map((key) {
+                                final value = jsonRow[key];
+                                final isNumber = value is num;
+                                final txt = value?.toString() ?? '';
+                                return Container(
+                                  width: _getColumnWidth(key),
+                                  decoration: BoxDecoration(
+                                    border: BoxBorder.all(
+                                      color: theme.dividerColor.withOpacity(
+                                        0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  child: _buildTableCell(
+                                    txt,
+                                    isHeader: false,
+                                    isNumber: isNumber,
+                                    columnKey: key,
+                                    // numValue:
+                                    //     isNumber ? value.toDouble() : null,
+                                    // columnMaxValue: columnMax[key],
+                                  ),
+                                );
+                              }).toList(),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildTableCell(
     String text, {
     bool isHeader = false,
@@ -498,6 +639,7 @@ class _DetailsDataMSMovingAvePopupState
           colorBackground: widget.colorTitle,
         )
         : Container(
+          height: isHeader ? 60 : 80,
           padding: isHeader ? EdgeInsets.only(top: 8) : null,
           // color: isHeader && text == 'STOPHOUR' ? Colors.green : null,
           alignment: isHeader ? Alignment.center : null,
