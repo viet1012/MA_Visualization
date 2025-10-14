@@ -5,11 +5,13 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 
 import '../API/ApiService.dart';
+import '../Model/ChartMSMovingAveModel.dart';
 import '../Model/DetailsMSMovingAveModel.dart';
 import '../Model/DetailsRFMovingAveModel.dart';
 import '../Model/MachineAnalysis.dart';
 import '../Popup/DetailsDataMSMovingAvePopup.dart';
 import '../Popup/DetailsDataRFMovingAvePopup.dart';
+import 'ChartMSMovingAveScreen.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
 import 'MachineTileWidget.dart';
@@ -25,6 +27,8 @@ class BubbleChart extends StatefulWidget {
 
   final String? selectedMachine;
   final AnalysisMode? selectedMode; // 🔹 nhận từ parent
+  final String month;
+  final int top;
 
   const BubbleChart({
     required this.data,
@@ -35,6 +39,8 @@ class BubbleChart extends StatefulWidget {
     this.onModeChange,
     this.selectedMachine,
     this.selectedMode,
+    required this.top,
+    required this.month,
     super.key,
   });
 
@@ -323,6 +329,67 @@ class _BubbleChartState extends State<BubbleChart>
                 print("❌ Rank không hợp lệ: ${machine.rank}");
                 return;
               }
+              // showDialog(
+              //   context: context,
+              //   barrierDismissible: false,
+              //   builder:
+              //       (_) => const Center(child: CircularProgressIndicator()),
+              // );
+              //
+              // try {
+              //   List<DetailsMSMovingAveModel> dataMS = await ApiService()
+              //       .fetchDetailsMSMovingAve(
+              //         monthFrom: range["monthFrom"]!,
+              //         monthTo: range["monthTo"]!,
+              //         div: machine.div,
+              //         macName: machine.macName,
+              //       );
+              //   List<DetailsRFMovingAveModel> dataRF = await ApiService()
+              //       .fetchDetailsRFMovingAve(
+              //         monthFrom: range["monthFrom"]!,
+              //         monthTo: range["monthTo"]!,
+              //         div: machine.div,
+              //         macName: machine.macName,
+              //       );
+              //
+              //   Navigator.of(context).pop();
+              //   Color colorTitle = DepartmentUtils.getDepartmentColor(
+              //     machine.div,
+              //   );
+              //
+              //   if (dataMS.isNotEmpty || dataRF.isNotEmpty) {
+              //     // Hiển thị popup dữ liệu
+              //     showDialog(
+              //       context: context,
+              //       builder:
+              //           (_) => SizedBox(
+              //             child: SingleChildScrollView(
+              //               child: Column(
+              //                 mainAxisAlignment: MainAxisAlignment.center,
+              //                 children: [
+              //                   DetailsDataMSMovingAvePopup(
+              //                     title: machine.macName,
+              //                     colorTitle: colorTitle,
+              //                     subTitle:
+              //                         'Machine Stopping [${machine.rank}]',
+              //                     data: dataMS,
+              //                   ),
+              //                   DetailsDataRFMovingAvePopup(
+              //                     title: machine.macName,
+              //                     colorTitle: colorTitle,
+              //                     subTitle: 'Repair Fee [${machine.rank}]',
+              //                     data: dataRF,
+              //                   ),
+              //                 ],
+              //               ),
+              //             ),
+              //           ),
+              //     );
+              //   }
+              // } catch (e) {
+              //   print("❌ Lỗi gọi API: $e");
+              // }
+
               showDialog(
                 context: context,
                 barrierDismissible: false,
@@ -331,57 +398,48 @@ class _BubbleChartState extends State<BubbleChart>
               );
 
               try {
-                List<DetailsMSMovingAveModel> dataMS = await ApiService()
-                    .fetchDetailsMSMovingAve(
-                      monthFrom: range["monthFrom"]!,
-                      monthTo: range["monthTo"]!,
-                      div: machine.div,
-                      macName: machine.macName,
-                    );
-                List<DetailsRFMovingAveModel> dataRF = await ApiService()
-                    .fetchDetailsRFMovingAve(
-                      monthFrom: range["monthFrom"]!,
-                      monthTo: range["monthTo"]!,
-                      div: machine.div,
-                      macName: machine.macName,
-                    );
-
-                Navigator.of(context).pop();
-                Color colorTitle = DepartmentUtils.getDepartmentColor(
-                  machine.div,
+                String formatted = widget.month.replaceAll("-", "");
+                final futureData = ApiService().fetchChartMSMovingAve(
+                  monthTo: formatted,
+                  div: machine.div,
+                  macName: machine.macName,
+                  top: widget.top,
                 );
 
-                if (dataMS.isNotEmpty || dataRF.isNotEmpty) {
-                  // Hiển thị popup dữ liệu
-                  showDialog(
-                    context: context,
-                    builder:
-                        (_) => SizedBox(
-                          child: SingleChildScrollView(
+                final data = await futureData;
+
+                if (context.mounted) {
+                  Navigator.pop(context); // đóng dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => SingleChildScrollView(
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                DetailsDataMSMovingAvePopup(
-                                  title: machine.macName,
-                                  colorTitle: colorTitle,
-                                  subTitle:
-                                      'Machine Stopping [${machine.rank}]',
-                                  data: dataMS,
+                                ChartMSMovingAveScreen(
+                                  futureData: Future.value(data),
+                                  monthFrom: range["monthFrom"]!,
+                                  monthTo: range["monthTo"]!,
+                                  machineAnalysis: machine,
                                 ),
-                                DetailsDataRFMovingAvePopup(
-                                  title: machine.macName,
-                                  colorTitle: colorTitle,
-                                  subTitle: 'Repair Fee [${machine.rank}]',
-                                  data: dataRF,
+                                ChartMSMovingAveScreen(
+                                  futureData: Future.value(data),
+                                  monthFrom: range["monthFrom"]!,
+                                  monthTo: range["monthTo"]!,
+                                  machineAnalysis: machine,
                                 ),
                               ],
                             ),
                           ),
-                        ),
+                    ),
                   );
                 }
               } catch (e) {
-                print("❌ Lỗi gọi API: $e");
+                if (context.mounted) Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi khi tải dữ liệu: $e')),
+                );
               }
             } else {
               // 👉 Bấm bubble mới => chọn
