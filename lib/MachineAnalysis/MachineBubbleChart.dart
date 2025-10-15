@@ -12,6 +12,7 @@ import '../Model/MachineAnalysis.dart';
 import '../Popup/DetailsDataMSMovingAvePopup.dart';
 import '../Popup/DetailsDataRFMovingAvePopup.dart';
 import 'ChartMSMovingAveScreen.dart';
+import 'ChartRFMovingAveScreen.dart';
 import 'DepartmentUtils.dart';
 import 'MachineBubbleScreen.dart';
 import 'MachineTileWidget.dart';
@@ -284,12 +285,16 @@ class _BubbleChartState extends State<BubbleChart>
                                 colorTitle: colorTitle,
                                 subTitle: 'Machine Stopping [${machine.rank}]',
                                 data: dataMS,
+                                maxHeight:
+                                    MediaQuery.of(context).size.height * .5,
                               ),
                               DetailsDataRFMovingAvePopup(
                                 title: machine.macName,
                                 colorTitle: colorTitle,
                                 subTitle: 'Repair Fee [${machine.rank}]',
                                 data: dataRF,
+                                maxHeight:
+                                    MediaQuery.of(context).size.height * .5,
                               ),
                             ],
                           ),
@@ -399,14 +404,21 @@ class _BubbleChartState extends State<BubbleChart>
 
               try {
                 String formatted = widget.month.replaceAll("-", "");
-                final futureData = ApiService().fetchChartMSMovingAve(
+                final futureDataMS = ApiService().fetchChartMSMovingAve(
+                  monthTo: formatted,
+                  div: machine.div,
+                  macName: machine.macName,
+                  top: widget.top,
+                );
+                final futureDataRF = ApiService().fetchChartRFMovingAve(
                   monthTo: formatted,
                   div: machine.div,
                   macName: machine.macName,
                   top: widget.top,
                 );
 
-                final data = await futureData;
+                final dataMS = await futureDataMS;
+                final dataRF = await futureDataRF;
 
                 if (context.mounted) {
                   Navigator.pop(context); // đóng dialog
@@ -414,22 +426,37 @@ class _BubbleChartState extends State<BubbleChart>
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) => SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                ChartMSMovingAveScreen(
-                                  futureData: Future.value(data),
-                                  monthFrom: range["monthFrom"]!,
-                                  monthTo: range["monthTo"]!,
-                                  machineAnalysis: machine,
-                                ),
-                                ChartMSMovingAveScreen(
-                                  futureData: Future.value(data),
-                                  monthFrom: range["monthFrom"]!,
-                                  monthTo: range["monthTo"]!,
-                                  machineAnalysis: machine,
-                                ),
-                              ],
+                          (_) => Scaffold(
+                            backgroundColor: Colors.black,
+                            appBar: AppBar(
+                              backgroundColor: Colors.black,
+                              title: Column(
+                                children: [
+                                  Text(machine.macName),
+                                  Text(
+                                    ' Machine Stopping - Repair Fee',
+                                    style: TextStyle(color: Colors.indigo),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            body: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  ChartMSMovingAveScreen(
+                                    futureData: Future.value(dataMS),
+                                    monthFrom: range["monthFrom"]!,
+                                    monthTo: range["monthTo"]!,
+                                    machineAnalysis: machine,
+                                  ),
+                                  ChartRFMovingAveScreen(
+                                    futureData: Future.value(dataRF),
+                                    monthFrom: range["monthFrom"]!,
+                                    monthTo: range["monthTo"]!,
+                                    machineAnalysis: machine,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                     ),

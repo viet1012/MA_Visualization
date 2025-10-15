@@ -11,6 +11,7 @@ import 'package:ma_visualization/Model/PMModel.dart';
 import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
 import 'package:ma_visualization/Model/RepairFeeModel.dart';
 
+import '../Model/ChartRFMovingAveModel.dart';
 import '../Model/DetailsMSMovingAveModel.dart';
 import '../Model/DetailsRFMovingAveModel.dart';
 import '../Model/MachineAnalysis.dart';
@@ -380,6 +381,30 @@ class ApiService {
       final List<dynamic> jsonList = json.decode(response.body);
       return jsonList
           .map((json) => ChartMSMovingAveModel.fromJson(json))
+          .toList();
+    } else {
+      throw Exception('Failed to load bubble data');
+    }
+  }
+
+  Future<List<ChartRFMovingAveModel>> fetchChartRFMovingAve({
+    required monthTo,
+    required String div,
+    required top,
+    String? macName,
+  }) async {
+    final uri = Uri.parse(
+      '$baseUrl/chart/RFMovingAve?divisions=$div&monthTo=$monthTo&top=$top&macName=$macName',
+    );
+    final response = await http.get(uri);
+
+    // Debug
+    print("url: $uri");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList
+          .map((json) => ChartRFMovingAveModel.fromJson(json))
           .toList();
     } else {
       throw Exception('Failed to load bubble data');

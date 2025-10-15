@@ -12,6 +12,7 @@ class DetailsDataRFMovingAvePopup extends StatefulWidget {
   final Color colorTitle;
   final String subTitle;
   final List<DetailsRFMovingAveModel> data;
+  final double maxHeight;
 
   const DetailsDataRFMovingAvePopup({
     super.key,
@@ -19,6 +20,7 @@ class DetailsDataRFMovingAvePopup extends StatefulWidget {
     required this.colorTitle,
     required this.subTitle,
     required this.data,
+    required this.maxHeight,
   });
 
   @override
@@ -118,7 +120,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width,
-            maxHeight: MediaQuery.of(context).size.height * .5,
+            maxHeight: widget.maxHeight,
           ),
           child: Padding(
             padding: const EdgeInsets.all(8),

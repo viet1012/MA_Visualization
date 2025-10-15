@@ -12,6 +12,7 @@ class DetailsDataMSMovingAvePopup extends StatefulWidget {
   final Color colorTitle;
   final String subTitle;
   final List<DetailsMSMovingAveModel> data;
+  final double maxHeight;
 
   const DetailsDataMSMovingAvePopup({
     super.key,
@@ -19,6 +20,7 @@ class DetailsDataMSMovingAvePopup extends StatefulWidget {
     required this.colorTitle,
     required this.subTitle,
     required this.data,
+    required this.maxHeight,
   });
 
   @override
@@ -112,7 +114,8 @@ class _DetailsDataMSMovingAvePopupState
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width,
-            maxHeight: MediaQuery.of(context).size.height * .5,
+            // maxHeight: MediaQuery.of(context).size.height * .9,
+            maxHeight: widget.maxHeight,
           ),
           child: Padding(
             padding: const EdgeInsets.all(8),

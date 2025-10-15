@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../API/ApiService.dart';
 import '../Model/ChartMSMovingAveModel.dart';
+import '../Model/ChartRFMovingAveModel.dart';
 import '../Model/DetailsMSMovingAveModel.dart';
+import '../Model/DetailsRFMovingAveModel.dart';
 import '../Model/MachineAnalysis.dart';
 import '../Popup/DetailsDataMSMovingAvePopup.dart';
+import '../Popup/DetailsDataRFMovingAvePopup.dart';
 import 'DepartmentUtils.dart';
 
-class ChartMSMovingAveScreen extends StatefulWidget {
-  const ChartMSMovingAveScreen({
+class ChartRFMovingAveScreen extends StatefulWidget {
+  const ChartRFMovingAveScreen({
     super.key,
     required this.futureData,
     required this.monthFrom,
@@ -16,19 +19,19 @@ class ChartMSMovingAveScreen extends StatefulWidget {
     required this.machineAnalysis,
   });
 
-  final Future<List<ChartMSMovingAveModel>> futureData;
+  final Future<List<ChartRFMovingAveModel>> futureData;
   final String monthFrom;
   final String monthTo;
   final MachineAnalysis machineAnalysis;
 
   @override
-  State<ChartMSMovingAveScreen> createState() => _ChartMSMovingAveScreenState();
+  State<ChartRFMovingAveScreen> createState() => _ChartRFMovingAveScreenState();
 }
 
-class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
+class _ChartRFMovingAveScreenState extends State<ChartRFMovingAveScreen> {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<ChartMSMovingAveModel>>(
+    return FutureBuilder<List<ChartRFMovingAveModel>>(
       future: widget.futureData,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -51,16 +54,11 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
             child: SfCartesianChart(
               plotAreaBackgroundColor: Colors.black,
               backgroundColor: Colors.black,
-
               primaryXAxis: CategoryAxis(
                 labelStyle: const TextStyle(color: Colors.white, fontSize: 16),
-                title: AxisTitle(
-                  text: 'Month',
-                  textStyle: const TextStyle(color: Colors.white, fontSize: 18),
-                ),
                 majorGridLines: const MajorGridLines(width: 0),
                 axisLabelFormatter: (AxisLabelRenderDetails details) {
-                  String raw = details.text.trim();
+                  String raw = details.text.trim() ?? '';
                   if (raw.isEmpty) {
                     return ChartAxisLabel(
                       '',
@@ -86,33 +84,58 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                   ];
 
                   try {
+                    // --- AUTO-DETECT LOGIC ---
                     if (RegExp(r'^\d{6}$').hasMatch(raw)) {
+                      // 👉 "092025" hoặc "202509"
                       String monthStr, yearStr;
                       if (raw.startsWith('20')) {
+                        // dạng YYYYMM
                         yearStr = raw.substring(0, 4);
                         monthStr = raw.substring(4, 6);
                       } else {
+                        // dạng MMYYYY
                         monthStr = raw.substring(0, 2);
                         yearStr = raw.substring(2, 6);
                       }
                       final month = int.tryParse(monthStr) ?? 0;
                       if (month >= 1 && month <= 12) {
-                        label = '${monthNames[month]}-${yearStr.substring(2)}';
+                        label =
+                            '${monthNames[month]}-${yearStr.substring(2)}'; // 👉 "Sep-25"
+                      }
+                    } else if (RegExp(r'^\d{4}-\d{2}$').hasMatch(raw)) {
+                      // 👉 "2025-09"
+                      final parts = raw.split('-');
+                      final year = parts[0];
+                      final month = int.tryParse(parts[1]) ?? 0;
+                      if (month >= 1 && month <= 12) {
+                        label = '${monthNames[month]}-${year.substring(2)}';
+                      }
+                    } else if (RegExp(r'^\d{2}-\d{4}$').hasMatch(raw)) {
+                      // 👉 "09-2025"
+                      final parts = raw.split('-');
+                      final month = int.tryParse(parts[0]) ?? 0;
+                      final year = parts[1];
+                      if (month >= 1 && month <= 12) {
+                        label = '${monthNames[month]}-${year.substring(2)}';
                       }
                     }
                   } catch (_) {
+                    // fallback: giữ nguyên nếu lỗi
                     label = raw;
                   }
+                  final labels = data.map((e) => e.month).toList();
+                  int startIndex = labels.indexOf(widget.monthFrom);
+                  int endIndex = labels.indexOf(widget.monthTo);
 
                   return ChartAxisLabel(
                     label,
-                    const TextStyle(color: Colors.white, fontSize: 16),
+                    const TextStyle(color: Colors.white),
                   );
                 },
                 plotBands: <PlotBand>[
                   PlotBand(
                     start: widget.monthFrom,
-                    end: widget.monthTo,
+                    end: widget.monthTo, // tiến 1 tháng
                     isVisible: true,
                     color: Colors.transparent,
                     shouldRenderAboveSeries: false,
@@ -127,7 +150,7 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                 name: 'HourAxis',
                 title: const AxisTitle(
                   text: 'Hour',
-                  textStyle: TextStyle(color: Colors.white, fontSize: 18),
+                  textStyle: TextStyle(color: Colors.white, fontSize: 16),
                 ),
                 labelStyle: const TextStyle(color: Colors.white, fontSize: 16),
                 axisLine: const AxisLine(width: 0),
@@ -137,8 +160,8 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                   name: 'CaseAxis',
                   opposedPosition: true,
                   title: const AxisTitle(
-                    text: 'Case',
-                    textStyle: TextStyle(color: Colors.white, fontSize: 18),
+                    text: '\$',
+                    textStyle: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                   labelStyle: const TextStyle(
                     color: Colors.white,
@@ -147,7 +170,6 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                   axisLine: const AxisLine(width: 0),
                 ),
               ],
-
               legend: const Legend(
                 isVisible: true,
                 textStyle: TextStyle(color: Colors.white, fontSize: 16),
@@ -156,15 +178,14 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                 enable: true,
                 textStyle: const TextStyle(fontSize: 16),
               ),
-
-              series: <CartesianSeries<ChartMSMovingAveModel, String>>[
-                ColumnSeries<ChartMSMovingAveModel, String>(
+              series: <CartesianSeries<ChartRFMovingAveModel, String>>[
+                ColumnSeries<ChartRFMovingAveModel, String>(
                   dataSource: data,
                   xValueMapper: (d, _) => d.month,
-                  yValueMapper: (d, _) => d.stopCase,
+                  yValueMapper: (d, _) => d.repairFee,
                   yAxisName: 'CaseAxis',
                   color: Colors.greenAccent.withOpacity(0.6),
-                  name: 'Stop_Case',
+                  name: 'Repair_Fee',
                   dataLabelSettings: const DataLabelSettings(
                     isVisible: true,
                     textStyle: TextStyle(color: Colors.white, fontSize: 16),
@@ -182,15 +203,15 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                     );
 
                     try {
-                      List<DetailsMSMovingAveModel> dataMS = await ApiService()
-                          .fetchDetailsMSMovingAve(
+                      List<DetailsRFMovingAveModel> dataMS = await ApiService()
+                          .fetchDetailsRFMovingAve(
                             monthFrom: clickedData.month,
                             monthTo: clickedData.month,
                             div: widget.machineAnalysis.div,
                             macName: widget.machineAnalysis.macName,
                           );
 
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(); // đóng loading
                       Color colorTitle = DepartmentUtils.getDepartmentColor(
                         widget.machineAnalysis.div,
                       );
@@ -201,15 +222,14 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                           builder:
                               (_) => SizedBox(
                                 child: SingleChildScrollView(
-                                  child: DetailsDataMSMovingAvePopup(
+                                  child: DetailsDataRFMovingAvePopup(
                                     title: widget.machineAnalysis.macName,
                                     colorTitle: colorTitle,
                                     subTitle:
-                                        'Machine Stopping [${widget.machineAnalysis.rank}]',
+                                        'Repair Fee [${widget.machineAnalysis.rank}]',
                                     data: dataMS,
                                     maxHeight:
-                                        MediaQuery.of(context).size.height *
-                                        .95,
+                                        MediaQuery.of(context).size.height * .9,
                                   ),
                                 ),
                               ),
@@ -220,19 +240,6 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                       print("❌ Lỗi gọi API: $e");
                     }
                   },
-                ),
-                LineSeries<ChartMSMovingAveModel, String>(
-                  dataSource: data,
-                  xValueMapper: (d, _) => d.month,
-                  yValueMapper: (d, _) => d.stopHour,
-                  yAxisName: 'HourAxis',
-                  color: Colors.blueAccent,
-                  markerSettings: const MarkerSettings(isVisible: true),
-                  name: 'Stop_Hour',
-                  dataLabelSettings: const DataLabelSettings(
-                    isVisible: true,
-                    textStyle: TextStyle(color: Colors.white, fontSize: 14),
-                  ),
                 ),
               ],
             ),
