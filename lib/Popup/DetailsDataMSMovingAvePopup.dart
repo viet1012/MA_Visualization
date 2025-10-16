@@ -136,6 +136,10 @@ class _DetailsDataMSMovingAvePopupState
   }
 
   Widget _buildHeader(ThemeData theme) {
+    final totalAmount = filteredData.fold<double>(
+      0,
+      (sum, item) => (sum + item.stopHour),
+    );
     return Column(
       children: [
         Row(
@@ -182,6 +186,18 @@ class _DetailsDataMSMovingAvePopupState
             ),
             Row(
               children: [
+                Text(
+                  "Total: ",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                Text(
+                  "${(totalAmount).toStringAsFixed(1)}h",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.blueAccent,
+                  ),
+                ),
                 FilledButton.icon(
                   icon: Icon(Icons.cleaning_services_rounded),
                   label: Text('Clear'),

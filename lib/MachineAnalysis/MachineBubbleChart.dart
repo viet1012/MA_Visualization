@@ -29,7 +29,7 @@ class BubbleChart extends StatefulWidget {
   final String? selectedMachine;
   final AnalysisMode? selectedMode; // 🔹 nhận từ parent
   final String month;
-  final int top;
+  final String selectedMonth;
 
   const BubbleChart({
     required this.data,
@@ -40,7 +40,7 @@ class BubbleChart extends StatefulWidget {
     this.onModeChange,
     this.selectedMachine,
     this.selectedMode,
-    required this.top,
+    required this.selectedMonth,
     required this.month,
     super.key,
   });
@@ -221,18 +221,42 @@ class _BubbleChartState extends State<BubbleChart>
           .toColor();
     }
 
-    Map<String, String> getMonthRange(String mmYYYY, int backMonths) {
-      final month = int.parse(mmYYYY.substring(0, 2));
-      final year = int.parse(mmYYYY.substring(2, 6));
+    Map<String, String> getMonthRange(String input, int backMonths) {
+      // Chuẩn hóa: bỏ khoảng trắng
+      input = input.trim();
+
+      int year, month;
+
+      // --- 1️⃣ Dạng "YYYY-MM"
+      if (RegExp(r'^\d{4}-\d{2}$').hasMatch(input)) {
+        year = int.parse(input.substring(0, 4));
+        month = int.parse(input.substring(5, 7));
+      }
+      // --- 2️⃣ Dạng "MMYYYY"
+      else if (RegExp(r'^\d{6}$').hasMatch(input)) {
+        month = int.parse(input.substring(0, 2));
+        year = int.parse(input.substring(2, 6));
+      }
+      // --- 3️⃣ Dạng "YYYYMM"
+      else if (RegExp(r'^\d{6}$').hasMatch(input) && input.startsWith('20')) {
+        year = int.parse(input.substring(0, 4));
+        month = int.parse(input.substring(4, 6));
+      } else {
+        throw FormatException(
+          "❌ Sai định dạng tháng: $input (hỗ trợ YYYY-MM, MMYYYY, YYYYMM)",
+        );
+      }
 
       final baseDate = DateTime(year, month, 1);
-
-      // Lùi lại X tháng
-      final from = DateTime(baseDate.year, baseDate.month - backMonths, 1);
+      final from = DateTime(
+        baseDate.year,
+        baseDate.month - (backMonths - 1),
+        1,
+      );
       final to = baseDate;
 
       String format(DateTime dt) =>
-          dt.year.toString() + dt.month.toString().padLeft(2, '0');
+          '${dt.year}${dt.month.toString().padLeft(2, '0')}'; // => "202507"
 
       return {"monthFrom": format(from), "monthTo": format(to)};
     }
@@ -243,7 +267,11 @@ class _BubbleChartState extends State<BubbleChart>
           if (widget.selectedMode == AnalysisMode.Total) {
             final int pointIndex = details.pointIndex!;
             final machine = allMachines[pointIndex];
-            final range = getMonthRange('092025', 6);
+            final range = getMonthRange(
+              widget.month,
+              int.parse(widget.selectedMonth),
+            );
+
             showDialog(
               context: context,
               barrierDismissible: false,
@@ -401,20 +429,22 @@ class _BubbleChartState extends State<BubbleChart>
                 builder:
                     (_) => const Center(child: CircularProgressIndicator()),
               );
-
+              Color colorTitle = DepartmentUtils.getDepartmentColor(
+                machine.div,
+              );
               try {
                 String formatted = widget.month.replaceAll("-", "");
                 final futureDataMS = ApiService().fetchChartMSMovingAve(
                   monthTo: formatted,
                   div: machine.div,
                   macName: machine.macName,
-                  top: widget.top,
+                  top: widget.selectedMonth,
                 );
                 final futureDataRF = ApiService().fetchChartRFMovingAve(
                   monthTo: formatted,
                   div: machine.div,
                   macName: machine.macName,
-                  top: widget.top,
+                  top: widget.selectedMonth,
                 );
 
                 final dataMS = await futureDataMS;
@@ -432,9 +462,27 @@ class _BubbleChartState extends State<BubbleChart>
                               backgroundColor: Colors.black,
                               title: Column(
                                 children: [
-                                  Text(machine.macName),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.white24),
+                                    ),
+                                    child: Text(
+                                      '${machine.macName}  |  ${machine.div}',
+                                      style: TextStyle(
+                                        color: colorTitle,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
                                   Text(
-                                    ' Machine Stopping - Repair Fee',
+                                    ' Machine Stopping • Repair Fee',
                                     style: TextStyle(color: Colors.indigo),
                                   ),
                                 ],

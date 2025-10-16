@@ -344,7 +344,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
                       _lastClickedMachine, // 🔹 truyền xuống BubbleChart,
                   selectedMode: _selectedMode, // ✅ truyền xuống
                   month: widget.month,
-                  top: _selectedTopN,
+                  selectedMonth: _selectedMonth,
                 ),
               ],
             ),

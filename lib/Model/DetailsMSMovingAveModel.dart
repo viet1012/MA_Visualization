@@ -12,7 +12,7 @@ class DetailsMSMovingAveModel {
   final String? startTime;
   final String? finishTime;
   final double? tempRun;
-  final double? stopHour;
+  final double stopHour;
   final String issueStatus;
 
   DetailsMSMovingAveModel({
@@ -27,7 +27,7 @@ class DetailsMSMovingAveModel {
     required this.startTime,
     required this.finishTime,
     this.tempRun,
-    this.stopHour,
+    required this.stopHour,
     required this.issueStatus,
   });
 
@@ -57,10 +57,7 @@ class DetailsMSMovingAveModel {
       finishTime: _formatDateTime(json['finishTime'].toString()) ?? '',
       tempRun:
           json['tempRun'] != null ? (json['tempRun'] as num).toDouble() : null,
-      stopHour:
-          json['stopHour'] != null
-              ? (json['stopHour'] as num).toDouble()
-              : null,
+      stopHour: (json['stopHour'] as num).toDouble() ?? 0.0,
       issueStatus: json['issueStatus'] ?? '',
     );
   }

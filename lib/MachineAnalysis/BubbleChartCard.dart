@@ -16,7 +16,7 @@ class BubbleChartCard extends StatelessWidget {
 
   final String? selectedMachine;
   final AnalysisMode selectedMode; // 🔹 nhận từ parent
-  final int top;
+  final String selectedMonth;
   final String month;
 
   const BubbleChartCard({
@@ -30,7 +30,7 @@ class BubbleChartCard extends StatelessWidget {
     this.selectedMachine,
     required this.selectedMode,
     required this.month,
-    required this.top,
+    required this.selectedMonth,
   });
 
   @override
@@ -52,7 +52,7 @@ class BubbleChartCard extends StatelessWidget {
               selectedMachine: selectedMachine,
               selectedMode: selectedMode,
               month: month,
-              top: top,
+              selectedMonth: selectedMonth,
             ),
           ],
         ),

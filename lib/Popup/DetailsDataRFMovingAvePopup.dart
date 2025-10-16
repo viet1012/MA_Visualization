@@ -141,6 +141,10 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
   }
 
   Widget _buildHeader(ThemeData theme) {
+    final totalAmount = filteredData.fold<double>(
+      0,
+      (sum, item) => (sum + item.act),
+    );
     return Column(
       children: [
         Row(
@@ -187,6 +191,18 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
             ),
             Row(
               children: [
+                Text(
+                  "Total: ",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                Text(
+                  "${(totalAmount / 1000).toStringAsFixed(1)}K\$",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.blueAccent,
+                  ),
+                ),
                 FilledButton.icon(
                   icon: Icon(Icons.cleaning_services_rounded),
                   label: Text('Clear'),

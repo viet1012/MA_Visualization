@@ -51,7 +51,7 @@ class DetailsRFMovingAveModel {
       bktxt: json['bktxt'] ?? '',
       qty: (json['qty'] ?? 0).toDouble(),
       unit: json['unit'] ?? '',
-      act: (json['act'] ?? 0).toDouble(),
+      act: double.parse(((json['act'] ?? 0).toDouble()).toStringAsFixed(1)),
       note: json['note'],
     );
   }
