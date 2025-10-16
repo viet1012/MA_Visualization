@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../API/ApiService.dart';
 import '../Model/ChartMSMovingAveModel.dart';
@@ -14,12 +15,14 @@ class ChartMSMovingAveScreen extends StatefulWidget {
     required this.monthFrom,
     required this.monthTo,
     required this.machineAnalysis,
+    required this.numberFormat,
   });
 
   final Future<List<ChartMSMovingAveModel>> futureData;
   final String monthFrom;
   final String monthTo;
   final MachineAnalysis machineAnalysis;
+  final NumberFormat numberFormat;
 
   @override
   State<ChartMSMovingAveScreen> createState() => _ChartMSMovingAveScreenState();
@@ -98,231 +101,326 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
             (startIndex - 0.5).clamp(0, labels.length - 1).toDouble();
         double endVal = (endIndex + 0.5).clamp(0, labels.length - 1).toDouble();
 
-        return Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height / 2.3,
-            child: SfCartesianChart(
-              plotAreaBackgroundColor: Colors.black,
-              backgroundColor: Colors.black,
-
-              primaryXAxis: CategoryAxis(
-                labelStyle: const TextStyle(color: Colors.white, fontSize: 16),
-                title: AxisTitle(
-                  text: 'Month',
-                  textStyle: const TextStyle(color: Colors.white, fontSize: 18),
+        return Container(
+          height: MediaQuery.of(context).size.height / 2.2,
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0a0e27),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF00F5FF).withOpacity(0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00F5FF).withOpacity(0.1),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF00F5FF).withOpacity(0.1),
+                      const Color(0xFFB000FF).withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: const Color(0xFF00F5FF).withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
                 ),
-                majorGridLines: const MajorGridLines(width: 0),
-                axisLabelFormatter: (AxisLabelRenderDetails details) {
-                  String raw = details.text.trim();
-                  if (raw.isEmpty) {
-                    return ChartAxisLabel(
-                      '',
-                      const TextStyle(color: Colors.white, fontSize: 16),
-                    );
-                  }
-
-                  String label = raw;
-                  const monthNames = [
-                    '',
-                    'Jan',
-                    'Feb',
-                    'Mar',
-                    'Apr',
-                    'May',
-                    'Jun',
-                    'Jul',
-                    'Aug',
-                    'Sep',
-                    'Oct',
-                    'Nov',
-                    'Dec',
-                  ];
-
-                  try {
-                    if (RegExp(r'^\d{6}$').hasMatch(raw)) {
-                      String monthStr, yearStr;
-                      if (raw.startsWith('20')) {
-                        yearStr = raw.substring(0, 4);
-                        monthStr = raw.substring(4, 6);
-                      } else {
-                        monthStr = raw.substring(0, 2);
-                        yearStr = raw.substring(2, 6);
-                      }
-                      final month = int.tryParse(monthStr) ?? 0;
-                      if (month >= 1 && month <= 12) {
-                        label = '${monthNames[month]}-${yearStr.substring(2)}';
-                      }
-                    }
-                  } catch (_) {
-                    label = raw;
-                  }
-
-                  return ChartAxisLabel(
-                    label,
-                    const TextStyle(color: Colors.white, fontSize: 16),
-                  );
-                },
-                plotBands: <PlotBand>[
-                  PlotBand(
-                    start: startVal,
-                    end: endVal,
-                    isVisible: true,
-                    color: Colors.transparent,
-                    shouldRenderAboveSeries: false,
-
-                    // Gradient border với hiệu ứng glow
-                    borderWidth: 2,
-                    borderColor: const Color(0xFFFF006E),
-                    dashArray: const <double>[8, 4],
-                    text: widget.machineAnalysis.scale,
-                    verticalTextAlignment: TextAnchor.start,
-                    textStyle: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFFF006E),
-                      letterSpacing: 2.0,
-
-                      // Multi-layer shadow cho text glow
-                      shadows: [
-                        Shadow(
-                          color: const Color(0xFFFF006E),
-                          blurRadius: 10,
-                          offset: const Offset(0, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Machine Stopping Analysis | ${widget.machineAnalysis.rank}',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 18,
+                          letterSpacing: 0.5,
                         ),
-                        Shadow(
-                          color: const Color(0xFFFF006E).withOpacity(0.6),
-                          blurRadius: 20,
-                          offset: const Offset(0, 0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 8),
+              Expanded(
+                child: SizedBox(
+                  child: SfCartesianChart(
+                    plotAreaBackgroundColor: const Color(0xFF0a0e27),
+                    backgroundColor: Colors.transparent,
+
+                    primaryXAxis: CategoryAxis(
+                      labelStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                      title: AxisTitle(
+                        text: 'Month',
+                        textStyle: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontStyle: FontStyle.italic,
                         ),
-                        Shadow(
-                          color: Colors.black87,
-                          blurRadius: 3,
-                          offset: const Offset(1, 1),
+                      ),
+                      majorGridLines: const MajorGridLines(
+                        width: 0,
+                      ), // ❌ tắt đường dọc
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        String raw = details.text.trim();
+                        if (raw.isEmpty) {
+                          return ChartAxisLabel(
+                            '',
+                            const TextStyle(color: Colors.white, fontSize: 16),
+                          );
+                        }
+
+                        String label = raw;
+                        const monthNames = [
+                          '',
+                          'Jan',
+                          'Feb',
+                          'Mar',
+                          'Apr',
+                          'May',
+                          'Jun',
+                          'Jul',
+                          'Aug',
+                          'Sep',
+                          'Oct',
+                          'Nov',
+                          'Dec',
+                        ];
+
+                        try {
+                          if (RegExp(r'^\d{6}$').hasMatch(raw)) {
+                            String monthStr, yearStr;
+                            if (raw.startsWith('20')) {
+                              yearStr = raw.substring(0, 4);
+                              monthStr = raw.substring(4, 6);
+                            } else {
+                              monthStr = raw.substring(0, 2);
+                              yearStr = raw.substring(2, 6);
+                            }
+                            final month = int.tryParse(monthStr) ?? 0;
+                            if (month >= 1 && month <= 12) {
+                              label =
+                                  '${monthNames[month]}-${yearStr.substring(2)}';
+                            }
+                          }
+                        } catch (_) {
+                          label = raw;
+                        }
+
+                        return ChartAxisLabel(
+                          label,
+                          const TextStyle(color: Colors.white, fontSize: 16),
+                        );
+                      },
+                      plotBands: <PlotBand>[
+                        PlotBand(
+                          start: startVal,
+                          end: endVal,
+                          isVisible: true,
+                          color: Colors.transparent,
+                          shouldRenderAboveSeries: false,
+
+                          // Gradient border với hiệu ứng glow
+                          borderWidth: 2,
+                          borderColor: const Color(0xFFFF006E),
+                          dashArray: const <double>[8, 4],
+                          text: widget.machineAnalysis.scale,
+                          verticalTextAlignment: TextAnchor.start,
+                          textStyle: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFFFF006E),
+                            letterSpacing: 2.0,
+
+                            // Multi-layer shadow cho text glow
+                            shadows: [
+                              Shadow(
+                                color: const Color(0xFFFF006E),
+                                blurRadius: 10,
+                                offset: const Offset(0, 0),
+                              ),
+                              Shadow(
+                                color: const Color(0xFFFF006E).withOpacity(0.6),
+                                blurRadius: 20,
+                                offset: const Offset(0, 0),
+                              ),
+                              Shadow(
+                                color: Colors.black87,
+                                blurRadius: 3,
+                                offset: const Offset(1, 1),
+                              ),
+                            ],
+                          ),
+
+                          // Text styling cyberpunk
+                          textAngle: 0,
                         ),
                       ],
                     ),
 
-                    // Text styling cyberpunk
-                    textAngle: 0,
-                  ),
-                ],
-              ),
+                    primaryYAxis: NumericAxis(
+                      name: 'HourAxis',
+                      title: const AxisTitle(
+                        text: 'Hour',
+                        textStyle: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                      labelStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                      axisLine: const AxisLine(width: 0),
+                      majorGridLines: const MajorGridLines(
+                        width: 0,
+                      ), // ❌ tắt đường ngang
+                    ),
+                    axes: <ChartAxis>[
+                      NumericAxis(
+                        name: 'CaseAxis',
+                        opposedPosition: true,
+                        title: const AxisTitle(
+                          text: 'Case',
+                          textStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        labelStyle: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                        axisLine: const AxisLine(width: 0),
+                      ),
+                    ],
 
-              primaryYAxis: NumericAxis(
-                name: 'HourAxis',
-                title: const AxisTitle(
-                  text: 'Hour',
-                  textStyle: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-                labelStyle: const TextStyle(color: Colors.white, fontSize: 16),
-                axisLine: const AxisLine(width: 0),
-              ),
-              axes: <ChartAxis>[
-                NumericAxis(
-                  name: 'CaseAxis',
-                  opposedPosition: true,
-                  title: const AxisTitle(
-                    text: 'Case',
-                    textStyle: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                  axisLine: const AxisLine(width: 0),
-                ),
-              ],
+                    legend: const Legend(
+                      isVisible: true,
+                      textStyle: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      textStyle: const TextStyle(fontSize: 16),
+                    ),
 
-              legend: const Legend(
-                isVisible: true,
-                textStyle: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-              tooltipBehavior: TooltipBehavior(
-                enable: true,
-                textStyle: const TextStyle(fontSize: 16),
-              ),
+                    series: <CartesianSeries<ChartMSMovingAveModel, String>>[
+                      ColumnSeries<ChartMSMovingAveModel, String>(
+                        dataSource: data,
+                        xValueMapper: (d, _) => d.month,
+                        yValueMapper: (d, _) => d.stopCase,
+                        yAxisName: 'CaseAxis',
+                        color: const Color(0xFF00F5FF).withOpacity(0.7),
+                        name: 'Stop_Case',
+                        dataLabelSettings: const DataLabelSettings(
+                          isVisible: true,
+                          textStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                        onPointTap: (ChartPointDetails details) async {
+                          final index = details.pointIndex!;
+                          final clickedData = data[index];
 
-              series: <CartesianSeries<ChartMSMovingAveModel, String>>[
-                ColumnSeries<ChartMSMovingAveModel, String>(
-                  dataSource: data,
-                  xValueMapper: (d, _) => d.month,
-                  yValueMapper: (d, _) => d.stopCase,
-                  yAxisName: 'CaseAxis',
-                  color: Colors.greenAccent.withOpacity(0.6),
-                  name: 'Stop_Case',
-                  dataLabelSettings: const DataLabelSettings(
-                    isVisible: true,
-                    textStyle: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  onPointTap: (ChartPointDetails details) async {
-                    final index = details.pointIndex!;
-                    final clickedData = data[index];
-
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder:
-                          (_) =>
-                              const Center(child: CircularProgressIndicator()),
-                    );
-
-                    try {
-                      List<DetailsMSMovingAveModel> dataMS = await ApiService()
-                          .fetchDetailsMSMovingAve(
-                            monthFrom: clickedData.month,
-                            monthTo: clickedData.month,
-                            div: widget.machineAnalysis.div,
-                            macName: widget.machineAnalysis.macName,
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder:
+                                (_) => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
                           );
 
-                      Navigator.of(context).pop();
-                      Color colorTitle = DepartmentUtils.getDepartmentColor(
-                        widget.machineAnalysis.div,
-                      );
+                          try {
+                            List<DetailsMSMovingAveModel> dataMS =
+                                await ApiService().fetchDetailsMSMovingAve(
+                                  monthFrom: clickedData.month,
+                                  monthTo: clickedData.month,
+                                  div: widget.machineAnalysis.div,
+                                  macName: widget.machineAnalysis.macName,
+                                );
 
-                      if (dataMS.isNotEmpty) {
-                        showDialog(
-                          context: context,
-                          builder:
-                              (_) => SizedBox(
-                                child: SingleChildScrollView(
-                                  child: DetailsDataMSMovingAvePopup(
-                                    title: widget.machineAnalysis.macName,
-                                    colorTitle: colorTitle,
-                                    subTitle:
-                                        'Machine Stopping [${widget.machineAnalysis.rank}]',
-                                    data: dataMS,
-                                    maxHeight:
-                                        MediaQuery.of(context).size.height *
-                                        .95,
-                                  ),
-                                ),
-                              ),
-                        );
-                      }
-                    } catch (e) {
-                      Navigator.of(context).pop();
-                      print("❌ Lỗi gọi API: $e");
-                    }
-                  },
-                ),
-                LineSeries<ChartMSMovingAveModel, String>(
-                  dataSource: data,
-                  xValueMapper: (d, _) => d.month,
-                  yValueMapper:
-                      (d, _) => double.parse(d.stopHour.toStringAsFixed(1)),
-                  yAxisName: 'HourAxis',
-                  color: Colors.blueAccent,
-                  markerSettings: const MarkerSettings(isVisible: true),
-                  name: 'Stop_Hour',
-                  dataLabelSettings: const DataLabelSettings(
-                    isVisible: true,
-                    textStyle: TextStyle(color: Colors.white, fontSize: 14),
+                            Navigator.of(context).pop();
+                            Color colorTitle =
+                                DepartmentUtils.getDepartmentColor(
+                                  widget.machineAnalysis.div,
+                                );
+
+                            if (dataMS.isNotEmpty) {
+                              showDialog(
+                                context: context,
+                                builder:
+                                    (_) => SizedBox(
+                                      child: SingleChildScrollView(
+                                        child: DetailsDataMSMovingAvePopup(
+                                          title: widget.machineAnalysis.macName,
+                                          colorTitle: colorTitle,
+                                          subTitle:
+                                              'Machine Stopping [${widget.machineAnalysis.rank}]',
+                                          data: dataMS,
+                                          maxHeight:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.height *
+                                              .95,
+                                          numberFormat: widget.numberFormat,
+                                        ),
+                                      ),
+                                    ),
+                              );
+                            }
+                          } catch (e) {
+                            Navigator.of(context).pop();
+                            print("❌ Lỗi gọi API: $e");
+                          }
+                        },
+                      ),
+                      LineSeries<ChartMSMovingAveModel, String>(
+                        dataSource: data,
+                        xValueMapper: (d, _) => d.month,
+                        yValueMapper:
+                            (d, _) =>
+                                double.parse(d.stopHour.toStringAsFixed(0)),
+                        dataLabelMapper:
+                            (d, _) => widget.numberFormat.format(d.stopHour),
+                        yAxisName: 'HourAxis',
+                        color: Colors.blueAccent,
+                        markerSettings: const MarkerSettings(isVisible: true),
+                        name: 'Stop_Hour',
+                        dataLabelSettings: const DataLabelSettings(
+                          isVisible: true,
+                          textStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },

@@ -214,13 +214,6 @@ class _BubbleChartState extends State<BubbleChart>
     double intervalX = calculateAxisInterval(minX, maxX);
     double intervalY = calculateAxisInterval(minY, maxY);
 
-    Color saturateColor(Color color) {
-      HSLColor hsl = HSLColor.fromColor(color);
-      return hsl
-          .withSaturation((hsl.saturation + 0.6).clamp(0.0, 1.0))
-          .toColor();
-    }
-
     Map<String, String> getMonthRange(String input, int backMonths) {
       // Chuẩn hóa: bỏ khoảng trắng
       input = input.trim();
@@ -315,6 +308,7 @@ class _BubbleChartState extends State<BubbleChart>
                                 data: dataMS,
                                 maxHeight:
                                     MediaQuery.of(context).size.height * .5,
+                                numberFormat: widget.numberFormat,
                               ),
                               DetailsDataRFMovingAvePopup(
                                 title: machine.macName,
@@ -323,6 +317,7 @@ class _BubbleChartState extends State<BubbleChart>
                                 data: dataRF,
                                 maxHeight:
                                     MediaQuery.of(context).size.height * .5,
+                                numberFormat: widget.numberFormat,
                               ),
                             ],
                           ),
@@ -343,15 +338,6 @@ class _BubbleChartState extends State<BubbleChart>
             if (renderBox == null) return;
 
             if (machine.macName == widget.selectedMachine) {
-              // 👉 Bấm lần 2 => reset
-              // setState(() {
-              //   selectedIndex = null;
-              //   selectedMachine = null;
-              //   _animationController.reverse();
-              // });
-              //
-              // widget.onBubbleTap?.call(""); // gửi rỗng
-
               // ✅ Gọi API ngoài setState
               final range = RankConverter.convertRankToMonthRange(
                 machine.rank,
@@ -459,33 +445,27 @@ class _BubbleChartState extends State<BubbleChart>
                           (_) => Scaffold(
                             backgroundColor: Colors.black,
                             appBar: AppBar(
-                              backgroundColor: Colors.black,
-                              title: Column(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.white24),
-                                    ),
-                                    child: Text(
-                                      '${machine.macName}  |  ${machine.div}',
-                                      style: TextStyle(
-                                        color: colorTitle,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                              backgroundColor: const Color(
+                                0xFF0a0e27,
+                              ).withOpacity(0.8),
+                              title: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.white24),
+                                ),
+                                child: Text(
+                                  '${machine.macName}  |  ${machine.div}',
+                                  style: TextStyle(
+                                    color: colorTitle,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  Text(
-                                    ' Machine Stopping • Repair Fee',
-                                    style: TextStyle(color: Colors.indigo),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                             body: SingleChildScrollView(
@@ -496,12 +476,14 @@ class _BubbleChartState extends State<BubbleChart>
                                     monthFrom: range["monthFrom"]!,
                                     monthTo: range["monthTo"]!,
                                     machineAnalysis: machine,
+                                    numberFormat: widget.numberFormat,
                                   ),
                                   ChartRFMovingAveScreen(
                                     futureData: Future.value(dataRF),
                                     monthFrom: range["monthFrom"]!,
                                     monthTo: range["monthTo"]!,
                                     machineAnalysis: machine,
+                                    numberFormat: widget.numberFormat,
                                   ),
                                 ],
                               ),

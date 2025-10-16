@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ma_visualization/Model/DetailsMSMovingAveModel.dart';
 import 'package:universal_html/html.dart' as html;
 
@@ -13,6 +14,7 @@ class DetailsDataMSMovingAvePopup extends StatefulWidget {
   final String subTitle;
   final List<DetailsMSMovingAveModel> data;
   final double maxHeight;
+  final NumberFormat numberFormat;
 
   const DetailsDataMSMovingAvePopup({
     super.key,
@@ -21,6 +23,7 @@ class DetailsDataMSMovingAvePopup extends StatefulWidget {
     required this.subTitle,
     required this.data,
     required this.maxHeight,
+    required this.numberFormat,
   });
 
   @override
@@ -191,13 +194,14 @@ class _DetailsDataMSMovingAvePopupState
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 Text(
-                  "${(totalAmount).toStringAsFixed(1)}h",
+                  "${widget.numberFormat.format(totalAmount).toString()}h",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                     color: Colors.blueAccent,
                   ),
                 ),
+                SizedBox(width: 8),
                 FilledButton.icon(
                   icon: Icon(Icons.cleaning_services_rounded),
                   label: Text('Clear'),
@@ -534,11 +538,13 @@ class _DetailsDataMSMovingAvePopupState
     String? columnKey, // thêm tham số để biết cột nào
   }) {
     final isStopHourColumn =
-        columnKey != null && columnKey.toLowerCase().contains('stopHour');
+        columnKey != null && columnKey.toLowerCase().contains('stophour');
     final displayText = (isStopHourColumn && isHeader) ? '${text} ' : text;
 
     final isActColumn = columnKey?.trim() == 'stopHour';
-
+    if (isStopHourColumn) {
+      print("exp: $displayText");
+    }
     return text == 'STOPHOUR'
         ? AnimatedTableCell(
           text: 'STOPHOUR',
@@ -557,7 +563,11 @@ class _DetailsDataMSMovingAvePopupState
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: SelectableText(
-              displayText,
+              isStopHourColumn
+                  ? widget.numberFormat.format(
+                    double.tryParse(displayText) ?? 0,
+                  )
+                  : displayText,
               textAlign: isNumber ? TextAlign.right : TextAlign.left,
               style: TextStyle(
                 fontWeight:

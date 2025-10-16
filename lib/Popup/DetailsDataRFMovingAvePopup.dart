@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ma_visualization/Model/DetailsRFMovingAveModel.dart';
 import 'package:universal_html/html.dart' as html;
 
@@ -13,6 +14,7 @@ class DetailsDataRFMovingAvePopup extends StatefulWidget {
   final String subTitle;
   final List<DetailsRFMovingAveModel> data;
   final double maxHeight;
+  final NumberFormat numberFormat;
 
   const DetailsDataRFMovingAvePopup({
     super.key,
@@ -21,6 +23,7 @@ class DetailsDataRFMovingAvePopup extends StatefulWidget {
     required this.subTitle,
     required this.data,
     required this.maxHeight,
+    required this.numberFormat,
   });
 
   @override
@@ -145,6 +148,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
       0,
       (sum, item) => (sum + item.act),
     );
+
     return Column(
       children: [
         Row(
@@ -203,6 +207,7 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
                     color: Colors.blueAccent,
                   ),
                 ),
+                SizedBox(width: 8),
                 FilledButton.icon(
                   icon: Icon(Icons.cleaning_services_rounded),
                   label: Text('Clear'),
@@ -554,12 +559,15 @@ class _DetailsDataPMPopupState extends State<DetailsDataRFMovingAvePopup> {
         : Container(
           height: isHeader ? 60 : 80,
           padding: isHeader ? EdgeInsets.only(top: 8) : null,
-          // color: Colors.green,
           alignment: isHeader ? Alignment.center : null,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: SelectableText(
-              displayText,
+              isActual
+                  ? widget.numberFormat.format(
+                    double.tryParse(displayText) ?? 0,
+                  )
+                  : displayText,
               textAlign: isNumber ? TextAlign.right : TextAlign.left,
               style: TextStyle(
                 fontWeight:
