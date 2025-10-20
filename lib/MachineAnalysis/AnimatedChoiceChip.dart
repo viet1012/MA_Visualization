@@ -16,6 +16,8 @@ class AnimatedChoiceChip extends StatefulWidget {
   final bool showIcon;
   final bool enableHapticFeedback;
   final Duration animationDuration;
+  final String? lastClickedMachine;
+  final String? targetMode;
 
   const AnimatedChoiceChip({
     super.key,
@@ -34,6 +36,8 @@ class AnimatedChoiceChip extends StatefulWidget {
     this.showIcon = true,
     this.enableHapticFeedback = true,
     this.animationDuration = const Duration(milliseconds: 250),
+    required this.lastClickedMachine,
+    this.targetMode,
   });
 
   @override
@@ -95,10 +99,33 @@ class _AnimatedChoiceChipState extends State<AnimatedChoiceChip>
     super.dispose();
   }
 
+  // void _handleTap() {
+  //   if (widget.enableHapticFeedback) {
+  //     // HapticFeedback.lightImpact(); // Uncomment if you want haptic feedback
+  //   }
+  //   widget.onTap();
+  // }
   void _handleTap() {
-    if (widget.enableHapticFeedback) {
-      // HapticFeedback.lightImpact(); // Uncomment if you want haptic feedback
+    // if (widget.enableHapticFeedback) {
+    //   HapticFeedback.lightImpact();
+    // }
+
+    if (widget.targetMode == 'MovAve' &&
+        (widget.lastClickedMachine == null ||
+            widget.lastClickedMachine!.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            '⚠️ Please select a machine before switching to Moving Average mode.',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+          ),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
     }
+
     widget.onTap();
   }
 

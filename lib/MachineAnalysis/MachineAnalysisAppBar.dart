@@ -98,6 +98,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                   ),
                   onPressed: () {
                     final selectedString = selectedDivs.join(',');
+                    print("selectedMode:  $selectedMode");
                     showMachineTableDialog(
                       selectedMode: selectedMode,
                       div: selectedString,
@@ -141,6 +142,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                         begin: Alignment.topRight,
                         end: Alignment.bottomLeft,
                       ),
+                      lastClickedMachine: lastClickedMachine,
                     ),
                     const SizedBox(width: 12),
                     AnimatedChoiceChip(
@@ -155,7 +157,12 @@ class MachineAnalysisAppBar extends StatelessWidget
                       isSelected:
                           selectedMode == AnalysisMode.Average ||
                           selectedMode == AnalysisMode.MovAve,
-                      onTap: () => onModeChanged(AnalysisMode.Average),
+                      onTap:
+                          () => onModeChanged(
+                            selectedMode == AnalysisMode.Average
+                                ? AnalysisMode.MovAve
+                                : AnalysisMode.Average,
+                          ),
                       selectedColor: Colors.green,
                       selectedGradient:
                           selectedMode == AnalysisMode.MovAve
@@ -165,6 +172,11 @@ class MachineAnalysisAppBar extends StatelessWidget
                               : const LinearGradient(
                                 colors: [Colors.pinkAccent, Colors.green],
                               ),
+                      lastClickedMachine: lastClickedMachine,
+                      targetMode:
+                          selectedMode == AnalysisMode.Average
+                              ? 'MovAve'
+                              : 'Average', // 👈 thêm dòng này
                     ),
                     const SizedBox(width: 12),
 
@@ -180,6 +192,7 @@ class MachineAnalysisAppBar extends StatelessWidget
                       selectedGradient: const LinearGradient(
                         colors: [Colors.yellow, Colors.pinkAccent],
                       ),
+                      lastClickedMachine: lastClickedMachine,
                     ),
                   ],
                 ),

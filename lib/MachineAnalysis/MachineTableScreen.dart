@@ -503,7 +503,15 @@ Future<void> showMachineTableDialog({
 
   List<Map<String, dynamic>> dataList = [];
   try {
-    if (selectedMode == AnalysisMode.MovAve) {
+    if (selectedMode == AnalysisMode.Average) {
+      final result = await ApiService().fetchMachineDataAnalysisAvg(
+        month: month,
+        monthBack: monthBack,
+        topLimit: topLimit,
+        div: div,
+      );
+      dataList = result.map((e) => e.toJson()).toList();
+    } else if (selectedMode == AnalysisMode.MovAve) {
       final result = await ApiService().fetchMachineDataAnalysisAvg(
         month: month,
         monthBack: monthBack,

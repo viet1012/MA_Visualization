@@ -448,23 +448,12 @@ class _BubbleChartState extends State<BubbleChart>
                               backgroundColor: const Color(
                                 0xFF0a0e27,
                               ).withOpacity(0.8),
-                              title: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.white24),
-                                ),
-                                child: Text(
-                                  '${machine.macName}  |  ${machine.div}',
-                                  style: TextStyle(
-                                    color: colorTitle,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              title: Text(
+                                '${machine.macName}  |  ${machine.div}',
+                                style: TextStyle(
+                                  color: colorTitle,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),

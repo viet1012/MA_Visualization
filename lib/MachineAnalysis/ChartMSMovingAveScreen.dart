@@ -1,3 +1,4 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -122,6 +123,7 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
           child: Column(
             children: [
               Container(
+                width: double.infinity, // 👈 ép full chiều ngang
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -141,21 +143,27 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
                     ),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Machine Stopping Analysis | ${widget.machineAnalysis.rank}',
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 18,
-                          letterSpacing: 0.5,
-                        ),
+                child: AnimatedTextKit(
+                  repeatForever: true,
+                  animatedTexts: [
+                    ColorizeAnimatedText(
+                      'Machine Stopping Analysis | ${widget.machineAnalysis.rank}',
+                      textStyle: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
+                      colors: [
+                        Colors.cyanAccent,
+                        Colors.purpleAccent,
+                        Colors.blueAccent,
+                        Colors.white,
+                      ],
                     ),
                   ],
+                  isRepeatingAnimation: true,
                 ),
               ),
+
               SizedBox(height: 8),
               Expanded(
                 child: SizedBox(
