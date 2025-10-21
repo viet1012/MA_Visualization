@@ -7,6 +7,7 @@ import 'AnimatedChoiceChip.dart';
 import 'DivisionFilterChips.dart';
 import 'EnhancedDropdown.dart';
 import 'MachineBubbleScreen.dart';
+import 'MachineStopReasonScreen.dart';
 import 'MachineTableScreen.dart';
 
 class MachineAnalysisAppBar extends StatelessWidget
@@ -180,19 +181,27 @@ class MachineAnalysisAppBar extends StatelessWidget
                     ),
                     const SizedBox(width: 12),
 
-                    AnimatedChoiceChip(
-                      label: "Average\nMonth",
-                      icon: Icon(
+                    IconButton(
+                      icon: const Icon(
                         Icons.align_vertical_bottom_outlined,
                         color: Colors.black,
+                        size: 28,
                       ),
-                      isSelected: selectedMode == AnalysisMode.MonthAve,
-                      onTap: () => onModeChanged(AnalysisMode.MonthAve),
-                      selectedColor: Colors.pinkAccent,
-                      selectedGradient: const LinearGradient(
-                        colors: [Colors.yellow, Colors.pinkAccent],
-                      ),
-                      lastClickedMachine: lastClickedMachine,
+                      tooltip: 'Average Month',
+                      onPressed: () {
+                        final selectedString = selectedDivs.join(',');
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => MachineStopReasonScreen(
+                                  month: month.replaceAll('-', ''), // bỏ dấu -
+                                  div: selectedString,
+                                ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

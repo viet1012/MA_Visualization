@@ -6,6 +6,7 @@ import 'package:ma_visualization/Model/DetailsDataMachineStoppingModel.dart';
 import 'package:ma_visualization/Model/DetailsDataModel.dart';
 import 'package:ma_visualization/Model/DetailsDataPMModel.dart';
 import 'package:ma_visualization/Model/MachineData.dart';
+import 'package:ma_visualization/Model/MachineStopReasonModel.dart';
 import 'package:ma_visualization/Model/MachineStoppingModel.dart';
 import 'package:ma_visualization/Model/PMModel.dart';
 import 'package:ma_visualization/Model/RepairFeeDailyModel.dart';
@@ -405,6 +406,51 @@ class ApiService {
       final List<dynamic> jsonList = json.decode(response.body);
       return jsonList
           .map((json) => ChartRFMovingAveModel.fromJson(json))
+          .toList();
+    } else {
+      throw Exception('Failed to load bubble data');
+    }
+  }
+
+  Future<List<MachineStopReasonModel>> fetchMSReason({
+    required month,
+    required String div,
+  }) async {
+    final uri = Uri.parse(
+      '$baseUrl/machine_stopping/reason?divisions=$div&month=$month',
+    );
+    final response = await http.get(uri);
+
+    // Debug
+    print("url: $uri");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList
+          .map((json) => MachineStopReasonModel.fromJson(json))
+          .toList();
+    } else {
+      throw Exception('Failed to load bubble data');
+    }
+  }
+
+  Future<List<MachineStopReasonModel>> fetchDetailsMSReason({
+    required month,
+    required String div,
+    String? inputReason,
+  }) async {
+    final uri = Uri.parse(
+      '$baseUrl/machine_stopping/reason/details?divisions=$div&month=$month&reason=$inputReason',
+    );
+    final response = await http.get(uri);
+
+    // Debug
+    print("url: $uri");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList
+          .map((json) => MachineStopReasonModel.fromJson(json))
           .toList();
     } else {
       throw Exception('Failed to load bubble data');

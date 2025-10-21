@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -30,8 +32,37 @@ class ChartMSMovingAveScreen extends StatefulWidget {
 }
 
 class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
+  double glowPhase = 0.0;
+  late Timer _glowTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _glowTimer = Timer.periodic(const Duration(milliseconds: 80), (timer) {
+      setState(() {
+        glowPhase += 0.1;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _glowTimer.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final glowIntensity = (sin(glowPhase) * 0.5 + 0.5); // dao động 0→1
+    final glowColor =
+        Color.lerp(
+          const Color(0x47FF006E),
+          const Color(0xFFFF006E),
+          glowIntensity,
+        )!;
+    // dấu gạch viền chạy nhanh chậm theo nhịp sáng
+    final dashSpeed = (sin(glowPhase * 2) * 4).abs();
+
     return FutureBuilder<List<ChartMSMovingAveModel>>(
       future: widget.futureData,
       builder: (context, snapshot) {
@@ -248,32 +279,23 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
 
                           // Gradient border với hiệu ứng glow
                           borderWidth: 2,
-                          borderColor: const Color(0xFFFF006E),
-                          dashArray: const <double>[8, 4],
+                          borderColor: glowColor,
+                          dashArray: <double>[8 + dashSpeed, 4],
                           text: widget.machineAnalysis.scale,
                           verticalTextAlignment: TextAnchor.start,
                           textStyle: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFFFF006E),
+                            color: glowColor,
                             letterSpacing: 2.0,
-
-                            // Multi-layer shadow cho text glow
                             shadows: [
                               Shadow(
-                                color: const Color(0xFFFF006E),
-                                blurRadius: 10,
-                                offset: const Offset(0, 0),
+                                color: glowColor.withOpacity(0.8),
+                                blurRadius: 8 + 6 * glowIntensity,
                               ),
                               Shadow(
-                                color: const Color(0xFFFF006E).withOpacity(0.6),
+                                color: glowColor.withOpacity(0.5),
                                 blurRadius: 20,
-                                offset: const Offset(0, 0),
-                              ),
-                              Shadow(
-                                color: Colors.black87,
-                                blurRadius: 3,
-                                offset: const Offset(1, 1),
                               ),
                             ],
                           ),

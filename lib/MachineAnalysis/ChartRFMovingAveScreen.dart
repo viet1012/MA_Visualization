@@ -1,14 +1,13 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../API/ApiService.dart';
-import '../Model/ChartMSMovingAveModel.dart';
 import '../Model/ChartRFMovingAveModel.dart';
-import '../Model/DetailsMSMovingAveModel.dart';
 import '../Model/DetailsRFMovingAveModel.dart';
 import '../Model/MachineAnalysis.dart';
-import '../Popup/DetailsDataMSMovingAvePopup.dart';
 import '../Popup/DetailsDataRFMovingAvePopup.dart';
 import 'DepartmentUtils.dart';
 
@@ -33,8 +32,37 @@ class ChartRFMovingAveScreen extends StatefulWidget {
 }
 
 class _ChartRFMovingAveScreenState extends State<ChartRFMovingAveScreen> {
+  double glowPhase = 0.0;
+  late Timer _glowTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _glowTimer = Timer.periodic(const Duration(milliseconds: 80), (timer) {
+      setState(() {
+        glowPhase += 0.1;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _glowTimer.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final glowIntensity = (sin(glowPhase) * 0.5 + 0.5); // dao động 0→1
+    final glowColor =
+        Color.lerp(
+          const Color(0x47FF006E),
+          const Color(0xFFFF006E),
+          glowIntensity,
+        )!;
+    // dấu gạch viền chạy nhanh chậm theo nhịp sáng
+    final dashSpeed = (sin(glowPhase * 2) * 4).abs();
+
     return FutureBuilder<List<ChartRFMovingAveModel>>(
       future: widget.futureData,
       builder: (context, snapshot) {
@@ -52,7 +80,6 @@ class _ChartRFMovingAveScreenState extends State<ChartRFMovingAveScreen> {
 
         // Lấy danh sách tháng trong dữ liệu
         final labels = data.map((e) => e.month).toList();
-        print("labels = $labels");
 
         // Hàm normalize tháng về dạng "YYYYMM" để so sánh dễ hơn
         String normalizeMonth(String raw) {
@@ -101,9 +128,24 @@ class _ChartRFMovingAveScreenState extends State<ChartRFMovingAveScreen> {
         startIndex ??= 0;
         endIndex ??= labels.length - 1;
 
+        DateTime now = DateTime.now();
+        String currentMonth =
+            "${now.year}${now.month.toString().padLeft(2, '0')}"; // ví dụ 202510
+
+        // Tính toVal và startVal bình thường
         double startVal =
             (startIndex - 0.5).clamp(0, labels.length - 1).toDouble();
         double endVal = (endIndex + 0.5).clamp(0, labels.length - 1).toDouble();
+
+        // 👉 Nếu tháng kết thúc là tháng hiện tại, cho nó "vượt" ra ngoài
+        if (to == currentMonth) {
+          endVal = labels.length.toDouble() + 0.5;
+        }
+
+        // 👉 Nếu tháng bắt đầu là tháng hiện tại, cũng có thể cho nó ra ngoài bên trái
+        if (from == currentMonth) {
+          startVal = -0.5;
+        }
 
         return Container(
           height: MediaQuery.of(context).size.height / 2.2,
@@ -268,32 +310,23 @@ class _ChartRFMovingAveScreenState extends State<ChartRFMovingAveScreen> {
 
                         // Gradient border với hiệu ứng glow
                         borderWidth: 2,
-                        borderColor: const Color(0xFFFF006E),
-                        dashArray: const <double>[8, 4],
+                        borderColor: glowColor,
+                        dashArray: <double>[8 + dashSpeed, 4],
                         text: widget.machineAnalysis.scale,
                         verticalTextAlignment: TextAnchor.start,
                         textStyle: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFFFF006E),
+                          color: glowColor,
                           letterSpacing: 2.0,
-
-                          // Multi-layer shadow cho text glow
                           shadows: [
                             Shadow(
-                              color: const Color(0xFFFF006E),
-                              blurRadius: 10,
-                              offset: const Offset(0, 0),
+                              color: glowColor.withOpacity(0.8),
+                              blurRadius: 8 + 6 * glowIntensity,
                             ),
                             Shadow(
-                              color: const Color(0xFFFF006E).withOpacity(0.6),
+                              color: glowColor.withOpacity(0.5),
                               blurRadius: 20,
-                              offset: const Offset(0, 0),
-                            ),
-                            Shadow(
-                              color: Colors.black87,
-                              blurRadius: 3,
-                              offset: const Offset(1, 1),
                             ),
                           ],
                         ),
