@@ -154,10 +154,18 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
         tooltipBehavior: _tooltipBehaviorDetails,
         plotAreaBorderColor: const Color(0xFF00B4D8).withOpacity(0.06),
         primaryXAxis: CategoryAxis(
-          labelStyle: const TextStyle(color: Color(0xFF8BA5C1)),
+          labelStyle: const TextStyle(
+            color: Color(0xFF8BA5C1),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         primaryYAxis: NumericAxis(
-          labelStyle: const TextStyle(color: Color(0xFF8BA5C1)),
+          labelStyle: const TextStyle(
+            color: Color(0xFF8BA5C1),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         series: <BarSeries<MachineStopReasonModel, String>>[
           BarSeries<MachineStopReasonModel, String>(
@@ -172,7 +180,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
               isVisible: true,
               textStyle: TextStyle(
                 color: Colors.white,
-                fontSize: 12,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -221,11 +229,15 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                             primaryXAxis: CategoryAxis(
                               labelStyle: const TextStyle(
                                 color: Color(0xFF8BA5C1),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             primaryYAxis: NumericAxis(
                               labelStyle: const TextStyle(
                                 color: Color(0xFF8BA5C1),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             series: <BarSeries<MachineStopReasonModel, String>>[
@@ -246,7 +258,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                                   isVisible: true,
                                   textStyle: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 11,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
