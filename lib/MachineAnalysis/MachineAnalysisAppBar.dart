@@ -165,14 +165,9 @@ class MachineAnalysisAppBar extends StatelessWidget
                                 : AnalysisMode.Average,
                           ),
                       selectedColor: Colors.green,
-                      selectedGradient:
-                          selectedMode == AnalysisMode.MovAve
-                              ? const LinearGradient(
-                                colors: [Colors.pinkAccent, Colors.blue],
-                              )
-                              : const LinearGradient(
-                                colors: [Colors.pinkAccent, Colors.green],
-                              ),
+                      selectedGradient: const LinearGradient(
+                        colors: [Colors.pinkAccent, Colors.green],
+                      ),
                       lastClickedMachine: lastClickedMachine,
                       targetMode:
                           selectedMode == AnalysisMode.Average
@@ -181,14 +176,12 @@ class MachineAnalysisAppBar extends StatelessWidget
                     ),
                     const SizedBox(width: 12),
                     AnimatedChoiceChip(
-                      label: "Stops Reason",
+                      label: "Stop\nReason",
                       icon: const Icon(
-                        Icons.receipt_long_sharp,
+                        Icons.stacked_bar_chart_sharp,
                         color: Colors.black,
                       ),
-                      isSelected:
-                          selectedMode == AnalysisMode.Average ||
-                          selectedMode == AnalysisMode.MovAve,
+                      isSelected: true,
                       onTap: () {
                         // ✅ Tạo chuỗi div (các phân xưởng)
                         final selectedString = selectedDivs.join(',');
@@ -209,14 +202,9 @@ class MachineAnalysisAppBar extends StatelessWidget
                         );
                       },
                       selectedColor: Colors.green,
-                      selectedGradient:
-                          selectedMode == AnalysisMode.MovAve
-                              ? const LinearGradient(
-                                colors: [Colors.pinkAccent, Colors.blue],
-                              )
-                              : const LinearGradient(
-                                colors: [Colors.pinkAccent, Colors.green],
-                              ),
+                      selectedGradient: const LinearGradient(
+                        colors: [Color(0xDF123443), Color(0xD3FFF3F3)],
+                      ),
                       lastClickedMachine: lastClickedMachine,
                     ),
                   ],
