@@ -80,7 +80,6 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
         final data = snapshot.data ?? [];
         // Lấy danh sách tháng trong dữ liệu
         final labels = data.map((e) => e.month).toList();
-        print("labels = $labels");
 
         // Hàm normalize tháng về dạng "YYYYMM" để so sánh dễ hơn
         String normalizeMonth(String raw) {
@@ -129,10 +128,24 @@ class _ChartMSMovingAveScreenState extends State<ChartMSMovingAveScreen> {
         startIndex ??= 0;
         endIndex ??= labels.length - 1;
 
+        DateTime now = DateTime.now();
+        String currentMonth =
+            "${now.year}${now.month.toString().padLeft(2, '0')}"; // ví dụ 202510
+
+        // Tính toVal và startVal bình thường
         double startVal =
             (startIndex - 0.5).clamp(0, labels.length - 1).toDouble();
         double endVal = (endIndex + 0.5).clamp(0, labels.length - 1).toDouble();
 
+        // 👉 Nếu tháng kết thúc là tháng hiện tại, cho nó "vượt" ra ngoài
+        if (to == currentMonth) {
+          endVal = labels.length.toDouble() + 0.5;
+        }
+
+        // 👉 Nếu tháng bắt đầu là tháng hiện tại, cũng có thể cho nó ra ngoài bên trái
+        if (from == currentMonth) {
+          startVal = -0.5;
+        }
         return Container(
           height: MediaQuery.of(context).size.height / 2.2,
           margin: const EdgeInsets.all(8),
