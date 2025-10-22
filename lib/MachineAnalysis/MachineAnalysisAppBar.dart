@@ -180,28 +180,44 @@ class MachineAnalysisAppBar extends StatelessWidget
                               : 'Average', // 👈 thêm dòng này
                     ),
                     const SizedBox(width: 12),
-
-                    IconButton(
+                    AnimatedChoiceChip(
+                      label: "Stops Reason",
                       icon: const Icon(
-                        Icons.align_vertical_bottom_outlined,
+                        Icons.receipt_long_sharp,
                         color: Colors.black,
-                        size: 28,
                       ),
-                      tooltip: 'Average Month',
-                      onPressed: () {
+                      isSelected:
+                          selectedMode == AnalysisMode.Average ||
+                          selectedMode == AnalysisMode.MovAve,
+                      onTap: () {
+                        // ✅ Tạo chuỗi div (các phân xưởng)
                         final selectedString = selectedDivs.join(',');
 
+                        // ✅ Điều hướng sang màn hình MachineStopReasonScreen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder:
                                 (context) => MachineStopReasonScreen(
-                                  month: month.replaceAll('-', ''), // bỏ dấu -
+                                  month: month.replaceAll(
+                                    '-',
+                                    '',
+                                  ), // bỏ dấu '-'
                                   div: selectedString,
                                 ),
                           ),
                         );
                       },
+                      selectedColor: Colors.green,
+                      selectedGradient:
+                          selectedMode == AnalysisMode.MovAve
+                              ? const LinearGradient(
+                                colors: [Colors.pinkAccent, Colors.blue],
+                              )
+                              : const LinearGradient(
+                                colors: [Colors.pinkAccent, Colors.green],
+                              ),
+                      lastClickedMachine: lastClickedMachine,
                     ),
                   ],
                 ),
