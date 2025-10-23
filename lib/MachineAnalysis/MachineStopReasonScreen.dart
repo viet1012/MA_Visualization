@@ -23,11 +23,13 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
   final ApiService api = ApiService();
   List<MachineStopReasonModel> reasons = [];
   List<MachineStopReasonModel> detailsReasons = [];
-  List<MachineStopReasonModel> prevDetailsReasons = [];
+  List<MachineStopReasonModel> prevReasons = [];
   bool isLoadingMain = true;
   bool isLoadingDetails = false;
   bool isCompareMode = false; // 🔹 trạng thái bật/tắt phân tích
   String? selectedReason;
+  final ValueNotifier<List<MachineStopReasonModel>> _detailsNotifier =
+      ValueNotifier([]);
 
   late TooltipBehavior _tooltipBehavior;
   late TooltipBehavior _tooltipBehaviorDetails;
@@ -82,7 +84,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       setState(() {
         reasons = data;
         detailsReasons = detailsData;
-        prevDetailsReasons = []; // ❌ chưa gọi tháng trước ở đây
+        prevReasons = []; // ❌ chưa gọi tháng trước ở đây
         selectedReason = null;
       });
     } catch (e) {
@@ -111,7 +113,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       setState(() {
         detailsReasons = detailsData;
         // ❌ Không load tháng trước nữa
-        prevDetailsReasons = [];
+        prevReasons = [];
       });
     } catch (e) {
       debugPrint('Error loading details: $e');
@@ -149,7 +151,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
   }
 
   Widget _buildAnalysisSummary() {
-    if (!isCompareMode || reasons.isEmpty || prevDetailsReasons.isEmpty) {
+    if (!isCompareMode || reasons.isEmpty || prevReasons.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -158,7 +160,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       0,
       (sum, e) => sum + e.stopHour,
     );
-    final totalPrevHours = prevDetailsReasons.fold<double>(
+    final totalPrevHours = prevReasons.fold<double>(
       0,
       (sum, e) => sum + e.stopHour,
     );
@@ -167,7 +169,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       0,
       (sum, e) => sum + e.stopCase,
     );
-    final totalPrevCases = prevDetailsReasons.fold<int>(
+    final totalPrevCases = prevReasons.fold<int>(
       0,
       (sum, e) => sum + e.stopCase,
     );
@@ -189,7 +191,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
 
     // 🔹 Map tháng trước theo reason
     final Map<String, double> prevMap = {
-      for (var e in prevDetailsReasons) e.reason1 ?? 'Unknown': e.stopHour,
+      for (var e in prevReasons) e.reason1 ?? 'Unknown': e.stopHour,
     };
 
     // 🔹 Tính thay đổi từng lý do
@@ -419,7 +421,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
   Widget _buildMainReasonChart() {
     if (isCompareMode) {
       final hasCurrent = reasons.isNotEmpty;
-      final hasPrevious = prevDetailsReasons.isNotEmpty;
+      final hasPrevious = prevReasons.isNotEmpty;
 
       if (!hasCurrent && !hasPrevious) {
         return const Center(
@@ -450,7 +452,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
           ),
           ColumnSeries<MachineStopReasonModel, String>(
             name: "Previous (${_getPreviousMonth(widget.month)})",
-            dataSource: prevDetailsReasons,
+            dataSource: prevReasons,
             xValueMapper: (data, _) => data.reason1 ?? 'Unknown',
             yValueMapper: (data, _) => data.stopHour,
             color: Colors.orangeAccent,
@@ -572,7 +574,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                     div: widget.div,
                   );
                   prevData.sort((a, b) => b.stopHour.compareTo(a.stopHour));
-                  setState(() => prevDetailsReasons = prevData);
+                  setState(() => prevReasons = prevData);
                 } catch (e) {
                   debugPrint('Error loading previous month data: $e');
                 } finally {
@@ -686,13 +688,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                                             color: Color(0xFF00B4D8),
                                           ),
                                         )
-                                        : Column(
-                                          children: [
-                                            Expanded(
-                                              child: _buildDetailsChart(),
-                                            ),
-                                          ],
-                                        ),
+                                        : _buildDetailsChart(),
                               ),
                             ],
                           ),
