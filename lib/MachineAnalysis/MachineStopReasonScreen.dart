@@ -416,9 +416,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
     );
   }
 
-  /// 🔸 Biểu đồ chi tiết (tháng hiện tại hoặc so sánh)
-  Widget _buildDetailsChart() {
-    // 🔹 Nếu bật Compare mode => So sánh tổng reasons tháng này vs tháng trước
+  Widget _buildMainReasonChart() {
     if (isCompareMode) {
       final hasCurrent = reasons.isNotEmpty;
       final hasPrevious = prevDetailsReasons.isNotEmpty;
@@ -471,7 +469,48 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
         ),
       );
     }
+    return SfCartesianChart(
+      tooltipBehavior: _tooltipBehavior,
+      primaryXAxis: CategoryAxis(
+        labelStyle: const TextStyle(
+          color: Color(0xFF8BA5C1),
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      primaryYAxis: NumericAxis(
+        labelStyle: const TextStyle(
+          color: Color(0xFF8BA5C1),
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      series: <BarSeries<MachineStopReasonModel, String>>[
+        BarSeries<MachineStopReasonModel, String>(
+          dataSource: reasons,
+          xValueMapper: (data, _) => data.reason1 ?? 'Unknown',
+          yValueMapper: (data, _) => data.stopHour,
+          pointColorMapper:
+              (data, _) =>
+                  (data.reason1 == selectedReason)
+                      ? const Color(0xFF00FFD1)
+                      : const Color(0xFF00D9FF),
+          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          dataLabelSettings: const DataLabelSettings(
+            isVisible: true,
+            textStyle: TextStyle(color: Colors.white, fontSize: 14),
+          ),
+          onPointTap: (ChartPointDetails details) {
+            final tapped = reasons[details.pointIndex!].reason1;
+            _loadDetailsForReason(tapped);
+          },
+        ),
+      ],
+    );
+  }
 
+  /// 🔸 Biểu đồ chi tiết (tháng hiện tại hoặc so sánh)
+  Widget _buildDetailsChart() {
     return SfCartesianChart(
       tooltipBehavior: _tooltipBehaviorDetails,
       primaryXAxis: CategoryAxis(
@@ -557,48 +596,41 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                         glowColor: const Color(0xFF00D9FF),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
-                          child: SfCartesianChart(
-                            tooltipBehavior: _tooltipBehavior,
-                            primaryXAxis: CategoryAxis(
-                              labelStyle: const TextStyle(
-                                color: Color(0xFF8BA5C1),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            primaryYAxis: NumericAxis(
-                              labelStyle: const TextStyle(
-                                color: Color(0xFF8BA5C1),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            series: <BarSeries<MachineStopReasonModel, String>>[
-                              BarSeries<MachineStopReasonModel, String>(
-                                dataSource: reasons,
-                                xValueMapper:
-                                    (data, _) => data.reason1 ?? 'Unknown',
-                                yValueMapper: (data, _) => data.stopHour,
-                                pointColorMapper:
-                                    (data, _) =>
-                                        (data.reason1 == selectedReason)
-                                            ? const Color(0xFF00FFD1)
-                                            : const Color(0xFF00D9FF),
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(6),
-                                ),
-                                dataLabelSettings: const DataLabelSettings(
-                                  isVisible: true,
-                                  textStyle: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    isCompareMode
+                                        ? "COMPARE STOP REASONS ${widget.month} vs ${_getPreviousMonth(widget.month)}"
+                                        : "STOP REASONS (ALL)",
+                                    style: const TextStyle(
+                                      color: Color(0xFF00B4D8),
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                onPointTap: (ChartPointDetails details) {
-                                  final tapped =
-                                      reasons[details.pointIndex!].reason1;
-                                  _loadDetailsForReason(tapped);
-                                },
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Expanded(
+                                child:
+                                    isLoadingDetails
+                                        ? const Center(
+                                          child: CircularProgressIndicator(
+                                            color: Color(0xFF00B4D8),
+                                          ),
+                                        )
+                                        : Column(
+                                          children: [
+                                            Expanded(
+                                              child: _buildMainReasonChart(),
+                                            ),
+                                            _buildAnalysisSummary(),
+                                          ],
+                                        ),
                               ),
                             ],
                           ),
@@ -622,9 +654,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    isCompareMode
-                                        ? "COMPARE STOP REASONS ${widget.month} vs ${_getPreviousMonth(widget.month)}"
-                                        : selectedReason == null
+                                    selectedReason == null
                                         ? "DETAILS (ALL)"
                                         : "DETAILS OF [${selectedReason!}]",
                                     style: const TextStyle(
@@ -661,7 +691,6 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                                             Expanded(
                                               child: _buildDetailsChart(),
                                             ),
-                                            _buildAnalysisSummary(), // 🧩 thêm dòng này
                                           ],
                                         ),
                               ),
