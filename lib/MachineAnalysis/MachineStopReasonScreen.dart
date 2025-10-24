@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../API/ApiService.dart';
 import '../Model/MachineStopReasonModel.dart';
+import 'MachineStopReasonDetailsChart.dart';
 
 class MachineStopReasonScreen extends StatefulWidget {
   final String month;
@@ -28,18 +29,15 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
   bool isLoadingDetails = false;
   bool isCompareMode = false; // 🔹 trạng thái bật/tắt phân tích
   String? selectedReason;
-  final ValueNotifier<List<MachineStopReasonModel>> _detailsNotifier =
-      ValueNotifier([]);
 
   late TooltipBehavior _tooltipBehavior;
-  late TooltipBehavior _tooltipBehaviorDetails;
+
   late AnimationController _pulseController;
 
   @override
   void initState() {
     super.initState();
     _tooltipBehavior = TooltipBehavior(enable: true);
-    _tooltipBehaviorDetails = TooltipBehavior(enable: true);
 
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1800),
@@ -91,34 +89,6 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       debugPrint('Error loading data: $e');
     } finally {
       setState(() => isLoadingMain = false);
-    }
-  }
-
-  /// ✅ Load chi tiết theo lý do cụ thể
-  Future<void> _loadDetailsForReason(String? reason) async {
-    try {
-      setState(() {
-        isLoadingDetails = true;
-        selectedReason = (reason == null || reason.isEmpty) ? null : reason;
-      });
-
-      // 🔹 Chỉ load chi tiết tháng hiện tại thôi
-      final detailsData = await api.fetchDetailsMSReason(
-        month: widget.month,
-        div: widget.div,
-        inputReason: reason ?? '',
-      );
-      detailsData.sort((a, b) => b.stopHour.compareTo(a.stopHour));
-
-      setState(() {
-        detailsReasons = detailsData;
-        // ❌ Không load tháng trước nữa
-        prevReasons = [];
-      });
-    } catch (e) {
-      debugPrint('Error loading details: $e');
-    } finally {
-      setState(() => isLoadingDetails = false);
     }
   }
 
@@ -434,9 +404,10 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
 
       return SfCartesianChart(
         legend: const Legend(isVisible: true, position: LegendPosition.bottom),
-        tooltipBehavior: _tooltipBehaviorDetails,
+        tooltipBehavior: _tooltipBehavior,
         primaryXAxis: CategoryAxis(
           labelStyle: const TextStyle(color: Color(0xFF8BA5C1), fontSize: 16),
+          isInversed: true,
         ),
         primaryYAxis: NumericAxis(
           labelStyle: const TextStyle(color: Color(0xFF8BA5C1), fontSize: 16),
@@ -479,6 +450,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
           fontSize: 16,
           fontWeight: FontWeight.bold,
         ),
+        isInversed: true,
       ),
       primaryYAxis: NumericAxis(
         labelStyle: const TextStyle(
@@ -504,34 +476,11 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
           ),
           onPointTap: (ChartPointDetails details) {
             final tapped = reasons[details.pointIndex!].reason1;
-            _loadDetailsForReason(tapped);
+            setState(() {
+              selectedReason = tapped;
+            });
+            // _loadDetailsForReason(tapped);
           },
-        ),
-      ],
-    );
-  }
-
-  /// 🔸 Biểu đồ chi tiết (tháng hiện tại hoặc so sánh)
-  Widget _buildDetailsChart() {
-    return SfCartesianChart(
-      tooltipBehavior: _tooltipBehaviorDetails,
-      primaryXAxis: CategoryAxis(
-        labelStyle: const TextStyle(color: Color(0xFF8BA5C1), fontSize: 16),
-      ),
-      primaryYAxis: NumericAxis(
-        labelStyle: const TextStyle(color: Color(0xFF8BA5C1), fontSize: 16),
-      ),
-      series: <BarSeries<MachineStopReasonModel, String>>[
-        BarSeries<MachineStopReasonModel, String>(
-          dataSource: detailsReasons,
-          xValueMapper: (data, _) => data.reason2 ?? 'Unknown',
-          yValueMapper: (data, _) => data.stopHour,
-          color: const Color(0xFF00B4D8),
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
-          dataLabelSettings: const DataLabelSettings(
-            isVisible: true,
-            textStyle: TextStyle(color: Colors.white, fontSize: 16),
-          ),
         ),
       ],
     );
@@ -543,7 +492,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
         title: Text(
-          "${widget.div} • STOP REASONS",
+          "${widget.div} • STOP REASONS [${widget.month.substring(4, 6)}-${widget.month.substring(0, 4)}]",
           style: const TextStyle(
             color: Color(0xFF00D9FF),
             fontWeight: FontWeight.bold,
@@ -589,7 +538,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
           isLoadingMain
               ? const Center(child: CircularProgressIndicator())
               : Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Row(
                   children: [
                     // 🟦 Chart bên trái
@@ -651,44 +600,24 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    selectedReason == null
-                                        ? "DETAILS (ALL)"
-                                        : "DETAILS OF [${selectedReason!}]",
-                                    style: const TextStyle(
-                                      color: Color(0xFF00B4D8),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  TextButton.icon(
-                                    onPressed: () => _loadDetailsForReason(''),
-                                    icon: const Icon(
-                                      Icons.refresh,
-                                      color: Color(0xFF00B4D8),
-                                    ),
-                                    label: const Text(
-                                      'ALL',
-                                      style: TextStyle(
-                                        color: Color(0xFF00B4D8),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                selectedReason == null
+                                    ? "DETAILS (ALL)"
+                                    : "DETAILS OF [${selectedReason!}]",
+                                style: const TextStyle(
+                                  color: Color(0xFF00B4D8),
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 12),
+
+                              // ✅ Chart tách riêng, chỉ tự load khi selectedReason đổi
                               Expanded(
-                                child:
-                                    isLoadingDetails
-                                        ? const Center(
-                                          child: CircularProgressIndicator(
-                                            color: Color(0xFF00B4D8),
-                                          ),
-                                        )
-                                        : _buildDetailsChart(),
+                                child: MachineStopReasonDetailsChart(
+                                  month: widget.month,
+                                  div: widget.div,
+                                  selectedReason: selectedReason,
+                                ),
                               ),
                             ],
                           ),
