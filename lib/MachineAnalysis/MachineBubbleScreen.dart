@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ma_visualization/MachineAnalysis/MachineStopReasonScreen.dart';
 import '../API/ApiService.dart';
 import '../Common/NoDataWidget.dart';
 import '../Model/MachineAnalysis.dart';
@@ -37,6 +38,8 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
   int _selectedTopN = 10; // mặc định Top 10
 
   String? _lastClickedMachine;
+
+  bool _showStopReason = false; // 👈 Thêm dòng này
 
   @override
   void initState() {
@@ -243,6 +246,7 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
           setState(() {
             _selectedMode = mode;
             _lastClickedMachine = null;
+            _showStopReason = false; // 👈 khi đổi tab khác thì ẩn Stop Reason
           });
           _loadData();
         },
@@ -270,87 +274,101 @@ class _BubbleChartScreenState extends State<BubbleChartScreen> {
         numberFormat: numberFormat,
         month: widget.month,
         lastClickedMachine: _lastClickedMachine,
-      ),
-      body: FutureBuilder<List<MachineAnalysis>>(
-        future: _futureData,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError ||
-              !snapshot.hasData ||
-              snapshot.data!.isEmpty) {
-            return NoDataWidget(
-              title: "No Data Available",
-              message: "Please try again with a different time range.",
-              icon: Icons.error_outline,
-            );
-          }
-
-          const List<String> divOrder = [
-            'PRESS',
-            'MOLD',
-            'GUIDE',
-          ]; // có thể mở rộng nếu cần
-
-          final orderedSelectedDivs = List<String>.from(_selectedDivs);
-          orderedSelectedDivs.sort((a, b) {
-            int indexA = divOrder.indexOf(a.toUpperCase());
-            int indexB = divOrder.indexOf(b.toUpperCase());
-            indexA = indexA == -1 ? divOrder.length : indexA;
-            indexB = indexB == -1 ? divOrder.length : indexB;
-            return indexA.compareTo(indexB);
+        onShowStopReason: () {
+          setState(() {
+            _showStopReason = !_showStopReason; // 👈 bật/tắt Stop Reason view
           });
-
-          final selectedString = orderedSelectedDivs.join(',');
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                DepartmentStatsWidget(
-                  data: snapshot.data!,
-                  numberFormat: numberFormat,
-                  div: selectedString,
-                  selectedMode: _selectedMode,
-                  month: widget.month,
-                  monthBack: _selectedMonth,
-                  topLimit: _selectedTopN,
-                ),
-                BubbleChartCard(
-                  data: snapshot.data!,
-                  tooltipBehavior: _tooltipBehavior,
-                  zoomPanBehavior: _zoomPanBehavior,
-                  numberFormat: numberFormat,
-                  onBubbleTap: (String machineName) {
-                    print('Clicked machine: $machineName');
-                    setState(() {
-                      if (machineName.isEmpty) {
-                        // 👉 Nếu con gửi chuỗi rỗng => reset
-                        _lastClickedMachine = null;
-                      } else {
-                        // 👉 Nếu có máy => lưu lại
-                        _lastClickedMachine = machineName;
-                      }
-                      _loadData();
-                    });
-                  },
-                  onModeChange: (mode) {
-                    setState(() {
-                      _selectedMode = mode;
-                    });
-                  },
-                  selectedMachine:
-                      _lastClickedMachine, // 🔹 truyền xuống BubbleChart,
-                  selectedMode: _selectedMode, // ✅ truyền xuống
-                  month: widget.month,
-                  selectedMonth: _selectedMonth,
-                ),
-              ],
-            ),
-          );
         },
       ),
+      body:
+          _showStopReason
+              ? MachineStopReasonScreen(
+                key: ValueKey(
+                  "${widget.month}_${_selectedDivs.join(',')}",
+                ), // 👈 ép rebuild
+                month: widget.month.replaceAll('-', ''),
+                div: _selectedDivs.join(','),
+              )
+              : FutureBuilder<List<MachineAnalysis>>(
+                future: _futureData,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError ||
+                      !snapshot.hasData ||
+                      snapshot.data!.isEmpty) {
+                    return NoDataWidget(
+                      title: "No Data Available",
+                      message: "Please try again with a different time range.",
+                      icon: Icons.error_outline,
+                    );
+                  }
+
+                  const List<String> divOrder = [
+                    'PRESS',
+                    'MOLD',
+                    'GUIDE',
+                  ]; // có thể mở rộng nếu cần
+
+                  final orderedSelectedDivs = List<String>.from(_selectedDivs);
+                  orderedSelectedDivs.sort((a, b) {
+                    int indexA = divOrder.indexOf(a.toUpperCase());
+                    int indexB = divOrder.indexOf(b.toUpperCase());
+                    indexA = indexA == -1 ? divOrder.length : indexA;
+                    indexB = indexB == -1 ? divOrder.length : indexB;
+                    return indexA.compareTo(indexB);
+                  });
+
+                  final selectedString = orderedSelectedDivs.join(',');
+
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        DepartmentStatsWidget(
+                          data: snapshot.data!,
+                          numberFormat: numberFormat,
+                          div: selectedString,
+                          selectedMode: _selectedMode,
+                          month: widget.month,
+                          monthBack: _selectedMonth,
+                          topLimit: _selectedTopN,
+                        ),
+                        BubbleChartCard(
+                          data: snapshot.data!,
+                          tooltipBehavior: _tooltipBehavior,
+                          zoomPanBehavior: _zoomPanBehavior,
+                          numberFormat: numberFormat,
+                          onBubbleTap: (String machineName) {
+                            print('Clicked machine: $machineName');
+                            setState(() {
+                              if (machineName.isEmpty) {
+                                // 👉 Nếu con gửi chuỗi rỗng => reset
+                                _lastClickedMachine = null;
+                              } else {
+                                // 👉 Nếu có máy => lưu lại
+                                _lastClickedMachine = machineName;
+                              }
+                              _loadData();
+                            });
+                          },
+                          onModeChange: (mode) {
+                            setState(() {
+                              _selectedMode = mode;
+                            });
+                          },
+                          selectedMachine:
+                              _lastClickedMachine, // 🔹 truyền xuống BubbleChart,
+                          selectedMode: _selectedMode, // ✅ truyền xuống
+                          month: widget.month,
+                          selectedMonth: _selectedMonth,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
     );
   }
 }

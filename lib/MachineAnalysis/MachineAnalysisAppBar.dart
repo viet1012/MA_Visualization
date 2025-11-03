@@ -25,6 +25,7 @@ class MachineAnalysisAppBar extends StatelessWidget
   final String monthBack;
   final NumberFormat numberFormat;
   final String? lastClickedMachine;
+  final VoidCallback onShowStopReason;
 
   const MachineAnalysisAppBar({
     super.key,
@@ -41,6 +42,7 @@ class MachineAnalysisAppBar extends StatelessWidget
     required this.monthBack,
     required this.numberFormat,
     required this.lastClickedMachine,
+    required this.onShowStopReason,
   });
 
   @override
@@ -182,25 +184,26 @@ class MachineAnalysisAppBar extends StatelessWidget
                         color: Colors.black,
                       ),
                       isSelected: true,
-                      onTap: () {
-                        // ✅ Tạo chuỗi div (các phân xưởng)
-                        final selectedString = selectedDivs.join(',');
-
-                        // ✅ Điều hướng sang màn hình MachineStopReasonScreen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => MachineStopReasonScreen(
-                                  month: month.replaceAll(
-                                    '-',
-                                    '',
-                                  ), // bỏ dấu '-'
-                                  div: selectedString,
-                                ),
-                          ),
-                        );
-                      },
+                      onTap: onShowStopReason,
+                      // onTap: () {
+                      //   // ✅ Tạo chuỗi div (các phân xưởng)
+                      //   final selectedString = selectedDivs.join(',');
+                      //
+                      //   // ✅ Điều hướng sang màn hình MachineStopReasonScreen
+                      //   Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //       builder:
+                      //           (context) => MachineStopReasonScreen(
+                      //             month: month.replaceAll(
+                      //               '-',
+                      //               '',
+                      //             ), // bỏ dấu '-'
+                      //             div: selectedString,
+                      //           ),
+                      //     ),
+                      //   );
+                      // },
                       selectedColor: Colors.green,
                       selectedGradient: const LinearGradient(
                         colors: [Color(0xDF123443), Color(0xD3FFF3F3)],

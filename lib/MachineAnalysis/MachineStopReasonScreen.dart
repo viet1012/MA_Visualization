@@ -3,6 +3,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import '../API/ApiService.dart';
 import '../Model/MachineStopReasonModel.dart';
 import 'MachineStopReasonDetailsChart.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class MachineStopReasonScreen extends StatefulWidget {
   final String month;
@@ -34,6 +35,8 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
 
   late AnimationController _pulseController;
 
+  late String currentMonth;
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +46,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       duration: const Duration(milliseconds: 1800),
       vsync: this,
     )..repeat(reverse: true);
+    currentMonth = widget.month;
 
     _loadData();
   }
@@ -87,6 +91,33 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       });
     } catch (e) {
       debugPrint('Error loading data: $e');
+    } finally {
+      setState(() => isLoadingMain = false);
+    }
+  }
+
+  Future<void> _loadDataForMonth(String month) async {
+    try {
+      setState(() => isLoadingMain = true);
+
+      final data = await api.fetchMSReason(month: month, div: widget.div);
+      data.sort((a, b) => b.stopHour.compareTo(a.stopHour));
+
+      final detailsData = await api.fetchDetailsMSReason(
+        month: month,
+        div: widget.div,
+        inputReason: '',
+      );
+      detailsData.sort((a, b) => b.stopHour.compareTo(a.stopHour));
+
+      setState(() {
+        reasons = data;
+        detailsReasons = detailsData;
+        selectedReason = null;
+        prevReasons = [];
+      });
+    } catch (e) {
+      debugPrint('Error loading data for month $month: $e');
     } finally {
       setState(() => isLoadingMain = false);
     }
@@ -433,15 +464,16 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
       );
     }
 
-    // 🔹 Còn lại = hiển thị chi tiết của lý do đang chọn (detailsReasons)
-    if (detailsReasons.isEmpty) {
-      return const Center(
-        child: Text(
-          "No data available for current month",
-          style: TextStyle(color: Colors.white70, fontSize: 16),
-        ),
-      );
-    }
+    // // ✅ Luôn render main chart dù details rỗng
+    // if (reasons.isEmpty) {
+    //   return const Center(
+    //     child: Text(
+    //       "No data available for current month",
+    //       style: TextStyle(color: Colors.white70, fontSize: 16),
+    //     ),
+    //   );
+    // }
+
     return SfCartesianChart(
       tooltipBehavior: _tooltipBehavior,
       primaryXAxis: CategoryAxis(
@@ -479,7 +511,6 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
             setState(() {
               selectedReason = tapped;
             });
-            // _loadDetailsForReason(tapped);
           },
         ),
       ],
@@ -491,12 +522,51 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
-        title: Text(
-          "${widget.div} • STOP REASONS [${widget.month.substring(4, 6)}-${widget.month.substring(0, 4)}]",
-          style: const TextStyle(
-            color: Color(0xFF00D9FF),
-            fontWeight: FontWeight.bold,
-          ),
+        automaticallyImplyLeading: false,
+
+        title: Row(
+          children: [
+            Text(
+              "${widget.div} • STOP REASONS [${currentMonth.substring(4, 6)}-${currentMonth.substring(0, 4)}]",
+              style: const TextStyle(
+                color: Color(0xFF00D9FF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(width: 22),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.cyanAccent,
+                  width: 2,
+                ), // 👈 viền màu & độ dày
+                borderRadius: BorderRadius.circular(10), // 👈 bo góc
+              ),
+              child: IconButton(
+                hoverColor: Colors.yellow,
+                icon: const Icon(
+                  Icons.calendar_month,
+                  color: Colors.cyanAccent,
+                ),
+                onPressed: () async {
+                  final now = DateTime.now();
+                  final picked = await showMonthPicker(
+                    context: context,
+                    initialDate: now,
+                    firstDate: DateTime(now.year - 1, 1),
+                    lastDate: DateTime(now.year + 1, 12),
+                  );
+
+                  if (picked != null) {
+                    final monthStr =
+                        "${picked.year}${picked.month.toString().padLeft(2, '0')}";
+                    setState(() => currentMonth = monthStr);
+                    _loadDataForMonth(monthStr);
+                  }
+                },
+              ),
+            ),
+          ],
         ),
         backgroundColor: const Color(0xFF0D1622),
         actions: [
@@ -556,7 +626,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                                 children: [
                                   Text(
                                     isCompareMode
-                                        ? "COMPARE STOP REASONS ${widget.month} vs ${_getPreviousMonth(widget.month)}"
+                                        ? "COMPARE STOP REASONS $currentMonth vs ${_getPreviousMonth(currentMonth)}"
                                         : "STOP REASONS (ALL)",
                                     style: const TextStyle(
                                       color: Color(0xFF00B4D8),
@@ -614,7 +684,7 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                               // ✅ Chart tách riêng, chỉ tự load khi selectedReason đổi
                               Expanded(
                                 child: MachineStopReasonDetailsChart(
-                                  month: widget.month,
+                                  month: currentMonth,
                                   div: widget.div,
                                   selectedReason: selectedReason,
                                 ),

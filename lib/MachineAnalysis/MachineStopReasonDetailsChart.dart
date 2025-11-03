@@ -69,9 +69,23 @@ class _MachineStopDetailsChartState
 
     if (detailsReasons.isEmpty) {
       return const Center(
-        child: Text(
-          "No data available",
-          style: TextStyle(color: Colors.white70),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "No data available for current month",
+              style: TextStyle(color: Colors.white70, fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "💡 Click a bar to view details",
+              style: TextStyle(
+                color: Colors.white38,
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ),
       );
     }
