@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../API/ApiService.dart';
+import '../Model/DetailsMSReasonModel.dart';
 import '../Model/MachineStopReasonModel.dart';
+import '../Popup/DetailsOfMSReasonDetailsPopup.dart';
 import 'MachineStopReasonDetailsChart.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 
@@ -496,11 +500,18 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
           dataSource: reasons,
           xValueMapper: (data, _) => data.reason1 ?? 'Unknown',
           yValueMapper: (data, _) => data.stopHour,
-          pointColorMapper:
-              (data, _) =>
-                  (data.reason1 == selectedReason)
-                      ? const Color(0xFF00FFD1)
-                      : const Color(0xFF00D9FF),
+          pointColorMapper: (data, _) {
+            if (selectedReason == null) {
+              // Chưa chọn thì tất cả màu xanh dương
+              return const Color(0xFF00D9FF);
+            } else {
+              // Đã chọn thì cột selected màu xanh dương, còn lại xám
+              return (data.reason1 == selectedReason)
+                  ? const Color(0xFF00D9FF)
+                  : Colors.grey.shade400;
+            }
+          },
+
           borderRadius: const BorderRadius.all(Radius.circular(6)),
           dataLabelSettings: const DataLabelSettings(
             isVisible: true,
@@ -633,6 +644,85 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                  TextButton.icon(
+                                    icon: const Icon(Icons.table_chart),
+                                    label: Shimmer.fromColors(
+                                      baseColor: Colors.grey.shade300,
+                                      highlightColor: Colors.blue,
+                                      period: const Duration(
+                                        milliseconds: 1800,
+                                      ), // tốc độ shimmer
+                                      child: Text(
+                                        "View Details",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              Colors
+                                                  .black, // màu gốc vẫn cần để giữ shape
+                                        ),
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder:
+                                            (_) => Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                      );
+
+                                      try {
+                                        List<DetailsMSReasonModel> detailsData =
+                                            await ApiService()
+                                                .fetchDetailOfsMSReason(
+                                                  div: widget.div,
+                                                  month: widget.month,
+                                                );
+
+                                        Navigator.of(
+                                          context,
+                                        ).pop(); // đóng loading dialog
+
+                                        if (detailsData.isNotEmpty) {
+                                          showDialog(
+                                            context: context,
+                                            builder:
+                                                (_) =>
+                                                    DetailsOfMSReasonDetailsPopup(
+                                                      title: widget.div,
+                                                      data: detailsData,
+                                                    ),
+                                          );
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'No data available',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        Navigator.of(
+                                          context,
+                                        ).pop(); // đóng loading dialog
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Error fetching data',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -670,14 +760,102 @@ class _MachineStopReasonScreenState extends State<MachineStopReasonScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                selectedReason == null
-                                    ? "DETAILS (ALL)"
-                                    : "DETAILS OF [${selectedReason!}]",
-                                style: const TextStyle(
-                                  color: Color(0xFF00B4D8),
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    selectedReason == null
+                                        ? "DETAILS (ALL)"
+                                        : "DETAILS OF [${selectedReason!}]",
+                                    style: const TextStyle(
+                                      color: Color(0xFF00B4D8),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  selectedReason == null
+                                      ? SizedBox()
+                                      : TextButton.icon(
+                                        icon: const Icon(Icons.table_chart),
+                                        label: Shimmer.fromColors(
+                                          baseColor: Colors.grey.shade300,
+                                          highlightColor: Colors.blue,
+                                          period: const Duration(
+                                            milliseconds: 1800,
+                                          ), // tốc độ shimmer
+                                          child: Text(
+                                            "View Details",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  Colors
+                                                      .black, // màu gốc vẫn cần để giữ shape
+                                            ),
+                                          ),
+                                        ),
+                                        onPressed: () async {
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder:
+                                                (_) => Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ),
+                                          );
+
+                                          try {
+                                            List<DetailsMSReasonModel>
+                                            detailsData = await ApiService()
+                                                .fetchDetailOfsMSReasonDetails(
+                                                  div: widget.div,
+                                                  month: widget.month,
+                                                  inputReason: selectedReason,
+                                                );
+
+                                            Navigator.of(
+                                              context,
+                                            ).pop(); // đóng loading dialog
+
+                                            if (detailsData.isNotEmpty) {
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (_) =>
+                                                        DetailsOfMSReasonDetailsPopup(
+                                                          title:
+                                                              selectedReason!,
+                                                          data: detailsData,
+                                                        ),
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'No data available',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            Navigator.of(
+                                              context,
+                                            ).pop(); // đóng loading dialog
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Error fetching data',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                ],
                               ),
                               const SizedBox(height: 12),
 

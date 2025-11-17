@@ -14,6 +14,7 @@ import 'package:ma_visualization/Model/RepairFeeModel.dart';
 
 import '../Model/ChartRFMovingAveModel.dart';
 import '../Model/DetailsMSMovingAveModel.dart';
+import '../Model/DetailsMSReasonModel.dart';
 import '../Model/DetailsRFMovingAveModel.dart';
 import '../Model/MachineAnalysis.dart';
 import '../Model/MachineTrendModel.dart';
@@ -454,6 +455,51 @@ class ApiService {
           .toList();
     } else {
       throw Exception('Failed to load bubble data');
+    }
+  }
+
+  Future<List<DetailsMSReasonModel>> fetchDetailOfsMSReasonDetails({
+    required month,
+    required String div,
+    String? inputReason,
+  }) async {
+    final uri = Uri.parse(
+      '$baseUrl/details_of/machine_stopping/reason/details?div=$div&month=$month&reason=$inputReason',
+    );
+    final response = await http.get(uri);
+
+    // Debug
+    print("url: $uri");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList
+          .map((json) => DetailsMSReasonModel.fromJson(json))
+          .toList();
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  Future<List<DetailsMSReasonModel>> fetchDetailOfsMSReason({
+    required month,
+    required String div,
+  }) async {
+    final uri = Uri.parse(
+      '$baseUrl/details_of/machine_stopping/reason?div=$div&month=$month',
+    );
+    final response = await http.get(uri);
+
+    // Debug
+    print("url: $uri");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList
+          .map((json) => DetailsMSReasonModel.fromJson(json))
+          .toList();
+    } else {
+      throw Exception('Failed to load data');
     }
   }
 
